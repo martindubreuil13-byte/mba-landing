@@ -31,8 +31,9 @@ export function OfferSection() {
       <div className="mx-auto flex max-w-6xl flex-col gap-14">
         <SectionHeading
           label="Programs"
-          title="Two ways to stop guessing and start building"
-          description="Pick the path that matches where you are: decide what to build, or build with a plan that actually scales."
+          title="Choose the path that matches where you are"
+          description="Start with clarity, or jump straight into a system that keeps you moving.
+          "
         />
 
         <div className="grid gap-8 lg:grid-cols-2">
@@ -43,10 +44,13 @@ export function OfferSection() {
                   The Threshold
                 </p>
                 <h3 className="mt-3 text-2xl font-semibold text-white">
-                  From noise to a decision you can act on
+                  Decide fast or keep burning runway
                 </h3>
                 <p className="mt-4 text-sm leading-relaxed text-white/70">
-                  Two sessions to decide whether to build, where to place your next bet, and what it takes to win.
+                  Two sessions to make a clear yes/no decision and avoid another quarter of wasted work.
+                </p>
+                <p className="mt-2 text-xs text-white/50">
+                  AI assists with analysis; you still decide.
                 </p>
               </div>
               <div className="flex flex-col items-end gap-1">
@@ -95,10 +99,13 @@ export function OfferSection() {
                   The Architect
                 </p>
                 <h3 className="mt-3 text-2xl font-semibold text-white">
-                  A build-ready architecture you can ship in 90 days
+                  Build a system that actually delivers
                 </h3>
                 <p className="mt-4 text-sm leading-relaxed text-white/70">
-                  A focused program that turns what you know into a single, aligned system everyone can execute.
+                  A 90-day path to a repeatable architecture that forces the right trade-offs.
+                </p>
+                <p className="mt-2 text-xs text-white/50">
+                  (AI helps speed analysis—this is still your plan.)
                 </p>
               </div>
               <div className="flex flex-col items-end gap-1">
@@ -142,7 +149,7 @@ export function OfferSection() {
                 Apply for The Architect
               </Button>
               <Button href="#" variant="secondary" size="lg" className="w-full">
-                Talk to the team
+                Talk to Martin
               </Button>
             </div>
 
