@@ -1,5 +1,7 @@
 import { GlassCard } from "@/app/components/ui/GlassCard";
 import { SectionHeading } from "@/app/components/ui/SectionHeading";
+import { Icon } from "@/app/components/ui/Icon";
+import { Lightbulb, Building, Zap } from "lucide-react";
 
 const stepData = [
   {
@@ -7,18 +9,21 @@ const stepData = [
     description:
       "Get laser-focused on the change you want to create. We map the problem, the customer, and the value path before anything else.",
     accent: "from-cyan-300 to-sky-300",
+    icon: Lightbulb,
   },
   {
     title: "Architecture",
     description:
       "Design the system that turns intent into repeatable results. We align goals, roles, and opportunity into an execution-ready blueprint.",
     accent: "from-emerald-300 to-cyan-300",
+    icon: Building,
   },
   {
     title: "Execution",
     description:
       "Operationalize the plan with clear checkpoints, metrics, and decisions. Growth happens when teams move together.",
     accent: "from-indigo-300 to-fuchsia-300",
+    icon: Zap,
   },
 ];
 
@@ -51,7 +56,7 @@ export function FrameworkSection() {
                 <div
                   className={`inline-flex items-center justify-center rounded-full bg-gradient-to-br ${step.accent} p-3 text-black shadow-[0_15px_40px_-22px_rgba(0,0,0,0.55)]`}
                 >
-                  <span className="text-lg font-semibold">{step.title.charAt(0)}</span>
+                  <Icon icon={step.icon} className="h-6 w-6" />
                 </div>
                 <h3 className="mt-6 text-xl font-semibold text-white">{step.title}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-white/70">{step.description}</p>

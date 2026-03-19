@@ -3,23 +3,24 @@
 import { Button } from "@/app/components/ui/Button";
 import { GlassCard } from "@/app/components/ui/GlassCard";
 import { SectionHeading } from "@/app/components/ui/SectionHeading";
-import { IconWrapper, CompassIcon, ChartIcon, ShieldIcon } from "@/app/components/ui/Icon";
+import { Icon } from "@/app/components/ui/Icon";
+import { Compass, BarChart3, Shield, MapPin } from "lucide-react";
 
 const thresholdHighlights = [
   {
-    icon: <CompassIcon />,
-    label: "Clarify what you’re really trying to build",
+    icon: Compass,
+    label: "Clarify what you're really trying to build",
   },
   {
-    icon: <ShieldIcon />,
-    label: "Understand what’s at stake if you move — or don’t",
+    icon: Shield,
+    label: "Understand what's at stake if you move — or don't",
   },
   {
-    icon: <ChartIcon />,
+    icon: BarChart3,
     label: "Identify gaps between vision and reality",
   },
   {
-    icon: <CompassIcon />,
+    icon: MapPin,
     label: "Decide the right next step with eyes open",
   },
 ];
@@ -61,9 +62,9 @@ export function OfferSection() {
             <div className="mt-8 grid gap-4">
               {thresholdHighlights.map((item) => (
                 <div key={item.label} className="flex items-start gap-4">
-                  <IconWrapper gradient="bg-gradient-to-br from-cyan-400/60 via-sky-400/40 to-indigo-400/40">
-                    {item.icon}
-                  </IconWrapper>
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400/80 via-sky-300/60 to-indigo-400/60 text-white shadow-[0_12px_32px_-18px_rgba(0,0,0,0.6)]">
+                    <Icon icon={item.icon} className="h-5 w-5" />
+                  </div>
                   <p className="text-sm text-white/70">{item.label}</p>
                 </div>
               ))}
@@ -112,27 +113,27 @@ export function OfferSection() {
 
             <div className="mt-8 grid gap-4">
               <div className="flex items-start gap-4">
-                <IconWrapper gradient="bg-gradient-to-br from-emerald-400/60 via-cyan-400/40 to-sky-400/40">
-                  <CompassIcon />
-                </IconWrapper>
+                <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400/60 via-cyan-400/40 to-sky-400/40 text-white shadow-[0_12px_32px_-18px_rgba(0,0,0,0.6)]">
+                  <Icon icon={Compass} className="h-5 w-5" />
+                </div>
                 <p className="text-sm text-white/70">A coherent, defensible business model</p>
               </div>
               <div className="flex items-start gap-4">
-                <IconWrapper gradient="bg-gradient-to-br from-cyan-400/60 via-sky-400/40 to-indigo-400/40">
-                  <ChartIcon />
-                </IconWrapper>
+                <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400/60 via-sky-400/40 to-indigo-400/40 text-white shadow-[0_12px_32px_-18px_rgba(0,0,0,0.6)]">
+                  <Icon icon={BarChart3} className="h-5 w-5" />
+                </div>
                 <p className="text-sm text-white/70">Clear customer + problem + positioning</p>
               </div>
               <div className="flex items-start gap-4">
-                <IconWrapper gradient="bg-gradient-to-br from-indigo-400/60 via-fuchsia-400/40 to-purple-400/40">
-                  <ShieldIcon />
-                </IconWrapper>
+                <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-400/60 via-fuchsia-400/40 to-purple-400/40 text-white shadow-[0_12px_32px_-18px_rgba(0,0,0,0.6)]">
+                  <Icon icon={Shield} className="h-5 w-5" />
+                </div>
                 <p className="text-sm text-white/70">A credible go-to-market strategy</p>
               </div>
               <div className="flex items-start gap-4">
-                <IconWrapper gradient="bg-gradient-to-br from-fuchsia-400/60 via-pink-400/40 to-rose-400/40">
-                  <CompassIcon />
-                </IconWrapper>
+                <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-fuchsia-400/60 via-pink-400/40 to-rose-400/40 text-white shadow-[0_12px_32px_-18px_rgba(0,0,0,0.6)]">
+                  <Icon icon={MapPin} className="h-5 w-5" />
+                </div>
                 <p className="text-sm text-white/70">A 90-day execution roadmap</p>
               </div>
             </div>

@@ -10,18 +10,18 @@ export function FinalCta({ onContactClick }: FinalCtaProps) {
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-8 text-center">
         <div className="glass-strong rounded-3xl border-white/10 p-10 text-white/90 shadow-[0_28px_80px_-28px_rgba(0,0,0,0.6)]">
           <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
-            Ready to build with clarity?
+            Stop wasting time on ideas that won't work
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/70">
-            Get a proven process and a partner that keeps your team aligned. Use the framework to
-            stop spinning and start shipping.
+            Get the architecture that turns your vision into a business that actually scales.
+            Join 50+ founders who've avoided the $100K+ mistakes that kill most startups.
           </p>
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
             <Button href="#offer" variant="primary" size="lg">
-              Start building now
+              Get Your Architecture Blueprint
             </Button>
             <Button onClick={onContactClick} variant="secondary" size="lg">
-              Book a call
+              Talk to Martin
             </Button>
           </div>
         </div>

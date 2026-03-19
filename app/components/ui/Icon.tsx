@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode, ComponentType } from "react";
 
 interface IconWrapperProps {
   className?: string;
@@ -18,6 +18,15 @@ export function IconWrapper({ className, children, gradient }: IconWrapperProps)
       {children}
     </span>
   );
+}
+
+interface IconProps {
+  icon: ComponentType<{ className?: string }>;
+  className?: string;
+}
+
+export function Icon({ icon: IconComponent, className }: IconProps) {
+  return <IconComponent className={className} />;
 }
 
 export function CompassIcon() {
