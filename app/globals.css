@@ -1,8 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #05060e;
+  --foreground: #f4f6ff;
+  --surface: rgba(255, 255, 255, 0.05);
+  --surface-strong: rgba(255, 255, 255, 0.1);
+  --neon: #18e5ff;
+  --neon-2: #7c5cff;
+  --border: rgba(255, 255, 255, 0.12);
 }
 
 @theme inline {
@@ -12,15 +17,80 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background: radial-gradient(circle at top, rgba(81, 163, 255, 0.18), transparent 55%),
+    radial-gradient(circle at 20% 80%, rgba(30, 255, 188, 0.14), transparent 52%),
+    var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  min-height: 100vh;
+  scroll-behavior: smooth;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .glass {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(26px);
+    -webkit-backdrop-filter: blur(26px);
+  }
+
+  .glass-strong {
+    background: var(--surface-strong);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  .neon {
+    text-shadow: 0 0 14px rgba(24, 229, 255, 0.6), 0 0 28px rgba(124, 92, 255, 0.25);
+  }
+
+  .neon-glow {
+    box-shadow: 0 0 0 1px rgba(24, 229, 255, 0.22), 0 0 32px rgba(24, 229, 255, 0.18),
+      0 0 54px rgba(124, 92, 255, 0.16);
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fadeUp {
+    animation: fadeInUp 0.9s ease-out both;
+  }
+
+  .animate-fadeUp-delay-1 {
+    animation: fadeInUp 0.9s ease-out 0.2s both;
+  }
+
+  .animate-fadeUp-delay-2 {
+    animation: fadeInUp 0.9s ease-out 0.4s both;
+  }
+
+  .animate-fadeUp-delay-3 {
+    animation: fadeInUp 0.9s ease-out 0.6s both;
+  }
+
+  @keyframes glowPulse {
+    0%,
+    100% {
+      opacity: 0.55;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.35;
+      transform: scale(1.04);
+    }
+  }
+
+  .animate-glowPulse {
+    animation: glowPulse 3.2s ease-in-out infinite;
+  }
 }
