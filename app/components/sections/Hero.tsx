@@ -36,56 +36,43 @@ export function Hero() {
           </Button>
         </div>
 
-        {/* Profile Image Section */}
-        <div className="w-full max-w-6xl animate-fadeUp">
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent rounded-3xl" />
-            <div className="relative glass rounded-3xl p-8 md:p-12">
-              <div className="flex flex-col md:flex-row items-center gap-8">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/20 to-indigo-400/20 rounded-full blur-xl" />
-                  <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden ring-2 ring-white/20">
-                    <img
-                      src="/images/martin-profile.jpg"
-                      alt="Martin - The Modern Business Architect"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        // Fallback to placeholder if image doesn't exist
-                        e.currentTarget.style.display = 'none';
-                        if (e.currentTarget.nextElementSibling) {
-                          (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
-                        }
-                      }}
-                    />
-                    {/* Fallback placeholder */}
-                    <div className="w-full h-full bg-gradient-to-br from-cyan-400/20 to-indigo-400/20 flex items-center justify-center" style={{ display: 'none' }}>
-                      <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-cyan-400 to-indigo-400 flex items-center justify-center">
-                        <span className="text-2xl md:text-3xl font-bold text-white">MBA</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex-1 text-center md:text-left">
-                  <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">
-                    Martin - The Modern Business Architect
-                  </h3>
-                  <p className="text-lg text-white/80 mb-4">
-                    With 30+ years of experience across 10 countries, I've built and scaled businesses
-                    from startups to corporations. As a business owner and entrepreneur, I've helped
-                    hundreds of founders avoid the costly mistakes that derail most ventures.
-                  </p>
-                  <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                    <span className="px-3 py-1 bg-cyan-400/10 text-cyan-300 rounded-full text-sm font-medium">
-                      30+ Years Experience
-                    </span>
-                    <span className="px-3 py-1 bg-indigo-400/10 text-indigo-300 rounded-full text-sm font-medium">
-                      10 Countries
-                    </span>
-                    <span className="px-3 py-1 bg-emerald-400/10 text-emerald-300 rounded-full text-sm font-medium">
-                      Business Owner
-                    </span>
-                  </div>
-                </div>
+        {/* About Martin Section */}
+        <div className="w-full max-w-4xl animate-fadeUp">
+          <div className="relative glass rounded-3xl p-8 md:p-12">
+            <div className="text-center">
+              <h3 className="text-2xl md:text-3xl font-bold text-white mb-6">
+                Martin — The Modern Business Architect
+              </h3>
+              <div className="space-y-4 text-lg text-white/80 leading-relaxed">
+                <p>
+                  I've spent decades watching the same pattern repeat.
+                </p>
+                <p>
+                  Smart people.<br />
+                  Good ideas.<br />
+                  And nothing that actually holds.
+                </p>
+                <p>
+                  Not because they lack talent.
+                </p>
+                <p>
+                  Because what they're building isn't structured to work.
+                </p>
+                <p>
+                  I've worked across industries, countries, and business stages.
+                </p>
+                <p>
+                  The problem is always the same:
+                </p>
+                <p className="font-semibold text-white">
+                  Execution without architecture.
+                </p>
+                <p>
+                  That's why I don't coach ideas.
+                </p>
+                <p className="font-semibold text-white">
+                  I design businesses that can actually stand.
+                </p>
               </div>
             </div>
           </div>
