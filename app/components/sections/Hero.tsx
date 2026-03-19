@@ -9,18 +9,22 @@ export function Hero() {
         <div className="absolute left-1/2 top-24 h-96 w-96 -translate-x-1/2 rounded-full bg-gradient-to-br from-indigo-300/15 via-fuchsia-300/10 to-transparent blur-3xl" />
       </div>
 
-      <div className="relative z-10 flex w-full max-w-7xl mx-auto flex-col items-start gap-10">
+      <div className="relative z-10 flex w-full max-w-7xl mx-auto flex-col items-center gap-16">
         <p className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-1 text-sm font-semibold tracking-wide text-white/70 ring-1 ring-white/10 animate-fadeUp">
           Most founders don’t fail because of bad ideas.
         </p>
-        <h1 className="text-5xl font-bold leading-tight tracking-tight text-white md:text-7xl animate-fadeUp">
-          <span className="block">They fail because nothing is</span>
+        <h1 className="text-6xl font-bold leading-tight tracking-tight text-white md:text-8xl animate-fadeUp">
+          <span className="block">You don’t need another idea.</span>
           <span className="block bg-gradient-to-r from-cyan-200 via-sky-100 to-indigo-200 bg-clip-text text-transparent">
-            structured enough to work.
+            You need something that actually works.
           </span>
         </h1>
         <p className="max-w-3xl text-xl leading-relaxed text-white/80 md:text-2xl animate-fadeUp">
-          You don’t need more inspiration. You need something that actually holds.
+          Most people don’t fail because they lack intelligence or ambition.
+          <br />
+          They fail because nothing they build is structured to hold.
+          <br />
+          So they start, stop, rethink… and stay in the same place.
         </p>
 
         <div className="flex flex-col gap-4 sm:flex-row animate-fadeUp">
@@ -28,7 +32,7 @@ export function Hero() {
             Build Something That Works
           </Button>
           <Button href="#framework" variant="secondary" size="lg" className="text-lg px-8 py-4">
-            See the system
+            See How It Works
           </Button>
         </div>
 
