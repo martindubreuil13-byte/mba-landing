@@ -59,7 +59,7 @@ export function FrameworkSection() {
                   <Icon icon={step.icon} className="h-6 w-6" />
                 </div>
                 <h3 className="mt-6 text-xl font-semibold text-white">{step.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-white/70">{step.description}</p>
+                <p className="mt-3 text-base leading-relaxed text-white/80">{step.description}</p>
               </GlassCard>
             ))}
           </div>

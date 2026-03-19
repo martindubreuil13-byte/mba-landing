@@ -1,54 +1,101 @@
-import { GlassCard } from "@/app/components/ui/GlassCard";
-import { SectionHeading } from "@/app/components/ui/SectionHeading";
-import { Icon } from "@/app/components/ui/Icon";
-import { AlertTriangle, Puzzle, Target } from "lucide-react";
-
 export function ProblemSection() {
   return (
-    <section className="relative px-6 py-20">
-      <div className="mx-auto flex max-w-6xl flex-col gap-14">
-        <SectionHeading
-          label="The cost of inaction"
-          title="Good ideas die in the gap"
-          description="Without a clear architecture, every week becomes an expensive experiment. Teams drift, decisions stall, and the runway burns while the product stays unfinished."
-        />
+    <section className="relative px-6 py-20 md:px-8">
+      <div className="mx-auto max-w-4xl">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-white md:text-4xl mb-12 leading-tight">
+            THE COST OF STAYING HERE
+          </h2>
 
-        <div className="grid gap-6 md:grid-cols-3">
-          <GlassCard className="p-6 animate-fadeUp-delay-1">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="inline-flex items-center justify-center rounded-full bg-gradient-to-br from-red-400/20 to-orange-400/20 p-2">
-                <Icon icon={AlertTriangle} className="h-5 w-5 text-red-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-white">Teams rowing different directions</h3>
-            </div>
-            <p className="text-sm text-white/70">
-              Every misaligned sprint wastes weeks. You’re paying for coordination, not progress.
+          <div className="space-y-8 text-lg md:text-xl text-white/90 leading-relaxed max-w-3xl mx-auto">
+            <p>
+              Nothing breaks overnight.
             </p>
-          </GlassCard>
+            <p>
+              That's the problem.
+            </p>
 
-          <GlassCard className="p-6 animate-fadeUp-delay-2">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="inline-flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400/20 to-red-400/20 p-2">
-                <Icon icon={Puzzle} className="h-5 w-5 text-yellow-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-white">You’re building the wrong thing</h3>
+            <div className="space-y-4">
+              <p>
+                You stay in motion.
+              </p>
+              <p>
+                You stay busy.
+              </p>
+              <p>
+                You stay "close" to something working.
+              </p>
             </div>
-            <p className="text-sm text-white/70">
-              If the model isn’t clear, every decision is a guess and every launch is a bet you can’t afford to lose.
-            </p>
-          </GlassCard>
 
-          <GlassCard className="p-6 animate-fadeUp-delay-3">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="inline-flex items-center justify-center rounded-full bg-gradient-to-br from-orange-400/20 to-red-400/20 p-2">
-                <Icon icon={Target} className="h-5 w-5 text-orange-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-white">You keep rerunning the same experiments</h3>
-            </div>
-            <p className="text-sm text-white/70">
-              Without a clear architecture, every iteration feels like a roll of the dice—until the runway runs out.
+            <p>
+              But nothing actually locks in.
             </p>
-          </GlassCard>
+
+            <p className="font-semibold text-white">
+              So this is what happens:
+            </p>
+
+            <div className="space-y-3 text-left max-w-2xl mx-auto">
+              <p>
+                You keep thinking about the same idea…
+                <br />
+                but it never becomes clear enough to commit.
+              </p>
+              <p>
+                You start…
+                <br />
+                then stop…
+                <br />
+                then rethink everything again.
+              </p>
+              <p>
+                You spend time, energy, sometimes money…
+              </p>
+              <p>
+                and end up exactly where you started.
+              </p>
+            </div>
+
+            <div className="space-y-4 pt-4">
+              <p>
+                Not because you're not capable.
+              </p>
+              <p className="font-semibold text-white">
+                Because nothing you're working on is structured to hold.
+              </p>
+            </div>
+
+            <div className="mt-16 pt-8 border-t border-white/10">
+              <p className="text-xl font-semibold text-white mb-8">
+                Ask yourself:
+              </p>
+
+              <div className="glass rounded-xl p-6 md:p-8 max-w-2xl mx-auto text-left space-y-6">
+                <div className="space-y-2">
+                  <p className="text-white font-medium">
+                    – How long have you been circling the same idea?
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-white font-medium">
+                    – What have you actually built that still holds today?
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-white font-medium">
+                    – If nothing changes, where will you be in 6 months?
+                  </p>
+                </div>
+              </div>
+
+              <p className="mt-8 text-lg font-semibold text-white/80 italic">
+                At some point, the cost isn't failure.
+              </p>
+              <p className="text-lg font-semibold text-white italic">
+                It's staying in the same place.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </section>

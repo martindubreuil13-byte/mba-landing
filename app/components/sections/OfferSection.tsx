@@ -45,13 +45,13 @@ export function OfferSection() {
                 <h3 className="mt-3 text-2xl font-semibold text-white">
                   Before you commit time, money, or energy…
                 </h3>
-                <p className="mt-4 text-sm leading-relaxed text-white/70">
+                <p className="mt-4 text-base leading-relaxed text-white/80">
                   You need to know if this even makes sense. The Threshold is a decision filter.
                 </p>
-                <p className="mt-4 text-sm leading-relaxed text-white/70">
+                <p className="mt-4 text-base leading-relaxed text-white/80">
                   Not motivation. Not coaching. Clarity.
                 </p>
-                <p className="mt-2 text-xs text-white/50">
+                <p className="mt-2 text-sm text-white/60">
                   AI assists with analysis; you still decide.
                 </p>
               </div>
@@ -70,7 +70,7 @@ export function OfferSection() {
                   <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400/80 via-sky-300/60 to-indigo-400/60 text-white shadow-[0_12px_32px_-18px_rgba(0,0,0,0.6)]">
                     <Icon icon={item.icon} className="h-5 w-5" />
                   </div>
-                  <p className="text-sm text-white/70">{item.label}</p>
+                  <p className="text-base text-white/80">{item.label}</p>
                 </div>
               ))}
             </div>
@@ -84,7 +84,7 @@ export function OfferSection() {
               </Button>
             </div>
 
-            <div className="mt-8 rounded-2xl bg-white/5 p-5 text-sm text-white/60">
+            <div className="mt-8 rounded-2xl bg-white/5 p-5 text-base text-white/70">
               <p className="font-medium text-white">What this isn’t</p>
               <ul className="mt-2 space-y-2">
                 <li>• Motivation or reassurance</li>
@@ -103,13 +103,13 @@ export function OfferSection() {
                 <h3 className="mt-3 text-2xl font-semibold text-white">
                   If the direction is clear…
                 </h3>
-                <p className="mt-4 text-sm leading-relaxed text-white/70">
-                  Most ideas don’t fail in execution. They fail because nothing was designed to hold.
+                <p className="mt-4 text-base leading-relaxed text-white/80">
+                  Most ideas don't fail in execution. They fail because nothing was designed to hold.
                 </p>
-                <p className="mt-4 text-sm leading-relaxed text-white/70">
+                <p className="mt-4 text-base leading-relaxed text-white/80">
                   The Architect turns your idea into something buildable.
                 </p>
-                <p className="mt-2 text-xs text-white/50">
+                <p className="mt-2 text-sm text-white/60">
                   AI assists with analysis; you still decide.
                 </p>
               </div>
@@ -127,25 +127,25 @@ export function OfferSection() {
                   <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400/60 via-cyan-400/40 to-sky-400/40 text-white shadow-[0_12px_32px_-18px_rgba(0,0,0,0.6)]">
                     <Icon icon={Compass} className="h-5 w-5" />
                   </div>
-                  <p className="text-sm text-white/70">A clear, defensible model that gets everyone aligned</p>
+                  <p className="text-base text-white/80">A clear, defensible model that gets everyone aligned</p>
                 </div>
                 <div className="flex items-start gap-4">
                   <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400/60 via-sky-400/40 to-indigo-400/40 text-white shadow-[0_12px_32px_-18px_rgba(0,0,0,0.6)]">
                     <Icon icon={BarChart3} className="h-5 w-5" />
                   </div>
-                  <p className="text-sm text-white/70">A justified go-to-market narrative that reduces risk</p>
+                  <p className="text-base text-white/80">A justified go-to-market narrative that reduces risk</p>
                 </div>
                 <div className="flex items-start gap-4">
                   <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-400/60 via-fuchsia-400/40 to-purple-400/40 text-white shadow-[0_12px_32px_-18px_rgba(0,0,0,0.6)]">
                     <Icon icon={Shield} className="h-5 w-5" />
                   </div>
-                  <p className="text-sm text-white/70">A playbook that turns uncertainty into predictable execution</p>
+                  <p className="text-base text-white/80">A playbook that turns uncertainty into predictable execution</p>
                 </div>
                 <div className="flex items-start gap-4">
                   <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-fuchsia-400/60 via-pink-400/40 to-rose-400/40 text-white shadow-[0_12px_32px_-18px_rgba(0,0,0,0.6)]">
                     <Icon icon={MapPin} className="h-5 w-5" />
                   </div>
-                  <p className="text-sm text-white/70">A 90-day roadmap that actually gets shipped</p>
+                  <p className="text-base text-white/80">A 90-day roadmap that actually gets shipped</p>
                 </div>
               </div>
 

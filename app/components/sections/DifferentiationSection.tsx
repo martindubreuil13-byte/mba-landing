@@ -34,7 +34,7 @@ export function DifferentiationSection() {
           {points.map((point, index) => (
             <GlassCard key={point.title} className={"p-6 " + (index === 0 ? "animate-fadeUp-delay-1" : index === 1 ? "animate-fadeUp-delay-2" : "animate-fadeUp-delay-3")}>
               <h3 className="text-lg font-semibold text-white">{point.title}</h3>
-              <p className="mt-3 text-sm text-white/70">{point.description}</p>
+              <p className="mt-3 text-base text-white/80 leading-relaxed">{point.description}</p>
             </GlassCard>
           ))}
         </div>
