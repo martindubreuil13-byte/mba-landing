@@ -31,9 +31,8 @@ export function OfferSection() {
       <div className="mx-auto flex max-w-6xl flex-col gap-14">
         <SectionHeading
           label="Programs"
-          title="Choose the path that matches where you are"
-          description="Start with clarity, or jump straight into a system that keeps you moving.
-          "
+          title="There are only two real questions:"
+          description="Should you build this? And if yes — how do you build it so it actually works?"
         />
 
         <div className="grid gap-8 lg:grid-cols-2">
@@ -44,10 +43,13 @@ export function OfferSection() {
                   The Threshold
                 </p>
                 <h3 className="mt-3 text-2xl font-semibold text-white">
-                  Decide fast or keep burning runway
+                  Before you commit time, money, or energy…
                 </h3>
                 <p className="mt-4 text-sm leading-relaxed text-white/70">
-                  Two sessions to make a clear yes/no decision and avoid another quarter of wasted work.
+                  You need to know if this even makes sense. The Threshold is a decision filter.
+                </p>
+                <p className="mt-4 text-sm leading-relaxed text-white/70">
+                  Not motivation. Not coaching. Clarity.
                 </p>
                 <p className="mt-2 text-xs text-white/50">
                   AI assists with analysis; you still decide.
@@ -99,13 +101,16 @@ export function OfferSection() {
                   The Architect
                 </p>
                 <h3 className="mt-3 text-2xl font-semibold text-white">
-                  Build a system that actually delivers
+                  If the direction is clear…
                 </h3>
                 <p className="mt-4 text-sm leading-relaxed text-white/70">
-                  A 90-day path to a repeatable architecture that forces the right trade-offs.
+                  Most ideas don’t fail in execution. They fail because nothing was designed to hold.
+                </p>
+                <p className="mt-4 text-sm leading-relaxed text-white/70">
+                  The Architect turns your idea into something buildable.
                 </p>
                 <p className="mt-2 text-xs text-white/50">
-                  (AI helps speed analysis—this is still your plan.)
+                  AI assists with analysis; you still decide.
                 </p>
               </div>
               <div className="flex flex-col items-end gap-1">
