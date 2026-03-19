@@ -3,19 +3,19 @@ import { SectionHeading } from "@/app/components/ui/SectionHeading";
 
 const points = [
   {
-    title: "Systems first, not tools first",
+    title: "Architecture first, not feature first",
     description:
-      "We start with the architecture that makes tools and teams work, not the other way around. This avoids bloated stacks and aimless roadmaps.",
+      "If the system isn’t in place, tools are just noise. We build the structure that makes every move deliberate.",
   },
   {
-    title: "Business logic meets product design",
+    title: "Every choice is a lever",
     description:
-      "Every decision is traced back to customer value, revenue levers, and what your market actually understands.",
+      "We trace every decision back to a measurable outcome so you can trade fast without losing the plot.",
   },
   {
-    title: "Built for leaders who ship",
+    title: "Made for people who actually ship",
     description:
-      "Our templates and routines make execution predictable, so you can scale without losing control.",
+      "You don’t need more meetings. You need a plan that forces choices and makes progress inevitable.",
   },
 ];
 

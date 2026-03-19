@@ -8,9 +8,9 @@ export function ProblemSection() {
     <section className="relative px-6 py-20">
       <div className="mx-auto flex max-w-6xl flex-col gap-14">
         <SectionHeading
-          label="The gap"
-          title='Most "good ideas" never become reality'
-          description="When the architecture is missing, teams stall, budgets bleed, and teams chase the next shiny thing. Our lens focuses on what needs to exist before the first line of code is ever written."
+          label="The cost of inaction"
+          title="Good ideas die in the gap"
+          description="Without a clear architecture, every week becomes an expensive experiment. Teams drift, decisions stall, and the runway burns while the product stays unfinished."
         />
 
         <div className="grid gap-6 md:grid-cols-3">
@@ -19,10 +19,10 @@ export function ProblemSection() {
               <div className="inline-flex items-center justify-center rounded-full bg-gradient-to-br from-red-400/20 to-orange-400/20 p-2">
                 <Icon icon={AlertTriangle} className="h-5 w-5 text-red-400" />
               </div>
-              <h3 className="text-lg font-semibold text-white">Unclear alignment</h3>
+              <h3 className="text-lg font-semibold text-white">Teams rowing different directions</h3>
             </div>
             <p className="text-sm text-white/70">
-              Teams build in silos, deadlines slip, and every meeting becomes another status update.
+              Every misaligned sprint wastes weeks. You’re paying for coordination, not progress.
             </p>
           </GlassCard>
 
@@ -31,10 +31,10 @@ export function ProblemSection() {
               <div className="inline-flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400/20 to-red-400/20 p-2">
                 <Icon icon={Puzzle} className="h-5 w-5 text-yellow-400" />
               </div>
-              <h3 className="text-lg font-semibold text-white">Ideas without structure</h3>
+              <h3 className="text-lg font-semibold text-white">You’re building the wrong thing</h3>
             </div>
             <p className="text-sm text-white/70">
-              Great concepts crumble when there’s no model to connect value, experience, and execution.
+              If the model isn’t clear, every decision is a guess and every launch is a bet you can’t afford to lose.
             </p>
           </GlassCard>
 
@@ -43,10 +43,10 @@ export function ProblemSection() {
               <div className="inline-flex items-center justify-center rounded-full bg-gradient-to-br from-orange-400/20 to-red-400/20 p-2">
                 <Icon icon={Target} className="h-5 w-5 text-orange-400" />
               </div>
-              <h3 className="text-lg font-semibold text-white">Execution without confidence</h3>
+              <h3 className="text-lg font-semibold text-white">You keep rerunning the same experiments</h3>
             </div>
             <p className="text-sm text-white/70">
-              You ship too early or too late, and the market never engages because the logic isn’t clear.
+              Without a clear architecture, every iteration feels like a roll of the dice—until the runway runs out.
             </p>
           </GlassCard>
         </div>

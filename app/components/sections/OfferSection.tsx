@@ -9,19 +9,19 @@ import { Compass, BarChart3, Shield, MapPin } from "lucide-react";
 const thresholdHighlights = [
   {
     icon: Compass,
-    label: "Clarify what you're really trying to build",
+    label: "Walk away with a clear yes/no decision",
   },
   {
     icon: Shield,
-    label: "Understand what's at stake if you move — or don't",
+    label: "Know what you're risking and what you're protecting",
   },
   {
     icon: BarChart3,
-    label: "Identify gaps between vision and reality",
+    label: "Spot the leaks in your logic before you ship",
   },
   {
     icon: MapPin,
-    label: "Decide the right next step with eyes open",
+    label: "Leave with a next-step plan you can actually execute",
   },
 ];
 
@@ -31,8 +31,8 @@ export function OfferSection() {
       <div className="mx-auto flex max-w-6xl flex-col gap-14">
         <SectionHeading
           label="Programs"
-          title="Two ways to get clear & move with confidence"
-          description="Pick the program that matches where you are: decision clarity or full build-ready architecture." 
+          title="Two ways to stop guessing and start building"
+          description="Pick the path that matches where you are: decide what to build, or build with a plan that actually scales."
         />
 
         <div className="grid gap-8 lg:grid-cols-2">
@@ -43,11 +43,10 @@ export function OfferSection() {
                   The Threshold
                 </p>
                 <h3 className="mt-3 text-2xl font-semibold text-white">
-                  From mental noise to direction
+                  From noise to a decision you can act on
                 </h3>
                 <p className="mt-4 text-sm leading-relaxed text-white/70">
-                  A short, focused orientation program that helps you decide what to build, whether to build,
-                  and what it would actually take to make it real.
+                  Two sessions to decide whether to build, where to place your next bet, and what it takes to win.
                 </p>
               </div>
               <div className="flex flex-col items-end gap-1">
@@ -72,10 +71,10 @@ export function OfferSection() {
 
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
               <Button href="#final" variant="primary" size="lg" className="w-full">
-                Book The Threshold
+                Lock in The Threshold
               </Button>
               <Button href="#contact" variant="secondary" size="lg" className="w-full">
-                Talk to the team
+                Talk to Martin
               </Button>
             </div>
 
@@ -96,10 +95,10 @@ export function OfferSection() {
                   The Architect
                 </p>
                 <h3 className="mt-3 text-2xl font-semibold text-white">
-                  12 weeks to a build-ready business architecture
+                  A build-ready architecture you can ship in 90 days
                 </h3>
                 <p className="mt-4 text-sm leading-relaxed text-white/70">
-                  A structured, outcome-driven program for founders who are committed to building.
+                  A focused program that turns what you know into a single, aligned system everyone can execute.
                 </p>
               </div>
               <div className="flex flex-col items-end gap-1">
@@ -111,32 +110,32 @@ export function OfferSection() {
               </div>
             </div>
 
-            <div className="mt-8 grid gap-4">
-              <div className="flex items-start gap-4">
-                <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400/60 via-cyan-400/40 to-sky-400/40 text-white shadow-[0_12px_32px_-18px_rgba(0,0,0,0.6)]">
-                  <Icon icon={Compass} className="h-5 w-5" />
+              <div className="mt-8 grid gap-4">
+                <div className="flex items-start gap-4">
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400/60 via-cyan-400/40 to-sky-400/40 text-white shadow-[0_12px_32px_-18px_rgba(0,0,0,0.6)]">
+                    <Icon icon={Compass} className="h-5 w-5" />
+                  </div>
+                  <p className="text-sm text-white/70">A clear, defensible model that gets everyone aligned</p>
                 </div>
-                <p className="text-sm text-white/70">A coherent, defensible business model</p>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400/60 via-sky-400/40 to-indigo-400/40 text-white shadow-[0_12px_32px_-18px_rgba(0,0,0,0.6)]">
-                  <Icon icon={BarChart3} className="h-5 w-5" />
+                <div className="flex items-start gap-4">
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400/60 via-sky-400/40 to-indigo-400/40 text-white shadow-[0_12px_32px_-18px_rgba(0,0,0,0.6)]">
+                    <Icon icon={BarChart3} className="h-5 w-5" />
+                  </div>
+                  <p className="text-sm text-white/70">A justified go-to-market narrative that reduces risk</p>
                 </div>
-                <p className="text-sm text-white/70">Clear customer + problem + positioning</p>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-400/60 via-fuchsia-400/40 to-purple-400/40 text-white shadow-[0_12px_32px_-18px_rgba(0,0,0,0.6)]">
-                  <Icon icon={Shield} className="h-5 w-5" />
+                <div className="flex items-start gap-4">
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-400/60 via-fuchsia-400/40 to-purple-400/40 text-white shadow-[0_12px_32px_-18px_rgba(0,0,0,0.6)]">
+                    <Icon icon={Shield} className="h-5 w-5" />
+                  </div>
+                  <p className="text-sm text-white/70">A playbook that turns uncertainty into predictable execution</p>
                 </div>
-                <p className="text-sm text-white/70">A credible go-to-market strategy</p>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-fuchsia-400/60 via-pink-400/40 to-rose-400/40 text-white shadow-[0_12px_32px_-18px_rgba(0,0,0,0.6)]">
-                  <Icon icon={MapPin} className="h-5 w-5" />
+                <div className="flex items-start gap-4">
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-fuchsia-400/60 via-pink-400/40 to-rose-400/40 text-white shadow-[0_12px_32px_-18px_rgba(0,0,0,0.6)]">
+                    <Icon icon={MapPin} className="h-5 w-5" />
+                  </div>
+                  <p className="text-sm text-white/70">A 90-day roadmap that actually gets shipped</p>
                 </div>
-                <p className="text-sm text-white/70">A 90-day execution roadmap</p>
               </div>
-            </div>
 
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
               <Button href="#contact" variant="primary" size="lg" className="w-full">

@@ -11,28 +11,25 @@ export function Hero() {
 
       <div className="relative z-10 flex w-full max-w-7xl mx-auto flex-col items-start gap-10">
         <p className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-1 text-sm font-semibold tracking-wide text-white/70 ring-1 ring-white/10 animate-fadeUp">
-          Premium business architecture for visionary founders
+          Stop guessing. Start building with certainty.
         </p>
         <h1 className="text-5xl font-bold leading-tight tracking-tight text-white md:text-7xl animate-fadeUp">
-          <span className="block">You don't need another</span>
+          <span className="block">Ideas don’t build businesses.</span>
           <span className="block bg-gradient-to-r from-cyan-200 via-sky-100 to-indigo-200 bg-clip-text text-transparent">
-            idea.
-          </span>
-          <span className="block text-4xl md:text-5xl font-semibold text-white/90 mt-4">
-            You need architecture.
+            Architecture does.
           </span>
         </h1>
         <p className="max-w-3xl text-xl leading-relaxed text-white/80 md:text-2xl animate-fadeUp">
-          Stop building in chaos. Get the clarity, systems, and momentum to turn your vision into
-          an unstoppable business. No more guessing. No more false starts.
+          Every week spent guessing where to invest is cash thrown away. Get a repeatable system that
+          turns good intent into predictable outcomes.
         </p>
 
         <div className="flex flex-col gap-4 sm:flex-row animate-fadeUp">
-          <Button href="#programs" variant="primary" size="lg" className="text-lg px-8 py-4">
+          <Button href="#offer" variant="primary" size="lg" className="text-lg px-8 py-4">
             Get Your Architecture Blueprint
           </Button>
           <Button href="#framework" variant="secondary" size="lg" className="text-lg px-8 py-4">
-            See How It Works
+            See the system
           </Button>
         </div>
 
