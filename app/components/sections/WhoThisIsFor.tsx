@@ -1,52 +1,47 @@
 import { GlassCard } from "@/app/components/ui/GlassCard";
 import { SectionHeading } from "@/app/components/ui/SectionHeading";
 
-const profiles = [
-  {
-    title: "You’re stuck shipping features and not progress",
-    description:
-      "You feel busy, but nothing changes. The work is real, the outcomes are not. You need a map that turns activity into acceleration.",
-  },
-  {
-    title: "You’ve lost runway to misaligned work",
-    description:
-      "Teams pull in different directions, deadlines slide, and momentum dies. You need a shared language and clear decision points.",
-  },
-  {
-    title: "You know you could move faster if the path was clear",
-    description:
-      "You’re tired of guessing what matters. You need a repeatable system that makes trade-offs obvious and progress inevitable.",
-  },
-];
-
 export function WhoThisIsFor() {
   return (
     <section className="relative px-6 py-20">
       <div className="mx-auto flex max-w-6xl flex-col gap-10">
         <SectionHeading
-          label="Who this is for"
-          title="Not for everyone. For people who mean it."
-          description="If you’re ready to stop making the same mistakes and start building with leverage, this is for you."
+          label="WHO THIS IS FOR"
+          title="This isn’t for everyone."
+          description="It’s for people who are done circling the same ideas."
         />
 
-        <div className="grid gap-6 md:grid-cols-3">
-          {profiles.map((profile, index) => (
-            <GlassCard
-              key={profile.title}
-              className={
-                "p-6 " +
-                (index === 0
-                  ? "animate-fadeUp-delay-1"
-                  : index === 1
-                  ? "animate-fadeUp-delay-2"
-                  : "animate-fadeUp-delay-3")
-              }
-            >
-              <h3 className="text-lg font-semibold text-white">{profile.title}</h3>
-              <p className="mt-3 text-sm text-white/70">{profile.description}</p>
-            </GlassCard>
-          ))}
-        </div>
+        <GlassCard className="p-10">
+          <div className="space-y-6">
+            <p className="text-sm text-white/70">
+              This is for you if:
+            </p>
+            <ul className="space-y-3 text-sm text-white/70">
+              <li>• You’ve been thinking about a business for a while… but nothing has fully taken shape</li>
+              <li>• You start, stop, rethink, and never feel confident enough to commit</li>
+              <li>• You know you’re capable of more… but your direction isn’t clear</li>
+              <li>• You don’t want more information — you want something that actually makes sense</li>
+              <li>• You’re tired of guessing what matters and what doesn’t</li>
+            </ul>
+            <p className="text-sm text-white/70">
+              You don’t need more ideas. You need something you can actually build on.
+            </p>
+
+            <div className="border-t border-white/10 pt-8 text-sm text-white/70">
+              <p>Most people stay here for years.</p>
+              <p className="mt-3">
+                Not because they lack intelligence.
+                <br />
+                Because nothing ever becomes clear enough to move.
+              </p>
+              <p className="mt-3">
+                If you’re looking for motivation, shortcuts, or someone to do it for you…
+                <br />
+                this isn’t it.
+              </p>
+            </div>
+          </div>
+        </GlassCard>
       </div>
     </section>
   );
