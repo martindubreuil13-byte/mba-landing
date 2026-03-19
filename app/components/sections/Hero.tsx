@@ -44,7 +44,7 @@ export function Hero() {
               <img
                 src="/images/martin-profile.jpg"
                 alt="Martin - The Modern Business Architect"
-                className="w-full h-full object-cover opacity-40"
+                className="absolute left-0 top-1/2 -translate-y-1/2 w-2/3 h-full object-contain opacity-60"
                 onError={(e) => {
                   // Fallback to placeholder if image doesn't exist
                   e.currentTarget.style.display = 'none';
@@ -54,59 +54,63 @@ export function Hero() {
                 }}
               />
               {/* Fallback placeholder */}
-              <div className="w-full h-full bg-gradient-to-br from-cyan-400/20 to-indigo-400/20 flex items-center justify-center" style={{ display: 'none' }}>
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2/3 h-full bg-gradient-to-br from-cyan-400/20 to-indigo-400/20 flex items-center justify-center" style={{ display: 'none' }}>
                 <div className="w-32 h-32 rounded-full bg-gradient-to-br from-cyan-400 to-indigo-400 flex items-center justify-center">
                   <span className="text-4xl font-bold text-white">MBA</span>
                 </div>
               </div>
-              {/* Dark gradient overlay for readability */}
-              <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 via-slate-900/60 to-slate-900/20" />
-              {/* Soft fade from left to right */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-transparent" />
+              {/* Subtle gradient overlay - only on left half */}
+              <div className="absolute left-0 top-0 w-1/2 h-full bg-gradient-to-r from-slate-900/40 via-slate-900/20 to-transparent" />
+              {/* Face highlight for better visibility */}
+              <div className="absolute left-1/4 top-1/2 -translate-y-1/2 w-1/3 h-1/2 bg-gradient-to-r from-transparent via-white/5 to-transparent rounded-full blur-sm" />
             </div>
 
             {/* Content */}
             <div className="relative z-10 p-8 md:p-16">
-              <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+              <div className="flex flex-col md:flex-row items-center gap-8 md:gap-16">
                 {/* Spacer for mobile - image is background */}
-                <div className="md:flex-1 md:invisible md:h-0"></div>
+                <div className="md:w-1/2 md:invisible md:h-0"></div>
 
                 {/* Text Content */}
-                <div className="md:flex-1 text-center md:text-left">
-                  <div className="inline-block glass rounded-2xl p-6 md:p-8 shadow-2xl shadow-black/20">
-                    <h3 className="text-2xl md:text-3xl font-bold text-white mb-6">
-                      Martin — The Modern Business Architect
-                    </h3>
-                    <div className="space-y-4 text-lg text-white/90 leading-relaxed">
-                      <p>
-                        I've spent decades watching the same pattern repeat.
-                      </p>
-                      <p>
-                        Smart people.<br />
-                        Good ideas.<br />
-                        And nothing that actually holds.
-                      </p>
-                      <p>
-                        Not because they lack talent.
-                      </p>
-                      <p>
-                        Because what they're building isn't structured to work.
-                      </p>
-                      <p>
-                        I've worked across industries, countries, and business stages.
-                      </p>
-                      <p>
-                        The problem is always the same:
-                      </p>
-                      <p className="font-semibold text-white">
-                        Execution without architecture.
-                      </p>
-                      <p>
-                        That's why I don't coach ideas.
-                      </p>
-                      <p className="font-semibold text-white">
-                        I design businesses that can actually stand.
-                      </p>
+                <div className="md:w-2/5 text-center md:text-left">
+                  <div className="relative">
+                    {/* Subtle glow behind text */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/10 via-indigo-400/5 to-transparent rounded-2xl blur-xl" />
+                    <div className="relative glass rounded-2xl p-6 md:p-8 shadow-2xl shadow-black/20 border border-white/5">
+                      <h3 className="text-2xl md:text-3xl font-bold text-white mb-6">
+                        Martin — The Modern Business Architect
+                      </h3>
+                      <div className="space-y-4 text-lg text-white/90 leading-relaxed">
+                        <p>
+                          I've spent decades watching the same pattern repeat.
+                        </p>
+                        <p>
+                          Smart people.<br />
+                          Good ideas.<br />
+                          And nothing that actually holds.
+                        </p>
+                        <p>
+                          Not because they lack talent.
+                        </p>
+                        <p>
+                          Because what they're building isn't structured to work.
+                        </p>
+                        <p>
+                          I've worked across industries, countries, and business stages.
+                        </p>
+                        <p>
+                          The problem is always the same:
+                        </p>
+                        <p className="font-semibold text-white">
+                          Execution without architecture.
+                        </p>
+                        <p>
+                          That's why I don't coach ideas.
+                        </p>
+                        <p className="font-semibold text-white">
+                          I design businesses that can actually stand.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
