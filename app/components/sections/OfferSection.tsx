@@ -7,44 +7,50 @@ import { SectionHeading } from "@/app/components/ui/SectionHeading";
 const offers = [
   {
     name: "The Threshold",
-    title: "Should you even build this?",
+    title: "Make the wrong move… and you lose months",
+    subtitle:
+      "Most ideas don’t fail because they’re bad. They fail because no one challenged them early.",
     price: "$399",
     cadence: "2 sessions",
     highlights: [
-      "Clear yes / no decision",
-      "Identify risks before you commit",
-      "Find flaws in your thinking early",
-      "Walk away with a concrete next step",
+      "Understand what entrepreneurship really demands",
+      "Explore your idea from multiple angles",
+      "Identify risks, gaps, and blind spots",
+      "Get a clear yes / no decision",
     ],
-    cta: "Start with The Threshold",
+    cta: "See how it works",
     variant: "default",
   },
   {
     name: "The Builder",
-    title: "Get momentum. Start building the right way",
+    title: "Most people build… then realize it doesn’t work",
+    subtitle:
+      "Structure before speed. Or pay for it later.",
     price: "$799",
     cadence: "4 weeks",
     highlights: [
-      "Turn your idea into a working structure",
-      "Define your first execution steps clearly",
-      "Avoid early-stage chaos and wasted effort",
-      "Leave with a focused action plan",
+      "Turn your idea into a working model",
+      "Define execution steps that actually make sense",
+      "Avoid early-stage chaos",
+      "Leave with a clear action system",
     ],
-    cta: "Start Building",
+    cta: "See how it works",
     variant: "default",
   },
   {
     name: "The Architect",
-    title: "Turn your idea into something real",
+    title: "If you’re serious, this is where it starts",
+    subtitle:
+      "Not about trying. About building something that actually holds.",
     price: "$1,799",
     cadence: "12 weeks",
     highlights: [
-      "Build a structured, defensible model",
+      "Design a defensible business structure",
       "Align product, market, and execution",
-      "Reduce uncertainty with clear decisions",
+      "Remove guesswork from decisions",
       "Ship with a real 90-day roadmap",
     ],
-    cta: "Apply for The Architect",
+    cta: "See how it works",
     variant: "strong",
   },
 ];
@@ -55,56 +61,76 @@ interface Props {
 
 export function OfferSection({ onContactClick }: Props) {
   return (
-    <section id="offer" className="w-full px-6 md:px-12 lg:px-24 py-28">
+    <section id="offer" className="w-full px-6 md:px-12 lg:px-24 py-32">
 
-      {/* HEADING */}
-      <div className="max-w-5xl mx-auto mb-20 text-center">
+      {/* HEADING — PUSHED FULL LEFT */}
+      <div className="mb-24 max-w-none">
         <SectionHeading
           label="Programs"
           title="Three paths. One decision."
-          description="Validate your idea, start building, or structure it properly to scale."
-          align="center"
+          description="You don’t need more information. You need the right level of decision."
+          align="left"
         />
       </div>
 
-      {/* OFFERS */}
-      <div className="grid gap-10 lg:grid-cols-3 max-w-7xl mx-auto">
+      {/* GRID */}
+      <div className="grid gap-8 lg:grid-cols-3 max-w-7xl mx-auto items-stretch">
 
         {offers.map((offer) => (
           <GlassCard
             key={offer.name}
             variant={offer.variant as any}
-            className="flex flex-col gap-8 text-left p-10 h-full"
+            className={`flex flex-col p-10 h-full ${
+              offer.variant === "strong"
+                ? "scale-[1.03] border-cyan-400/40"
+                : ""
+            }`}
           >
 
             {/* HEADER */}
-            <div className="space-y-3">
-              <p className="eyebrow text-sm">{offer.name}</p>
-              <h3 className="text-2xl font-semibold leading-snug">
-                {offer.title}
-              </h3>
+            <div className="min-h-[120px] flex flex-col justify-between">
+              <p className="text-xs tracking-[0.18em] uppercase text-cyan-300">
+                {offer.name}
+              </p>
+
+              <div className="space-y-2">
+                <h3 className="text-xl font-semibold text-white leading-snug">
+                  {offer.title}
+                </h3>
+
+                <p className="text-sm text-white/50 leading-relaxed">
+                  {offer.subtitle}
+                </p>
+              </div>
             </div>
 
             {/* PRICE */}
-            <div>
-              <p className="text-3xl font-semibold">{offer.price}</p>
-              <p className="text-sm text-white/60 mt-1">{offer.cadence}</p>
+            <div className="mt-6 min-h-[70px] flex flex-col justify-center">
+              <p className="text-4xl font-semibold text-white">
+                {offer.price}
+              </p>
+              <p className="text-sm text-white/50 mt-1">
+                {offer.cadence}
+              </p>
             </div>
 
+            {/* DIVIDER */}
+            <div className="w-full h-px bg-white/10 my-8" />
+
             {/* HIGHLIGHTS */}
-            <div className="space-y-4">
+            <div className="space-y-5">
               {offer.highlights.map((item) => (
-                <div key={item} className="flex gap-3">
+                <div key={item} className="flex items-start gap-3">
                   <span className="mt-2 h-2 w-2 rounded-full bg-cyan-300 shrink-0" />
-                  <p className="text-base text-white/80 leading-relaxed">
+                  <p className="text-sm text-white/80 leading-relaxed">
                     {item}
                   </p>
                 </div>
               ))}
             </div>
 
-            {/* CTA */}
-            <div className="flex flex-col gap-4 pt-4 mt-auto">
+            {/* CTA — CLEAR SEPARATION */}
+            <div className="flex flex-col gap-4 pt-8 mt-auto">
               <Button variant="primary" size="lg" className="w-full">
                 {offer.cta}
               </Button>
@@ -113,9 +139,9 @@ export function OfferSection({ onContactClick }: Props) {
                 onClick={onContactClick}
                 variant="ghost"
                 size="md"
-                className="w-full"
+                className="w-full border border-white/20 hover:border-cyan-400/40 hover:bg-white/5"
               >
-                Talk to Martin
+                Schedule a quick call
               </Button>
             </div>
 
@@ -125,8 +151,9 @@ export function OfferSection({ onContactClick }: Props) {
       </div>
 
       {/* FOOTNOTE */}
-      <p className="text-base text-white/50 text-center max-w-2xl mx-auto mt-16">
-        Not sure which path fits your situation? A short conversation will make the next step obvious.
+      <p className="text-sm text-white/40 text-left max-w-xl mt-20 leading-relaxed">
+        If you're hesitating, you're probably trying to solve the wrong level of problem.
+        Pick a path, and it becomes obvious very quickly.
       </p>
 
     </section>

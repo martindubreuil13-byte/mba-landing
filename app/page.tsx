@@ -9,7 +9,7 @@ import { Hero } from "./components/sections/Hero";
 import { ProblemSection } from "./components/sections/ProblemSection";
 import { WhoThisIsFor } from "./components/sections/WhoThisIsFor";
 import { FrameworkSection } from "./components/sections/FrameworkSection";
-import { DifferentiationSection } from "./components/sections/DifferentiationSection";
+// ❌ Removed DifferentiationSection import
 import { OfferSection } from "./components/sections/OfferSection";
 import { FinalCta } from "./components/sections/FinalCta";
 
@@ -20,7 +20,7 @@ export default function Home() {
     <>
       <Navbar onContactClick={() => setIsContactOpen(true)} />
 
-      <main className="w-full overflow-x-hidden bg-[#020617]">
+      <main className="w-full overflow-x-hidden bg-[#020617] pt-20">
 
         {/* HERO */}
         <section className="w-full">
@@ -32,9 +32,6 @@ export default function Home() {
           <ProblemSection />
         </section>
 
-        {/* SOFT TRANSITION */}
-        <div className="h-16 bg-gradient-to-b from-transparent to-[#020617]" />
-
         {/* WHO THIS IS FOR */}
         <section className="w-full">
           <WhoThisIsFor />
@@ -45,13 +42,7 @@ export default function Home() {
           <FrameworkSection />
         </section>
 
-        {/* SOFT TRANSITION */}
-        <div className="h-16 bg-gradient-to-b from-[#020617] to-[#020617]" />
-
-        {/* DIFFERENTIATION */}
-        <section className="w-full">
-          <DifferentiationSection />
-        </section>
+        {/* ❌ DIFFERENTIATION REMOVED */}
 
         {/* OFFER */}
         <section className="w-full">
@@ -65,13 +56,11 @@ export default function Home() {
 
       </main>
 
-      {/* CONTACT MODAL */}
       <ContactModal
         isOpen={isContactOpen}
         onClose={() => setIsContactOpen(false)}
       />
 
-      {/* FOOTER */}
       <footer className="border-t border-white/10 py-8 text-center text-xs uppercase tracking-[0.14em] text-white/40">
         © {new Date().getFullYear()} Modern Business Architect
       </footer>

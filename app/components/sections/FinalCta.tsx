@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/app/components/ui/Button";
 
 interface FinalCtaProps {
@@ -8,49 +10,43 @@ export function FinalCta({ onContactClick }: FinalCtaProps) {
   return (
     <section
       id="final"
-      className="w-full px-6 md:px-12 lg:px-20 py-32 text-center"
+      className="w-full px-6 md:px-12 lg:px-24 py-16"
     >
 
-      <div className="max-w-4xl mx-auto flex flex-col items-center gap-8">
+      <div className="max-w-none flex flex-col items-start gap-10">
 
-        {/* HEADLINE */}
+        {/* HEADLINE — ALIGNED PROPERLY */}
         <h2 className="text-4xl md:text-5xl font-semibold leading-tight tracking-[-0.02em]">
-          At some point, thinking about it
-          <span className="block text-white/60 mt-3">
-            becomes more expensive than building it.
+          At some point,
+          <span className="block mt-3">
+            not deciding becomes the real risk.
           </span>
         </h2>
 
         {/* BODY */}
         <p className="text-lg md:text-xl text-white/70 max-w-2xl leading-relaxed">
-          You don’t need more ideas.
+          You’ve thought about it long enough.
           <br />
-          You don’t need more time.
+          What’s missing isn’t another idea.
           <br />
-          You need something that actually works.
+          It’s a structure you can actually move with.
         </p>
 
-        {/* ACTION */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4 w-full max-w-md">
-
-          <Button href="#offer" variant="primary" size="lg" className="w-full">
-            Choose Your Path
-          </Button>
-
+        {/* SINGLE CTA — CLEAR INTENT */}
+        <div className="pt-6 w-full max-w-sm">
           <Button
             onClick={onContactClick}
-            variant="ghost"
+            variant="primary"
             size="lg"
             className="w-full"
           >
-            Talk to Martin
+            See if you qualify
           </Button>
-
         </div>
 
         {/* SUBTEXT */}
-        <p className="text-sm text-white/50 max-w-xl">
-          If you're still unsure, a short conversation will make the next step obvious.
+        <p className="text-sm text-white/40 max-w-xl leading-relaxed">
+          This isn’t for everyone. But if you’re serious, you’ll know.
         </p>
 
       </div>

@@ -39,7 +39,7 @@ export function FrameworkSection() {
           <SectionHeading
             label="Framework"
             title="Idea → Architecture → Execution"
-            description="A system designed to turn ambition into structure—and structure into momentum."
+            description="A system designed to turn ambition into structure—and structure into a business."
             align="left"
           />
         </div>
