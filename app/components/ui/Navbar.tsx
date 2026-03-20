@@ -1,13 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Menu, X } from "lucide-react";
 
-type NavbarProps = {
-  onContactClick?: () => void;
-};
-
-export function Navbar({ onContactClick }: NavbarProps) {
+export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -21,22 +18,26 @@ export function Navbar({ onContactClick }: NavbarProps) {
 
         {/* DESKTOP NAV */}
         <nav className="hidden md:flex items-center gap-8 text-sm text-white/70">
-          <a href="#" className="hover:text-white transition">
-            Framework
-          </a>
-          <a href="#" className="hover:text-white transition">
-            Program
-          </a>
-          <a href="#" className="hover:text-white transition">
-            Contact
-          </a>
 
-          <button
-            onClick={onContactClick}
-            className="ml-4 px-4 py-2 rounded-full bg-white text-black text-sm font-medium hover:opacity-90 transition"
-          >
-            Get Started
-          </button>
+          <Link href="#framework" className="hover:text-white transition">
+            Framework
+          </Link>
+
+          <Link href="#program" className="hover:text-white transition">
+            Program
+          </Link>
+
+          {/* REAL CONTACT LINK */}
+          <Link href="/contact" className="hover:text-white transition">
+            Contact
+          </Link>
+
+          {/* MAIN CTA */}
+          <Link href="/contact">
+            <button className="ml-4 px-5 py-2 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white text-sm font-medium hover:opacity-90 transition">
+              Get Started
+            </button>
+          </Link>
         </nav>
 
         {/* MOBILE MENU BUTTON */}
@@ -51,25 +52,24 @@ export function Navbar({ onContactClick }: NavbarProps) {
       {/* MOBILE MENU */}
       {isOpen && (
         <div className="md:hidden bg-[#020617] border-t border-white/10 px-6 py-6 flex flex-col gap-4 text-white/80">
-          <a href="#" onClick={() => setIsOpen(false)}>
-            Framework
-          </a>
-          <a href="#" onClick={() => setIsOpen(false)}>
-            Program
-          </a>
-          <a href="#" onClick={() => setIsOpen(false)}>
-            Contact
-          </a>
 
-          <button
-            onClick={() => {
-              setIsOpen(false);
-              onContactClick?.();
-            }}
-            className="mt-2 px-4 py-2 rounded-full bg-white text-black text-sm font-medium"
-          >
-            Get Started
-          </button>
+          <Link href="#framework" onClick={() => setIsOpen(false)}>
+            Framework
+          </Link>
+
+          <Link href="#program" onClick={() => setIsOpen(false)}>
+            Program
+          </Link>
+
+          <Link href="/contact" onClick={() => setIsOpen(false)}>
+            Contact
+          </Link>
+
+          <Link href="/contact" onClick={() => setIsOpen(false)}>
+            <button className="mt-2 px-4 py-2 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white text-sm font-medium">
+              Get Started
+            </button>
+          </Link>
         </div>
       )}
     </header>

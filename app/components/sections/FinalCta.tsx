@@ -1,21 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@/app/components/ui/Button";
 
-interface FinalCtaProps {
-  onContactClick: () => void;
-}
-
-export function FinalCta({ onContactClick }: FinalCtaProps) {
+export function FinalCta() {
   return (
     <section
       id="final"
       className="w-full px-6 md:px-12 lg:px-24 py-16"
     >
-
       <div className="max-w-none flex flex-col items-start gap-10">
 
-        {/* HEADLINE — ALIGNED PROPERLY */}
+        {/* HEADLINE */}
         <h2 className="text-4xl md:text-5xl font-semibold leading-tight tracking-[-0.02em]">
           At some point,
           <span className="block mt-3">
@@ -32,16 +28,17 @@ export function FinalCta({ onContactClick }: FinalCtaProps) {
           It’s a structure you can actually move with.
         </p>
 
-        {/* SINGLE CTA — CLEAR INTENT */}
+        {/* CTA */}
         <div className="pt-6 w-full max-w-sm">
-          <Button
-            onClick={onContactClick}
-            variant="primary"
-            size="lg"
-            className="w-full"
-          >
-            See if you qualify
-          </Button>
+          <Link href="/contact" className="w-full">
+            <Button
+              variant="primary"
+              size="lg"
+              className="w-full"
+            >
+              See if you qualify
+            </Button>
+          </Link>
         </div>
 
         {/* SUBTEXT */}
@@ -50,7 +47,6 @@ export function FinalCta({ onContactClick }: FinalCtaProps) {
         </p>
 
       </div>
-
     </section>
   );
 }
