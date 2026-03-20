@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@/app/components/ui/Button";
 import { GlassCard } from "@/app/components/ui/GlassCard";
 import { SectionHeading } from "@/app/components/ui/SectionHeading";
@@ -18,8 +19,6 @@ const offers = [
       "Identify risks, gaps, and blind spots",
       "Get a clear yes / no decision",
     ],
-    cta: "See how it works",
-    variant: "default",
   },
   {
     name: "The Builder",
@@ -34,8 +33,6 @@ const offers = [
       "Avoid early-stage chaos",
       "Leave with a clear action system",
     ],
-    cta: "See how it works",
-    variant: "default",
   },
   {
     name: "The Architect",
@@ -50,20 +47,15 @@ const offers = [
       "Remove guesswork from decisions",
       "Ship with a real 90-day roadmap",
     ],
-    cta: "See how it works",
-    variant: "strong",
+    strong: true,
   },
 ];
 
-interface Props {
-  onContactClick: () => void;
-}
-
-export function OfferSection({ onContactClick }: Props) {
+export function OfferSection() {
   return (
     <section id="offer" className="w-full px-6 md:px-12 lg:px-24 py-32">
 
-      {/* HEADING — PUSHED FULL LEFT */}
+      {/* HEADING */}
       <div className="mb-24 max-w-none">
         <SectionHeading
           label="Programs"
@@ -79,11 +71,8 @@ export function OfferSection({ onContactClick }: Props) {
         {offers.map((offer) => (
           <GlassCard
             key={offer.name}
-            variant={offer.variant as any}
             className={`flex flex-col p-10 h-full ${
-              offer.variant === "strong"
-                ? "scale-[1.03] border-cyan-400/40"
-                : ""
+              offer.strong ? "scale-[1.03] border-cyan-400/40" : ""
             }`}
           >
 
@@ -129,20 +118,17 @@ export function OfferSection({ onContactClick }: Props) {
               ))}
             </div>
 
-            {/* CTA — CLEAR SEPARATION */}
-            <div className="flex flex-col gap-4 pt-8 mt-auto">
-              <Button variant="primary" size="lg" className="w-full">
-                {offer.cta}
-              </Button>
-
-              <Button
-                onClick={onContactClick}
-                variant="ghost"
-                size="md"
-                className="w-full border border-white/20 hover:border-cyan-400/40 hover:bg-white/5"
-              >
-                Schedule a quick call
-              </Button>
+            {/* CTA — SINGLE, CLEAR */}
+            <div className="pt-8 mt-auto">
+              <Link href="/contact">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="w-full"
+                >
+                  See if you qualify
+                </Button>
+              </Link>
             </div>
 
           </GlassCard>
