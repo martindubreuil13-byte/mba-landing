@@ -1,37 +1,80 @@
 "use client";
 
-import { DifferentiationSection } from "./components/sections/DifferentiationSection";
-import { FinalCta } from "./components/sections/FinalCta";
-import { FrameworkSection } from "./components/sections/FrameworkSection";
-import { Hero } from "./components/sections/Hero";
-import { OfferSection } from "./components/sections/OfferSection";
-import { ProblemSection } from "./components/sections/ProblemSection";
-import { ReflectionSection } from "./components/sections/ReflectionSection";
-import { WhoThisIsFor } from "./components/sections/WhoThisIsFor";
-import { ContactModal } from "./components/ui/ContactModal";
-import { Navbar } from "./components/ui/Navbar";
 import { useState } from "react";
+
+import { Navbar } from "./components/ui/Navbar";
+import { ContactModal } from "./components/ui/ContactModal";
+
+import { Hero } from "./components/sections/Hero";
+import { ProblemSection } from "./components/sections/ProblemSection";
+import { WhoThisIsFor } from "./components/sections/WhoThisIsFor";
+import { FrameworkSection } from "./components/sections/FrameworkSection";
+import { DifferentiationSection } from "./components/sections/DifferentiationSection";
+import { OfferSection } from "./components/sections/OfferSection";
+import { FinalCta } from "./components/sections/FinalCta";
 
 export default function Home() {
   const [isContactOpen, setIsContactOpen] = useState(false);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(81,163,255,0.18),transparent_55%),radial-gradient(circle_at_20%_80%,rgba(30,255,188,0.14),transparent_52%),#05060e] text-white">
+    <>
       <Navbar onContactClick={() => setIsContactOpen(true)} />
-      <Hero />
-      <WhoThisIsFor />
-      <ProblemSection />
-      <ReflectionSection />
-      <FrameworkSection />
-      <DifferentiationSection />
-      <OfferSection />
-      <FinalCta onContactClick={() => setIsContactOpen(true)} />
 
-      <ContactModal isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
+      <main className="w-full overflow-x-hidden bg-[#020617]">
 
-      <footer className="border-t border-white/10 py-10 text-center text-xs text-white/55">
-        © {new Date().getFullYear()} Modern Business Architect — Built with clarity.
+        {/* HERO */}
+        <section className="w-full">
+          <Hero />
+        </section>
+
+        {/* PROBLEM */}
+        <section className="w-full">
+          <ProblemSection />
+        </section>
+
+        {/* SOFT TRANSITION */}
+        <div className="h-16 bg-gradient-to-b from-transparent to-[#020617]" />
+
+        {/* WHO THIS IS FOR */}
+        <section className="w-full">
+          <WhoThisIsFor />
+        </section>
+
+        {/* FRAMEWORK */}
+        <section className="w-full">
+          <FrameworkSection />
+        </section>
+
+        {/* SOFT TRANSITION */}
+        <div className="h-16 bg-gradient-to-b from-[#020617] to-[#020617]" />
+
+        {/* DIFFERENTIATION */}
+        <section className="w-full">
+          <DifferentiationSection />
+        </section>
+
+        {/* OFFER */}
+        <section className="w-full">
+          <OfferSection onContactClick={() => setIsContactOpen(true)} />
+        </section>
+
+        {/* FINAL CTA */}
+        <section className="w-full">
+          <FinalCta onContactClick={() => setIsContactOpen(true)} />
+        </section>
+
+      </main>
+
+      {/* CONTACT MODAL */}
+      <ContactModal
+        isOpen={isContactOpen}
+        onClose={() => setIsContactOpen(false)}
+      />
+
+      {/* FOOTER */}
+      <footer className="border-t border-white/10 py-8 text-center text-xs uppercase tracking-[0.14em] text-white/40">
+        © {new Date().getFullYear()} Modern Business Architect
       </footer>
-    </main>
+    </>
   );
 }

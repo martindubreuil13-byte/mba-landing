@@ -34,14 +34,14 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="relative mx-4 w-full max-w-md">
-        <GlassCard className="p-6">
-          <div className="flex items-center justify-between mb-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-md">
+      <div className="relative w-full max-w-lg">
+        <GlassCard className="glass-strong p-6 sm:p-8">
+          <div className="mb-6 flex items-center justify-between">
             <h3 className="text-xl font-semibold text-white">Get in Touch</h3>
             <button
               onClick={onClose}
-              className="text-white/60 hover:text-white"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-white/60 transition-colors hover:text-white"
               aria-label="Close modal"
             >
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,7 +52,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-white/80 mb-1">
+              <label htmlFor="name" className="mb-2 block text-sm font-medium text-white/78">
                 Name
               </label>
               <input
@@ -62,13 +62,13 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                 required
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full rounded-lg bg-white/10 border border-white/20 px-3 py-2 text-white placeholder-white/50 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                className="h-12 w-full rounded-2xl border border-white/12 bg-white/[0.04] px-4 text-white placeholder-white/38 focus:border-cyan-300/60 focus:outline-none focus:ring-1 focus:ring-cyan-300/60"
                 placeholder="Your name"
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-white/80 mb-1">
+              <label htmlFor="email" className="mb-2 block text-sm font-medium text-white/78">
                 Email
               </label>
               <input
@@ -78,13 +78,13 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full rounded-lg bg-white/10 border border-white/20 px-3 py-2 text-white placeholder-white/50 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                className="h-12 w-full rounded-2xl border border-white/12 bg-white/[0.04] px-4 text-white placeholder-white/38 focus:border-cyan-300/60 focus:outline-none focus:ring-1 focus:ring-cyan-300/60"
                 placeholder="your@email.com"
               />
             </div>
 
             <div>
-              <label htmlFor="company" className="block text-sm font-medium text-white/80 mb-1">
+              <label htmlFor="company" className="mb-2 block text-sm font-medium text-white/78">
                 Company
               </label>
               <input
@@ -93,13 +93,13 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                 name="company"
                 value={formData.company}
                 onChange={handleChange}
-                className="w-full rounded-lg bg-white/10 border border-white/20 px-3 py-2 text-white placeholder-white/50 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                className="h-12 w-full rounded-2xl border border-white/12 bg-white/[0.04] px-4 text-white placeholder-white/38 focus:border-cyan-300/60 focus:outline-none focus:ring-1 focus:ring-cyan-300/60"
                 placeholder="Your company"
               />
             </div>
 
             <div>
-              <label htmlFor="message" className="block text-sm font-medium text-white/80 mb-1">
+              <label htmlFor="message" className="mb-2 block text-sm font-medium text-white/78">
                 Message
               </label>
               <textarea
@@ -108,7 +108,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                 rows={4}
                 value={formData.message}
                 onChange={handleChange}
-                className="w-full rounded-lg bg-white/10 border border-white/20 px-3 py-2 text-white placeholder-white/50 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 resize-none"
+                className="w-full rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3 text-white placeholder-white/38 focus:border-cyan-300/60 focus:outline-none focus:ring-1 focus:ring-cyan-300/60 resize-none"
                 placeholder="Tell us about your project..."
               />
             </div>

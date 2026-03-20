@@ -1,41 +1,43 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "The Modern Business Architect",
   description:
-    "A premium framework to turn your best ideas into product, team and market alignment.",
+    "Turn your ideas into structured, scalable businesses with clarity, alignment, and execution.",
   metadataBase: new URL("https://example.com"),
   openGraph: {
     title: "The Modern Business Architect",
     description:
-      "A premium framework to turn your best ideas into product, team and market alignment.",
+      "Turn your ideas into structured, scalable businesses with clarity, alignment, and execution.",
     type: "website",
   },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="en" className="h-full scroll-smooth">
+      <body className="min-h-full flex flex-col bg-background text-foreground antialiased">
+        
+        {/* 🌌 GLOBAL BACKGROUND CONTROL */}
+        <div className="fixed inset-0 -z-10 pointer-events-none">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(81,163,255,0.12),transparent_40rem)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(30,255,188,0.08),transparent_25rem)]" />
+        </div>
+
+        {/* 🧱 MAIN STRUCTURE */}
+        <main className="flex-1 w-full">
+          {children}
+        </main>
+
+        {/* (optional later) footer */}
+        {/* <Footer /> */}
+
+      </body>
     </html>
   );
 }

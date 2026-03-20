@@ -1,123 +1,115 @@
+"use client";
+
 import { Button } from "@/app/components/ui/Button";
 
 export function Hero() {
   return (
-    <section className="relative flex min-h-screen flex-col items-center justify-center px-6 py-24">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-28 -top-28 h-80 w-80 rounded-full bg-gradient-to-br from-cyan-400/35 via-indigo-400/15 to-transparent blur-3xl" />
-        <div className="absolute -right-28 top-1/2 h-96 w-96 rounded-full bg-gradient-to-tr from-emerald-400/30 via-sky-400/10 to-transparent blur-3xl" />
-        <div className="absolute left-1/2 top-24 h-96 w-96 -translate-x-1/2 rounded-full bg-gradient-to-br from-indigo-300/15 via-fuchsia-300/10 to-transparent blur-3xl" />
+    <section className="relative overflow-hidden bg-black flex items-center pt-20 pb-16 lg:pt-24 lg:pb-20">
+
+      {/* RIGHT IMAGE */}
+      <div className="absolute inset-y-0 right-0 w-[48%] min-w-[380px] hidden lg:block">
+        <div
+          className="h-full w-full bg-cover bg-center"
+          style={{
+            backgroundImage: "url('/images/martin-profile.jpg')",
+            filter: "grayscale(22%) contrast(108%) brightness(82%)",
+          }}
+        />
+
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/25 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/15" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_50%,transparent_58%,black_100%)]" />
       </div>
 
-      <div className="relative z-10 flex w-full max-w-7xl mx-auto flex-col items-center gap-16">
-        <p className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-1 text-sm font-semibold tracking-wide text-white/70 ring-1 ring-white/10 animate-fadeUp">
-          Most founders don’t fail because of bad ideas.
-        </p>
-        <h1 className="text-6xl font-bold leading-tight tracking-tight text-white md:text-8xl animate-fadeUp">
-          <span className="block">You don’t need another idea.</span>
-          <span className="block bg-gradient-to-r from-cyan-200 via-sky-100 to-indigo-200 bg-clip-text text-transparent">
-            You need something that actually works.
-          </span>
-        </h1>
-        <p className="max-w-3xl text-xl leading-relaxed text-white/80 md:text-2xl animate-fadeUp">
-          Most people don’t fail because they lack intelligence or ambition.
-          <br />
-          They fail because nothing they build is structured to hold.
-          <br />
-          So they start, stop, rethink… and stay in the same place.
-        </p>
+      {/* CONTENT */}
+      <div className="relative z-10 w-full px-6 md:px-12 lg:px-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-10">
 
-        <div className="flex flex-col gap-4 sm:flex-row animate-fadeUp">
-          <Button href="#offer" variant="primary" size="lg" className="text-lg px-8 py-4">
-            Build Something That Works
-          </Button>
-          <Button href="#framework" variant="secondary" size="lg" className="text-lg px-8 py-4">
-            See How It Works
-          </Button>
-        </div>
+          {/* LEFT */}
+          <div className="lg:col-span-7 flex flex-col justify-center">
 
-        {/* About Martin Section */}
-        <div className="w-full max-w-7xl animate-fadeUp">
-          <div className="relative overflow-hidden glass rounded-3xl">
-            {/* Background Image with Gradient Fade */}
-            <div className="absolute inset-0">
-              <img
-                src="/images/martin-profile.jpg"
-                alt="Martin - The Modern Business Architect"
-                className="absolute left-0 top-1/2 -translate-y-1/2 w-2/3 h-full object-contain opacity-60"
-                onError={(e) => {
-                  // Fallback to placeholder if image doesn't exist
-                  e.currentTarget.style.display = 'none';
-                  if (e.currentTarget.nextElementSibling) {
-                    (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
-                  }
-                }}
-              />
-              {/* Fallback placeholder */}
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2/3 h-full bg-gradient-to-br from-cyan-400/20 to-indigo-400/20 flex items-center justify-center" style={{ display: 'none' }}>
-                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-cyan-400 to-indigo-400 flex items-center justify-center">
-                  <span className="text-4xl font-bold text-white">MBA</span>
-                </div>
-              </div>
-              {/* Subtle gradient overlay - only on left half */}
-              <div className="absolute left-0 top-0 w-1/2 h-full bg-gradient-to-r from-slate-900/40 via-slate-900/20 to-transparent" />
-              {/* Face highlight for better visibility */}
-              <div className="absolute left-1/4 top-1/2 -translate-y-1/2 w-1/3 h-1/2 bg-gradient-to-r from-transparent via-white/5 to-transparent rounded-full blur-sm" />
+            <p className="text-xs tracking-[0.25em] uppercase text-white/40 mb-6">
+              Most founders don’t fail because of bad ideas.
+            </p>
+
+            <h1 className="text-[2.5rem] sm:text-5xl md:text-6xl xl:text-[5.2rem] font-semibold leading-[1.02] tracking-[-0.04em]">
+              You don’t need another idea.
+              <span className="block mt-4 bg-gradient-to-r from-cyan-200 via-sky-100 to-white bg-clip-text text-transparent">
+                You need something that actually works.
+              </span>
+            </h1>
+
+            <p className="max-w-[560px] text-white/70 text-base md:text-lg leading-8 mt-8">
+              Most people don’t fail because they lack intelligence or ambition.
+              They fail because nothing they build is structured to hold.
+              So they start, stop, rethink—and stay in the same place.
+            </p>
+
+            {/* CTA */}
+            <div className="flex flex-col sm:flex-row gap-4 mt-10">
+              <Button href="#offer" variant="primary" size="lg">
+                Build Something That Works
+              </Button>
+              <Button href="#framework" variant="secondary" size="lg">
+                See How It Works
+              </Button>
             </div>
 
-            {/* Content */}
-            <div className="relative z-10 p-8 md:p-16">
-              <div className="flex flex-col md:flex-row items-center gap-8 md:gap-16">
-                {/* Spacer for mobile - image is background */}
-                <div className="md:w-1/2 md:invisible md:h-0"></div>
-
-                {/* Text Content */}
-                <div className="md:w-2/5 text-center md:text-left">
-                  <div className="relative">
-                    {/* Subtle glow behind text */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/10 via-indigo-400/5 to-transparent rounded-2xl blur-xl" />
-                    <div className="relative glass rounded-2xl p-6 md:p-8 shadow-2xl shadow-black/20 border border-white/5">
-                      <h3 className="text-2xl md:text-3xl font-bold text-white mb-6">
-                        Martin — The Modern Business Architect
-                      </h3>
-                      <div className="space-y-4 text-lg text-white/90 leading-relaxed">
-                        <p>
-                          I've spent decades watching the same pattern repeat.
-                        </p>
-                        <p>
-                          Smart people.<br />
-                          Good ideas.<br />
-                          And nothing that actually holds.
-                        </p>
-                        <p>
-                          Not because they lack talent.
-                        </p>
-                        <p>
-                          Because what they're building isn't structured to work.
-                        </p>
-                        <p>
-                          I've worked across industries, countries, and business stages.
-                        </p>
-                        <p>
-                          The problem is always the same:
-                        </p>
-                        <p className="font-semibold text-white">
-                          Execution without architecture.
-                        </p>
-                        <p>
-                          That's why I don't coach ideas.
-                        </p>
-                        <p className="font-semibold text-white">
-                          I design businesses that can actually stand.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            {/* MOBILE INSIGHT */}
+            <div className="lg:hidden mt-10 border-l border-cyan-400/40 pl-4">
+              <p className="text-sm text-white/70 leading-6">
+                I’ve spent decades watching the same pattern repeat: smart people, good ideas—and nothing that actually holds.
+              </p>
+              <p className="text-sm text-white/70 leading-6 mt-3">
+                Not because they lack talent. Because what they’re building isn’t structured to work.
+              </p>
+              <p className="text-sm text-white/90 leading-6 mt-3 font-medium">
+                I design businesses that can actually stand.
+              </p>
+              <div className="mt-3 flex items-center gap-3">
+                <span className="text-sm font-semibold">Martin</span>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-white/50">
+                  MBA
+                </span>
               </div>
+            </div>
+
+          </div>
+
+          {/* RIGHT SPACER */}
+          <div className="lg:col-span-5" />
+        </div>
+
+        {/* DESKTOP INSIGHT */}
+        <div className="hidden lg:block absolute left-[54%] bottom-[60px] max-w-[520px]">
+
+          <div className="relative">
+
+            {/* Accent */}
+            <div className="absolute left-0 top-3 bottom-3 w-px bg-gradient-to-b from-cyan-300/90 via-sky-200/50 to-transparent" />
+
+            {/* Box */}
+            <div className="ml-4 px-6 py-3 rounded-xl bg-white/[0.035] backdrop-blur-xl shadow-[0_20px_60px_-35px_rgba(0,0,0,0.95)]">
+
+              <p className="text-sm text-white/70 leading-6">
+                I’ve spent decades watching the same pattern repeat: smart people, good ideas—and nothing that actually holds. Not because they lack talent, but because what they’re building isn’t structured to work.
+              </p>
+
+              <p className="text-sm text-white/90 leading-6 mt-3 font-medium">
+                I design businesses that can actually stand.
+              </p>
+
+              <div className="mt-2 flex items-center gap-3">
+                <span className="text-sm font-semibold">Martin</span>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-white/50">
+                  MBA
+                </span>
+              </div>
+
             </div>
           </div>
         </div>
+
       </div>
     </section>
   );

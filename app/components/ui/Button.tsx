@@ -1,62 +1,86 @@
 import Link from "next/link";
-import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
+import type {
+  AnchorHTMLAttributes,
+  ButtonHTMLAttributes,
+  ReactNode,
+} from "react";
 import { cn } from "@/app/lib/utils";
 
-type ButtonVariant = "primary" | "secondary";
+type Variant = "primary" | "secondary" | "ghost";
+type Size = "sm" | "md" | "lg";
 
-type ButtonSize = "sm" | "md" | "lg";
-
-type ButtonBase = {
-  variant?: ButtonVariant;
-  size?: ButtonSize;
+type Base = {
+  variant?: Variant;
+  size?: Size;
   className?: string;
   children: ReactNode;
 };
 
-type ButtonAsButton = ButtonBase & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className"> & {
-  href?: undefined;
-};
+type AsButton = Base &
+  Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className"> & {
+    href?: undefined;
+  };
 
-type ButtonAsLink = ButtonBase & Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "className" | "href"> & {
-  href: string;
-};
+type AsLink = Base &
+  Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "className" | "href"> & {
+    href: string;
+  };
 
-export type ButtonProps = ButtonAsButton | ButtonAsLink;
+export type ButtonProps = AsButton | AsLink;
 
-const variantStyles: Record<ButtonVariant, string> = {
+/* 🎯 VARIANTS (REAL HIERARCHY) */
+const variants: Record<Variant, string> = {
   primary:
-    "bg-gradient-to-r from-cyan-400/90 via-sky-400/60 to-indigo-400/70 text-black shadow-[0_12px_32px_-14px_rgba(56,189,248,0.75)] hover:shadow-[0_18px_56px_-22px_rgba(56,189,248,0.7)] hover:scale-[1.02]",
+    "bg-cyan-300 text-slate-950 font-semibold shadow-[0_18px_50px_-20px_rgba(103,232,249,0.9)] hover:bg-cyan-200 active:scale-[0.98]",
+
   secondary:
-    "bg-white/10 text-white ring-1 ring-white/20 hover:bg-white/15 hover:ring-white/30",
+    "bg-white/[0.06] text-white border border-white/12 hover:bg-white/[0.1] active:scale-[0.98]",
+
+  ghost:
+    "text-white/70 hover:text-white hover:bg-white/[0.06]",
 };
 
-const sizeStyles: Record<ButtonSize, string> = {
+/* 📏 SIZES */
+const sizes: Record<Size, string> = {
   sm: "h-10 px-4 text-sm",
-  md: "h-12 px-5 text-base",
-  lg: "h-14 px-6 text-base font-semibold",
+  md: "h-12 px-5 text-sm",
+  lg: "h-[3.25rem] px-6 text-base",
 };
 
-export function Button({ variant = "primary", size = "md", className, ...props }: ButtonProps) {
+export function Button({
+  variant = "primary",
+  size = "md",
+  className,
+  ...props
+}: ButtonProps) {
   const base = cn(
-    "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
-    variantStyles[variant],
-    sizeStyles[size],
-    className,
+    "inline-flex items-center justify-center rounded-full transition-all duration-200",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60",
+    "disabled:opacity-50 disabled:pointer-events-none",
+    variants[variant],
+    sizes[size],
+    className
   );
 
-  if (typeof props.href === "string") {
-    const { href, ...rest } = props;
+  /* LINK */
+  if ("href" in props && props.href) {
+    const { href, children, ...rest } = props;
     return (
-      <Link href={href} className={base} {...(rest as AnchorHTMLAttributes<HTMLAnchorElement>)}>
-        {props.children}
+      <Link
+        href={href}
+        className={base}
+        {...(rest as AnchorHTMLAttributes<HTMLAnchorElement>)}
+      >
+        {children}
       </Link>
     );
   }
 
+  /* BUTTON */
   const { children, ...rest } = props as ButtonHTMLAttributes<HTMLButtonElement>;
 
   return (
-    <button type="button" className={base} {...rest}>
+    <button className={base} {...rest}>
       {children}
     </button>
   );

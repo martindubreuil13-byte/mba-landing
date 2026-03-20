@@ -2,33 +2,43 @@ import type { ReactNode } from "react";
 import { cn } from "@/app/lib/utils";
 
 interface SectionHeadingProps {
-  label: string;
+  label?: string;
   title: string;
   description?: string;
-  children?: ReactNode;
+  align?: "center" | "left";
   className?: string;
+  children?: ReactNode;
 }
 
 export function SectionHeading({
   label,
   title,
   description,
-  children,
+  align = "center",
   className,
+  children,
 }: SectionHeadingProps) {
   return (
-    <div className={cn("animate-fadeUp", className)}>
-      <p className="text-sm font-semibold uppercase tracking-widest text-cyan-200/80">
-        {label}
-      </p>
-      <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white md:text-4xl">
+    <div
+      className={cn(
+        "animate-fadeUp flex flex-col gap-4",
+        align === "center" && "items-center text-center",
+        align === "left" && "items-start text-left",
+        className
+      )}
+    >
+      {label && <p className="eyebrow">{label}</p>}
+
+      <h2 className="text-3xl sm:text-4xl lg:text-[2.8rem] font-semibold tracking-[-0.03em] leading-[1.1] max-w-3xl">
         {title}
       </h2>
-      {description ? (
-        <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/65">
+
+      {description && (
+        <p className="section-copy max-w-2xl">
           {description}
         </p>
-      ) : null}
+      )}
+
       {children}
     </div>
   );
