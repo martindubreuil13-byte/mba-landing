@@ -1,91 +1,84 @@
 "use client";
 
-import { GlassCard } from "@/app/components/ui/GlassCard";
-import { SectionHeading } from "@/app/components/ui/SectionHeading";
-import { Icon } from "@/app/components/ui/Icon";
-import { Lightbulb, Building, Zap } from "lucide-react";
-
 const steps = [
   {
-    title: "Idea",
+    title: "Arrival",
     description:
-      "Get laser-focused on the change you want to create. Define the problem, the customer, and the value path before anything else.",
-    icon: Lightbulb,
+      "Define the outcome before anything moves. What are we building, why does it matter, and what does success actually look like?",
   },
   {
     title: "Architecture",
     description:
-      "Design the system that turns intent into repeatable results. Align goals, roles, and opportunities into a real blueprint.",
-    icon: Building,
+      "Reverse engineer the path. Milestones, constraints, and enablers—designed to make progress structured, not accidental.",
     highlight: true,
   },
   {
-    title: "Execution",
+    title: "Assembly",
     description:
-      "Operationalize with clear checkpoints, metrics, and decisions. Growth happens when everything moves together.",
-    icon: Zap,
+      "Break it down until execution becomes inevitable. Small, precise steps—so progress starts from day one.",
   },
 ];
 
 export function FrameworkSection() {
   return (
-    <section id="framework" className="relative w-full text-white">
+    <section id="framework" className="relative w-full text-white bg-[#020617]">
 
-      {/* FULL WIDTH CONTAINER */}
-      <div className="px-6 py-28 md:px-12 lg:px-20">
+      <div className="px-6 pt-12 pb-16 md:px-12 lg:px-20">
 
-        {/* HEADING (LEFT ALIGNED = STRONGER) */}
-        <div className="max-w-3xl mb-16">
-          <SectionHeading
-            label="Framework"
-            title="Idea → Architecture → Execution"
-            description="A system designed to turn ambition into structure—and structure into a business."
-            align="left"
-          />
+        {/* HEADER */}
+        <div className="max-w-2xl mb-12">
+
+          <p className="text-[11px] uppercase tracking-[0.28em] text-white/35">
+            Framework
+          </p>
+
+          <h2 className="mt-4 text-3xl md:text-5xl font-semibold leading-[1.05] tracking-[-0.04em]">
+            Arrival → Architecture → Assembly
+          </h2>
+
+          <p className="mt-6 text-base md:text-lg leading-7 text-white/65 max-w-[520px]">
+            Most people start building too early.
+            This system forces clarity, structure, and momentum—before effort is wasted.
+          </p>
+
         </div>
 
-        {/* FLOW GRID */}
-        <div className="relative grid gap-6 lg:grid-cols-3">
+        {/* FLOW */}
+        <div className="flex flex-col gap-12 max-w-[640px]">
 
           {steps.map((step, index) => (
-            <GlassCard
-              key={step.title}
-              variant="default"
-              className={`relative flex flex-col gap-6 p-8 ${
-                step.highlight
-                  ? "scale-[1.04] border-white/20 bg-white/[0.07]"
-                  : "opacity-90"
-              }`}
-            >
+            <div key={step.title} className="relative">
 
-              {/* STEP NUMBER */}
-              <span className="text-xs uppercase tracking-[0.2em] text-white/40">
+              {/* TOP LINE */}
+              <div className="mb-4 h-[1px] w-10 bg-cyan-300/60" />
+
+              {/* STEP LABEL */}
+              <p className="text-[11px] tracking-[0.2em] uppercase text-white/30 mb-2">
                 0{index + 1}
-              </span>
-
-              {/* ICON */}
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
-                <Icon icon={step.icon} className="h-6 w-6 text-white" />
-              </div>
+              </p>
 
               {/* TITLE */}
-              <h3 className="text-xl md:text-2xl font-semibold">
+              <h3
+                className={`text-xl md:text-2xl font-semibold ${
+                  step.highlight ? "text-white" : "text-white/85"
+                }`}
+              >
                 {step.title}
               </h3>
 
               {/* DESCRIPTION */}
-              <p className="text-base md:text-lg leading-relaxed text-white/75">
+              <p className="mt-2 text-base leading-relaxed text-white/65">
                 {step.description}
               </p>
 
-              {/* SUBTLE ARROW (FLOW INDICATOR) */}
+              {/* FLOW CONNECTOR */}
               {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute right-[-18px] top-1/2 -translate-y-1/2 text-white/20 text-2xl">
-                  →
+                <div className="mt-8 text-white/20 text-lg">
+                  ↓
                 </div>
               )}
 
-            </GlassCard>
+            </div>
           ))}
 
         </div>
