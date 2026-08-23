@@ -134,15 +134,15 @@ export default function CasesPage() {
                 </p>
               </div>
 
-              {/* Outcomes — linear sequence */}
+              {/* Outcomes — linear sequence desktop, stacked mobile */}
               <motion.div
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
                 viewport={{ once: true }}
-                className="overflow-x-auto"
               >
-                <div className="flex gap-6 md:gap-8 min-w-max md:min-w-full md:flex-wrap md:gap-y-0">
+                {/* Desktop: horizontal sequence */}
+                <div className="hidden md:flex gap-6 md:gap-8">
                   <div className="flex items-center gap-6 md:gap-8">
                     <p className="text-lg md:text-xl font-light text-[#6b1f1f] whitespace-nowrap">KILL IT.</p>
                     <div className="h-6 w-px bg-[#1a1816]/20" />
@@ -153,6 +153,30 @@ export default function CasesPage() {
                     <p className="text-lg md:text-xl font-light text-[#1a1816] whitespace-nowrap">EVOLVE IT.</p>
                     <div className="h-6 w-px bg-[#1a1816]/20" />
                     <p className="text-lg md:text-xl font-light text-[#6b1f1f] whitespace-nowrap">CREATE IT.</p>
+                  </div>
+                </div>
+
+                {/* Mobile: vertical sequence */}
+                <div className="md:hidden space-y-4">
+                  <div className="flex items-center gap-4">
+                    <p className="text-base font-light text-[#6b1f1f]">KILL IT.</p>
+                    <div className="flex-1 h-px bg-[#1a1816]/20" />
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <p className="text-base font-light text-[#1a1816]">FIND IT.</p>
+                    <div className="flex-1 h-px bg-[#1a1816]/20" />
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <p className="text-base font-light text-[#6b1f1f]">VALIDATE IT.</p>
+                    <div className="flex-1 h-px bg-[#1a1816]/20" />
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <p className="text-base font-light text-[#1a1816]">EVOLVE IT.</p>
+                    <div className="flex-1 h-px bg-[#1a1816]/20" />
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <p className="text-base font-light text-[#6b1f1f]">CREATE IT.</p>
+                    <div className="flex-1 h-px bg-[#1a1816]/20" />
                   </div>
                 </div>
               </motion.div>
