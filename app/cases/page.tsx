@@ -111,6 +111,40 @@ export default function CasesPage() {
         </section>
 
         {/* ============================================================
+            CREDIBILITY BLOCK
+        */}
+
+        <section className="w-full px-6 md:px-12 lg:px-16 py-24 md:py-36">
+          <div className="max-w-6xl">
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true, margin: "-50px" }}
+              className="max-w-3xl space-y-8"
+            >
+              <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]">
+                These are real cases.
+              </p>
+
+              <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/60">
+                Real businesses. Real decisions. Real work.
+              </p>
+
+              <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/60">
+                Some required pre-architecture. Some business architecture. Some execution.
+              </p>
+
+              <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/60">
+                Details have been anonymized and, where necessary, simplified to protect confidentiality.
+              </p>
+            </motion.div>
+
+          </div>
+        </section>
+
+        {/* ============================================================
             TRANSITION — FIVE SITUATIONS CHAPTER
         */}
 

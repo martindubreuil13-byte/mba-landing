@@ -265,32 +265,51 @@ export default function LetsTalkPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="max-w-3xl space-y-6"
+                className="max-w-3xl space-y-8"
               >
                 <h3 className="text-lg md:text-xl font-light leading-relaxed text-[#1a1816]">
-                  Good.
+                  Good. Let's start there.
                 </h3>
-
-                <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/60">
-                  Let's start there.
-                </p>
 
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.4 }}
-                  className="border-t border-[#1a1816]/8 pt-6 space-y-4"
+                  className="border-t border-[#1a1816]/8 pt-6 space-y-6"
                 >
                   <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/60">
-                    You don't need to convince me your idea is brilliant.
-                  </p>
-
-                  <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/60">
-                    We'll figure out whether it is.
+                    You don't need to prepare a pitch or have all the answers.
                   </p>
 
                   <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/60">
                     Tell me where you are, what you're trying to do, and what's getting in the way.
+                  </p>
+
+                  <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/60">
+                    Then we'll have a conversation.
+                  </p>
+
+                  <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/60">
+                    Entrepreneur to entrepreneur.
+                  </p>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.6 }}
+                  className="border-t border-[#1a1816]/8 pt-6 space-y-6"
+                >
+                  <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/60">
+                    It may lead to working together.
+                  </p>
+
+                  <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/60">
+                    It may not.
+                  </p>
+
+                  <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/60">
+                    Either way, it'll be a good conversation.
                   </p>
                 </motion.div>
               </motion.div>

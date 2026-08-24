@@ -43,7 +43,7 @@ export default function WorkPage() {
             </motion.div>
 
             {/* Recognition states — ONE AT A TIME, clean replacement */}
-            <div className="min-h-[50vh] flex items-center mb-16 md:mb-20">
+            <div className="w-full mb-16 md:mb-20">
               <div className="w-full max-w-3xl">
 
                 {/* State 01 */}
@@ -129,63 +129,59 @@ export default function WorkPage() {
               </div>
             </div>
 
-            {/* Convergence — theatrical settling effect, compressed */}
+            {/* SYNTHESIS + QUESTION — One editorial composition */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 0.8, delay: 2.2 }}
               viewport={{ once: true, margin: "-50px" }}
-              className="mb-12 md:mb-16"
+              className="max-w-3xl mb-16 md:mb-20"
             >
-              <div className="mb-6 h-px w-12 bg-[#6b1f1f]" />
-              <motion.h3
-                initial={{ letterSpacing: "0.05em" }}
-                whileInView={{ letterSpacing: "0" }}
-                transition={{ duration: 0.9, delay: 0.2 }}
-                viewport={{ once: true }}
-                className="text-3xl md:text-4xl lg:text-5xl font-light leading-tight mb-4"
-              >
-                Different
-                <br />
-                starting points.
-              </motion.h3>
-              <motion.p
-                initial={{ opacity: 0.6 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.7, delay: 0.5 }}
-                viewport={{ once: true }}
-                className="text-2xl md:text-3xl font-light leading-tight"
-              >
-                <span className="text-[#6b1f1f] font-semibold">Same question.</span>
-              </motion.p>
-            </motion.div>
+              {/* Synthesis — conclusion of the preceding sequence */}
+              <div className="mb-12 md:mb-16">
+                <div className="mb-6 h-px w-12 bg-[#6b1f1f]" />
+                <motion.h3
+                  initial={{ letterSpacing: "0.05em" }}
+                  whileInView={{ letterSpacing: "0" }}
+                  transition={{ duration: 0.9, delay: 0.2 }}
+                  viewport={{ once: true }}
+                  className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight mb-6"
+                >
+                  Different
+                  <br />
+                  starting points.
+                </motion.h3>
+                <motion.p
+                  initial={{ opacity: 0.6 }}
+                  whileInView={{ opacity: 1 }}
+                  transition={{ duration: 0.7, delay: 0.5 }}
+                  viewport={{ once: true }}
+                  className="text-3xl md:text-4xl font-light leading-tight"
+                >
+                  <span className="text-[#6b1f1f] font-semibold">Same question.</span>
+                </motion.p>
+              </div>
 
-            {/* Final question — flows naturally from convergence */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9 }}
-              viewport={{ once: true, margin: "-50px" }}
-              className="py-12 md:py-16 max-w-3xl"
-            >
-              <h3 className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight tracking-tight">
-                What should
-                <br />
-                happen next?
-              </h3>
+              {/* Question — deliberate editorial question */}
+              <motion.p
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.7 }}
+                viewport={{ once: true }}
+                className="text-2xl md:text-3xl font-medium leading-tight text-[#1a1816]"
+              >
+                What do we do next?
+              </motion.p>
             </motion.div>
 
           </div>
         </section>
 
-        {/* Transition pause — compressed, flows directly as answer */}
-        <div className="h-4 md:h-6" />
-
         {/* ============================================================
             THE PIVOT: DISORDER → ALIGNMENT
         */}
 
-        <section className="w-full px-6 md:px-12 lg:px-16 py-12 md:py-16">
+        <section className="w-full px-6 md:px-12 lg:px-16 py-6 md:py-8">
           <div className="max-w-6xl">
 
             <motion.div
@@ -251,15 +247,54 @@ export default function WorkPage() {
         </section>
 
         {/* ============================================================
-            ACT 01: PUT THE IDEA ON TRIAL
-            Editorial Left mode — stable headline, evolving investigation
+            BRIDGE: EDITORIAL NARRATIVE (increased authority)
         */}
 
-        <section className="w-full px-6 md:px-12 lg:px-16 py-32 md:py-48">
+        <section className="w-full px-6 md:px-12 lg:px-16 py-16 md:py-20">
           <div className="max-w-6xl">
 
-            {/* Stable left anchor */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true, margin: "-50px" }}
+              className="max-w-3xl space-y-6 md:space-y-8"
+            >
+              <p className="text-2xl md:text-3xl lg:text-4xl font-light leading-tight text-[#1a1816]">
+                So what happens when we stop improvising?
+              </p>
+              <p className="text-3xl md:text-4xl lg:text-5xl font-light leading-tight text-[#1a1816]">
+                <span className="text-[#6b1f1f] font-semibold">We get to work.</span>
+              </p>
+              <p className="text-2xl md:text-3xl lg:text-4xl font-light leading-tight text-[#1a1816]">
+                Where we start depends on where you are.
+              </p>
+
+              <motion.p
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                viewport={{ once: true }}
+                className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70 pt-8"
+              >
+                Depending on where you are, we start with one of three things.
+              </motion.p>
+            </motion.div>
+
+          </div>
+        </section>
+
+        {/* ============================================================
+            ACT 01: PUT THE IDEA ON TRIAL
+            Unified LEFT/RIGHT architecture with shared system
+        */}
+
+        <section className="w-full px-6 md:px-12 lg:px-16 py-20 md:py-28">
+          <div className="max-w-6xl">
+
+            {/* LEFT/RIGHT architecture — unified system */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
+              {/* LEFT COLUMN — Act anchor */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -275,35 +310,35 @@ export default function WorkPage() {
                 </h2>
               </motion.div>
 
-              {/* Evolving right stage */}
+              {/* RIGHT COLUMN — Content progression */}
               <motion.div
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 transition={{ duration: 0.8 }}
                 viewport={{ once: true, margin: "-50px" }}
-                className="md:col-span-8 space-y-12 md:space-y-16"
+                className="md:col-span-8 space-y-8 md:space-y-12"
               >
-                <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]">
-                  You've got an idea.
-                </p>
-                <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]">
-                  Great.
-                </p>
-                <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70">
-                  Now let's see if reality agrees.
-                </p>
+                {/* Opening condition */}
+                <div className="space-y-4">
+                  <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]">
+                    You've got an idea? Great.
+                  </p>
+                  <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70">
+                    Now let's put it to the test and see if reality agrees.
+                  </p>
+                </div>
 
-                {/* Investigation — progressive reveal */}
-                <div className="pt-8 md:pt-12 min-h-[30vh]">
+                {/* What we do */}
+                <div className="border-t border-[#1a1816]/8 pt-8 space-y-4">
                   <motion.p
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.7 }}
                     viewport={{ once: false, margin: "-100px" }}
-                    className="text-xl md:text-2xl font-light text-[#1a1816]"
+                    className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70"
                   >
-                    We challenge it.
+                    We challenge it. Stress-test it. Investigate the assumptions behind it. Look for enough evidence that there is a market and that the idea deserves to exist.
                   </motion.p>
 
                   <motion.p
@@ -312,127 +347,99 @@ export default function WorkPage() {
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.7, delay: 0.3 }}
                     viewport={{ once: false, margin: "-100px" }}
-                    className="text-xl md:text-2xl font-light text-[#1a1816] mt-12"
+                    className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70"
                   >
-                    Stress-test it.
-                  </motion.p>
-
-                  <motion.p
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.7, delay: 0.6 }}
-                    viewport={{ once: false, margin: "-100px" }}
-                    className="text-xl md:text-2xl font-light text-[#1a1816] mt-12"
-                  >
-                    Investigate the assumptions behind it.
+                    And if you don't have an idea yet, we'll find one.
                   </motion.p>
                 </div>
 
-                {/* Evidence */}
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70 pt-8 md:pt-12 border-t border-[#1a1816]/8"
-                >
-                  Look for evidence that there is a market—
-                  <br />
-                  and that the idea deserves to exist in it.
-                </motion.p>
+                {/* Outcome */}
+                <div className="border-t border-[#1a1816]/8 pt-8 space-y-6">
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.7, delay: 0.5 }}
+                    viewport={{ once: true }}
+                    className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70"
+                  >
+                    The outcome is a decision:
+                  </motion.p>
+
+                  <div className="grid grid-cols-3 gap-6 md:gap-8">
+                    <motion.p
+                      initial={{ opacity: 0, y: 10 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 0.6 }}
+                      viewport={{ once: true }}
+                      className="text-2xl md:text-3xl font-light leading-tight text-[#1a1816]"
+                    >
+                      PROCEED.
+                    </motion.p>
+                    <motion.p
+                      initial={{ opacity: 0, y: 10 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 0.7 }}
+                      viewport={{ once: true }}
+                      className="text-2xl md:text-3xl font-light leading-tight text-[#1a1816]"
+                    >
+                      RESHAPE.
+                    </motion.p>
+                    <motion.p
+                      initial={{ opacity: 0, y: 10 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 0.8 }}
+                      viewport={{ once: true }}
+                      className="text-2xl md:text-3xl font-light leading-tight text-[#1a1816]"
+                    >
+                      WALK AWAY.
+                    </motion.p>
+                  </div>
+                </div>
+
+                {/* Final thought */}
+                <div className="border-t border-[#1a1816]/8 pt-8">
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.7, delay: 0.9 }}
+                    viewport={{ once: true }}
+                    className="text-2xl md:text-3xl lg:text-4xl font-light leading-tight text-[#1a1816] mb-4"
+                  >
+                    Finding out now
+                    <br />
+                    is cheap.
+                  </motion.p>
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.7, delay: 1.1 }}
+                    viewport={{ once: true }}
+                    className="text-2xl md:text-3xl lg:text-4xl font-light leading-tight text-[#1a1816]"
+                  >
+                    Finding out after you've built
+                    <br />
+                    the damn thing
+                    <br />
+                    <span className="text-[#6b1f1f] font-semibold">isn't.</span>
+                  </motion.p>
+                </div>
               </motion.div>
             </div>
-
-            {/* Three outcomes — full width, structured grid */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true, margin: "-50px" }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-16 my-24 md:my-32 py-16 md:py-20 border-y border-[#1a1816]/10"
-            >
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0 }}
-                viewport={{ once: true }}
-              >
-                <p className="text-3xl md:text-4xl font-light leading-tight text-[#1a1816]">
-                  Proceed.
-                </p>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                viewport={{ once: true }}
-              >
-                <p className="text-3xl md:text-4xl font-light leading-tight text-[#1a1816]">
-                  Reshape.
-                </p>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                viewport={{ once: true }}
-              >
-                <p className="text-3xl md:text-4xl font-light leading-tight text-[#1a1816]">
-                  Walk away.
-                </p>
-              </motion.div>
-            </motion.div>
-
-            {/* Sting — conclusion with strong authority */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true, margin: "-50px" }}
-              className="max-w-3xl border-t border-[#1a1816]/8 pt-20 md:pt-28 my-24 md:my-32"
-            >
-              <motion.p
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.7, delay: 0.2 }}
-                viewport={{ once: true }}
-                className="text-3xl md:text-4xl lg:text-5xl font-light leading-tight text-[#1a1816] mb-6"
-              >
-                Finding out now
-                <br />
-                is cheap.
-              </motion.p>
-              <motion.p
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.7, delay: 0.4 }}
-                viewport={{ once: true }}
-                className="text-3xl md:text-4xl lg:text-5xl font-light leading-tight text-[#1a1816]"
-              >
-                Finding out after
-                <br />
-                you've built the damn thing
-                <br />
-                <span className="text-[#6b1f1f] font-semibold">isn't.</span>
-              </motion.p>
-            </motion.div>
 
           </div>
         </section>
 
         {/* ============================================================
             ACT 02: ARCHITECT THE BUSINESS
-            Structured Field mode — components assemble into architecture
+            Unified LEFT/RIGHT architecture with shared system
         */}
 
-        <section className="w-full px-6 md:px-12 lg:px-16 py-28 md:py-40">
+        <section className="w-full px-6 md:px-12 lg:px-16 py-20 md:py-28">
           <div className="max-w-6xl">
 
-            {/* Act 02 using consistent grammar: LEFT anchor + RIGHT process */}
+            {/* LEFT/RIGHT architecture — unified system */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
+              {/* LEFT COLUMN — Act anchor */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -448,418 +455,262 @@ export default function WorkPage() {
                 </h2>
               </motion.div>
 
-              {/* Right stage: architecture assembly */}
+              {/* RIGHT COLUMN — Content progression */}
               <motion.div
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 transition={{ duration: 0.8 }}
                 viewport={{ once: true, margin: "-50px" }}
-                className="md:col-span-8 space-y-12 md:space-y-16"
+                className="md:col-span-8 space-y-8 md:space-y-12"
               >
-                <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]">
-                  A promising idea still isn't a business.
-                </p>
-                <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70">
-                  Now we give it structure.
-                </p>
+                {/* Opening condition */}
+                <div className="space-y-4">
+                  <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]">
+                    The idea survived.
+                  </p>
+                  <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70">
+                    We have enough evidence that this can work.
+                  </p>
+                  <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70">
+                    Now let's architect it.
+                  </p>
+                </div>
 
-                <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70 pt-8 border-t border-[#1a1816]/8">
-                  The pieces might include:
-                </p>
+                {/* What we do — Architecture elements */}
+                <div className="border-t border-[#1a1816]/8 pt-8 space-y-8">
+                  <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70">
+                    We architect how the pieces work together:
+                  </p>
+
+                  {/* Compact two-column architecture list */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+                    <div>
+                      <p className="text-lg font-semibold leading-tight text-[#1a1816] mb-3">Offer</p>
+                      <p className="text-base text-[#1a1816]/60">What exactly are we putting into the market?</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold leading-tight text-[#1a1816] mb-3">Pricing</p>
+                      <p className="text-base text-[#1a1816]/60">What will people pay — and how?</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold leading-tight text-[#1a1816] mb-3">Revenue Streams</p>
+                      <p className="text-base text-[#1a1816]/60">Where does the money come from?</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold leading-tight text-[#1a1816] mb-3">Economics</p>
+                      <p className="text-base text-[#1a1816]/60">Can the numbers actually work?</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold leading-tight text-[#1a1816] mb-3">Channels</p>
+                      <p className="text-base text-[#1a1816]/60">How will we reach the market?</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold leading-tight text-[#1a1816] mb-3">Value Delivery</p>
+                      <p className="text-base text-[#1a1816]/60">How do we deliver what we promise?</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold leading-tight text-[#1a1816] mb-3">Go-to-Market</p>
+                      <p className="text-base text-[#1a1816]/60">How do we create demand and win customers?</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold leading-tight text-[#1a1816] mb-3">Operations</p>
+                      <p className="text-base text-[#1a1816]/60">What has to work behind the scenes?</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Final thought */}
+                <div className="border-t border-[#1a1816]/8 pt-8 space-y-6">
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.7, delay: 0.3 }}
+                    viewport={{ once: true }}
+                    className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70"
+                  >
+                    The outcome is an architecture:
+                  </motion.p>
+
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.7, delay: 0.5 }}
+                    viewport={{ once: true }}
+                    className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70"
+                  >
+                    A business that makes sense on paper before we spend the resources to make it real.
+                  </motion.p>
+
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.7, delay: 0.7 }}
+                    viewport={{ once: true }}
+                    className="text-2xl md:text-3xl lg:text-4xl font-light leading-tight text-[#1a1816] mb-4"
+                  >
+                    Every decision
+                    <br />
+                    affects the others.
+                  </motion.p>
+
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.7, delay: 0.9 }}
+                    viewport={{ once: true }}
+                    className="text-2xl md:text-3xl lg:text-4xl font-light leading-tight text-[#1a1816]"
+                  >
+                    That's why we architect
+                    <br />
+                    <span className="text-[#6b1f1f] font-semibold">the whole business</span>
+                    <br />
+                    instead of improvising one piece at a time.
+                  </motion.p>
+                </div>
               </motion.div>
             </div>
-
-            {/* ASSEMBLY COMPOSITION — Business architecture decisions (8 items) */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true, margin: "-50px" }}
-              className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-20 py-32 md:py-48"
-            >
-
-              {/* Offer */}
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 0 }}
-                viewport={{ once: true }}
-              >
-                <h3 className="text-3xl md:text-4xl font-light leading-tight text-[#1a1816] mb-4">
-                  Offer
-                </h3>
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.3 }}
-                  viewport={{ once: true }}
-                  className="text-base md:text-lg text-[#1a1816]/60 leading-relaxed mb-6"
-                >
-                  What exactly are we putting into the market?
-                </motion.p>
-                <motion.div
-                  initial={{ scaleX: 0 }}
-                  whileInView={{ scaleX: 1 }}
-                  transition={{ duration: 0.6, delay: 0.5 }}
-                  viewport={{ once: true }}
-                  style={{ transformOrigin: "left" }}
-                  className="h-px w-16 bg-[#1a1816]/20"
-                />
-              </motion.div>
-
-              {/* Pricing */}
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 0.1 }}
-                viewport={{ once: true }}
-              >
-                <h3 className="text-3xl md:text-4xl font-light leading-tight text-[#1a1816] mb-4">
-                  Pricing
-                </h3>
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.35 }}
-                  viewport={{ once: true }}
-                  className="text-base md:text-lg text-[#1a1816]/60 leading-relaxed mb-6"
-                >
-                  What will people pay — and how?
-                </motion.p>
-                <motion.div
-                  initial={{ scaleX: 0 }}
-                  whileInView={{ scaleX: 1 }}
-                  transition={{ duration: 0.6, delay: 0.55 }}
-                  viewport={{ once: true }}
-                  style={{ transformOrigin: "left" }}
-                  className="h-px w-16 bg-[#1a1816]/20"
-                />
-              </motion.div>
-
-              {/* Revenue Streams */}
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 0.2 }}
-                viewport={{ once: true }}
-              >
-                <h3 className="text-3xl md:text-4xl font-light leading-tight text-[#1a1816] mb-4">
-                  Revenue Streams
-                </h3>
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.4 }}
-                  viewport={{ once: true }}
-                  className="text-base md:text-lg text-[#1a1816]/60 leading-relaxed mb-6"
-                >
-                  Where does the money come from?
-                </motion.p>
-                <motion.div
-                  initial={{ scaleX: 0 }}
-                  whileInView={{ scaleX: 1 }}
-                  transition={{ duration: 0.6, delay: 0.6 }}
-                  viewport={{ once: true }}
-                  style={{ transformOrigin: "left" }}
-                  className="h-px w-16 bg-[#1a1816]/20"
-                />
-              </motion.div>
-
-              {/* Economics */}
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 0.3 }}
-                viewport={{ once: true }}
-              >
-                <h3 className="text-3xl md:text-4xl font-light leading-tight text-[#1a1816] mb-4">
-                  Economics
-                </h3>
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.45 }}
-                  viewport={{ once: true }}
-                  className="text-base md:text-lg text-[#1a1816]/60 leading-relaxed mb-6"
-                >
-                  Can the numbers actually work?
-                </motion.p>
-                <motion.div
-                  initial={{ scaleX: 0 }}
-                  whileInView={{ scaleX: 1 }}
-                  transition={{ duration: 0.6, delay: 0.65 }}
-                  viewport={{ once: true }}
-                  style={{ transformOrigin: "left" }}
-                  className="h-px w-16 bg-[#1a1816]/20"
-                />
-              </motion.div>
-
-              {/* Channels */}
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 0.4 }}
-                viewport={{ once: true }}
-              >
-                <h3 className="text-3xl md:text-4xl font-light leading-tight text-[#1a1816] mb-4">
-                  Channels
-                </h3>
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.5 }}
-                  viewport={{ once: true }}
-                  className="text-base md:text-lg text-[#1a1816]/60 leading-relaxed mb-6"
-                >
-                  How will we reach the market?
-                </motion.p>
-                <motion.div
-                  initial={{ scaleX: 0 }}
-                  whileInView={{ scaleX: 1 }}
-                  transition={{ duration: 0.6, delay: 0.7 }}
-                  viewport={{ once: true }}
-                  style={{ transformOrigin: "left" }}
-                  className="h-px w-16 bg-[#1a1816]/20"
-                />
-              </motion.div>
-
-              {/* Value Delivery */}
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <h3 className="text-3xl md:text-4xl font-light leading-tight text-[#1a1816] mb-4">
-                  Value Delivery
-                </h3>
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.55 }}
-                  viewport={{ once: true }}
-                  className="text-base md:text-lg text-[#1a1816]/60 leading-relaxed mb-6"
-                >
-                  How do we deliver what we promise?
-                </motion.p>
-                <motion.div
-                  initial={{ scaleX: 0 }}
-                  whileInView={{ scaleX: 1 }}
-                  transition={{ duration: 0.6, delay: 0.75 }}
-                  viewport={{ once: true }}
-                  style={{ transformOrigin: "left" }}
-                  className="h-px w-16 bg-[#1a1816]/20"
-                />
-              </motion.div>
-
-              {/* Go-to-Market */}
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 0.6 }}
-                viewport={{ once: true }}
-              >
-                <h3 className="text-3xl md:text-4xl font-light leading-tight text-[#1a1816] mb-4">
-                  Go-to-Market
-                </h3>
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.65 }}
-                  viewport={{ once: true }}
-                  className="text-base md:text-lg text-[#1a1816]/60 leading-relaxed mb-6"
-                >
-                  How do we create demand and win customers?
-                </motion.p>
-                <motion.div
-                  initial={{ scaleX: 0 }}
-                  whileInView={{ scaleX: 1 }}
-                  transition={{ duration: 0.6, delay: 0.85 }}
-                  viewport={{ once: true }}
-                  style={{ transformOrigin: "left" }}
-                  className="h-px w-16 bg-[#1a1816]/20"
-                />
-              </motion.div>
-
-              {/* Operations */}
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 0.7 }}
-                viewport={{ once: true }}
-              >
-                <h3 className="text-3xl md:text-4xl font-light leading-tight text-[#1a1816] mb-4">
-                  Operations
-                </h3>
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.75 }}
-                  viewport={{ once: true }}
-                  className="text-base md:text-lg text-[#1a1816]/60 leading-relaxed mb-6"
-                >
-                  What has to work behind the scenes?
-                </motion.p>
-                <motion.div
-                  initial={{ scaleX: 0 }}
-                  whileInView={{ scaleX: 1 }}
-                  transition={{ duration: 0.6, delay: 0.95 }}
-                  viewport={{ once: true }}
-                  style={{ transformOrigin: "left" }}
-                  className="h-px w-16 bg-[#1a1816]/20"
-                />
-              </motion.div>
-
-            </motion.div>
-
-            {/* Assembly completion — full-width resolution */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true, margin: "-50px" }}
-              className="border-t border-[#1a1816]/8 pt-24 md:pt-32 max-w-3xl"
-            >
-              <motion.p
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.7, delay: 0.2 }}
-                viewport={{ once: true }}
-                className="text-2xl md:text-3xl lg:text-4xl font-light leading-tight text-[#1a1816] mb-6"
-              >
-                Every decision
-                <br />
-                affects the others.
-              </motion.p>
-              <p className="text-3xl md:text-4xl lg:text-5xl font-light leading-tight text-[#1a1816]">
-                That's why we architect
-                <br />
-                <span className="text-[#6b1f1f] font-semibold">the whole business.</span>
-              </p>
-            </motion.div>
 
           </div>
         </section>
 
         {/* ============================================================
             ACT 03: MAKE IT EXIST
-            Editorial Left mode — structure transitions to motion
+            Editorial Left mode — structure aligns with Acts 01 and 02
         */}
 
-        <section className="w-full px-6 md:px-12 lg:px-16 py-32 md:py-48">
+        <section className="w-full px-6 md:px-12 lg:px-16 py-20 md:py-28">
           <div className="max-w-6xl">
 
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true, margin: "-50px" }}
-              className="mb-20 md:mb-28 max-w-3xl"
-            >
-              <p className="text-xs tracking-widest uppercase text-[#6b1f1f] font-semibold mb-8">03</p>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight tracking-tight mb-12">
-                Make it
-                <br />
-                exist.
-              </h2>
-              <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70 max-w-3xl">
-                Because a beautifully architected business
-                <br />
-                that never meets the market
-                <br />
-                is still an idea.
-              </p>
-            </motion.div>
+            {/* LEFT/RIGHT structure — unified system */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
+              {/* LEFT COLUMN — Act anchor */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true, margin: "-50px" }}
+                className="md:col-span-4"
+              >
+                <p className="text-xs tracking-widest uppercase text-[#6b1f1f] font-semibold mb-8">03</p>
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight tracking-tight">
+                  Make it
+                  <br />
+                  exist.
+                </h2>
+              </motion.div>
 
-            {/* Execution sequence — momentum, not isolation */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true, margin: "-50px" }}
-              className="mb-16 md:mb-20"
-            >
-              <div className="text-2xl md:text-3xl font-light text-[#1a1816] leading-relaxed">
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0 }}
-                  viewport={{ once: true }}
-                  className="inline"
-                >
-                  We build →{" "}
-                </motion.span>
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.1 }}
-                  viewport={{ once: true }}
-                  className="inline"
-                >
-                  We launch →{" "}
-                </motion.span>
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                  viewport={{ once: true }}
-                  className="inline"
-                >
-                  We sell →{" "}
-                </motion.span>
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.3 }}
-                  viewport={{ once: true }}
-                  className="inline"
-                >
-                  We learn →{" "}
-                </motion.span>
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.4 }}
-                  viewport={{ once: true }}
-                  className="inline"
-                >
-                  We adjust.
-                </motion.span>
-              </div>
-            </motion.div>
-
-            {/* Resolution — evidence → conclusion */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true, margin: "-50px" }}
-              className="max-w-3xl border-t border-[#1a1816]/8 pt-20 md:pt-28"
-            >
-              <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/60 mb-12">
-                Until reality answers.
-              </p>
-
-              <motion.p
+              {/* RIGHT COLUMN — Content progression */}
+              <motion.div
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.3 }}
-                viewport={{ once: true }}
-                className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight text-[#1a1816] mb-6"
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true, margin: "-50px" }}
+                className="md:col-span-8 space-y-8 md:space-y-12"
               >
-                Someone buys.
-              </motion.p>
+                {/* Opening condition */}
+                <div className="space-y-4">
+                  <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]">
+                    The architecture works on paper.
+                  </p>
+                  <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70">
+                    Now we make it exist.
+                  </p>
+                </div>
 
-              <motion.p
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.6 }}
-                viewport={{ once: true }}
-                className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight"
-              >
-                <span className="text-[#6b1f1f] font-semibold">Now it's a business.</span>
-              </motion.p>
-            </motion.div>
+                {/* Execution sequence */}
+                <div className="border-t border-[#1a1816]/8 pt-8 space-y-6">
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0 }}
+                    viewport={{ once: true }}
+                    className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70"
+                  >
+                    We build.
+                  </motion.p>
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.1 }}
+                    viewport={{ once: true }}
+                    className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70"
+                  >
+                    We launch.
+                  </motion.p>
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                    viewport={{ once: true }}
+                    className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70"
+                  >
+                    We sell.
+                  </motion.p>
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.3 }}
+                    viewport={{ once: true }}
+                    className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70"
+                  >
+                    We learn.
+                  </motion.p>
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.4 }}
+                    viewport={{ once: true }}
+                    className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70"
+                  >
+                    We adjust.
+                  </motion.p>
+                </div>
+
+                {/* Reality gets a vote */}
+                <motion.p
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.6 }}
+                  viewport={{ once: true }}
+                  className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70 border-t border-[#1a1816]/8 pt-8"
+                >
+                  Reality gets a vote.
+                </motion.p>
+
+                {/* Final thought */}
+                <div className="border-t border-[#1a1816]/8 pt-8 space-y-6">
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.7, delay: 0.3 }}
+                    viewport={{ once: true }}
+                    className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70"
+                  >
+                    The outcome is not another document.
+                  </motion.p>
+
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.7, delay: 0.5 }}
+                    viewport={{ once: true }}
+                    className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70"
+                  >
+                    It's a business operating in the real world.
+                  </motion.p>
+
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.7, delay: 0.7 }}
+                    viewport={{ once: true }}
+                    className="text-3xl md:text-4xl lg:text-5xl font-light leading-tight text-[#1a1816]"
+                  >
+                    Success starts when customers start paying for it.
+                  </motion.p>
+                </div>
+              </motion.div>
+            </div>
 
           </div>
         </section>
@@ -869,7 +720,7 @@ export default function WorkPage() {
             Monumental Center mode — understanding crystallizes
         */}
 
-        <section className="w-full px-6 md:px-12 lg:px-16 py-40 md:py-56">
+        <section className="w-full px-6 md:px-12 lg:px-16 pt-10 md:pt-14 pb-16 md:pb-20">
           <div className="max-w-6xl">
 
             {/* Three principles — summary, strong contrast */}
@@ -878,7 +729,7 @@ export default function WorkPage() {
               whileInView={{ opacity: 1 }}
               transition={{ duration: 0.8 }}
               viewport={{ once: true, margin: "-50px" }}
-              className="space-y-2 md:space-y-3 mb-12 md:mb-16 max-w-3xl"
+              className="space-y-2 md:space-y-3 mb-8 md:mb-12 max-w-3xl"
             >
               <motion.p
                 initial={{ opacity: 0, y: 15 }}
@@ -917,7 +768,7 @@ export default function WorkPage() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.4 }}
               viewport={{ once: true, margin: "-50px" }}
-              className="border-t border-[#1a1816]/8 pt-16 md:pt-24 mb-24 md:mb-32 max-w-3xl"
+              className="border-t border-[#1a1816]/8 pt-12 md:pt-16 mb-16 md:mb-20 max-w-3xl"
             >
               <p className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight tracking-tight">
                 That is
