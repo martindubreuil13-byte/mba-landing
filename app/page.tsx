@@ -5,6 +5,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Navigation from "@/app/components/Navigation";
+import { PageStructuredData } from "@/app/components/PageStructuredData";
 
 const PREFERS_REDUCED_MOTION = () => {
   if (typeof window === "undefined") return false;
@@ -33,6 +34,11 @@ export default function Home() {
 
   return (
     <>
+      <PageStructuredData
+        name="The Modern Business Architect"
+        description="Business Architecture for entrepreneurs: test what's worth building, architect how the business will work, and make it exist."
+        path="/"
+      />
       <Navigation />
 
       {/* HERO — ONE VERTICAL COMPOSITION */}

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_NAME}`,
   },
   description:
-    "Turn your ideas into structured, scalable businesses with clarity, alignment, and execution.",
+    "Business Architecture for entrepreneurs: test what's worth building, architect how the business will work, and make it exist.",
   authors: [{ name: PRINCIPAL_NAME }],
   creator: PRINCIPAL_NAME,
   alternates: { canonical: "/" },
@@ -17,17 +17,27 @@ export const metadata: Metadata = {
   openGraph: {
     title: SITE_NAME,
     description:
-      "Turn your ideas into structured, scalable businesses with clarity, alignment, and execution.",
+      "Business Architecture for entrepreneurs: test what's worth building, architect how the business will work, and make it exist.",
     url: "/",
     siteName: SITE_NAME,
     type: "website",
     locale: "en_US",
+    images: [
+      {
+        url: "/og/modern-business-architect.png",
+        width: 1200,
+        height: 630,
+        alt: "The Modern Business Architect — Ideas are easy. Businesses are architected.",
+        type: "image/png",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: SITE_NAME,
     description:
-      "Turn your ideas into structured, scalable businesses with clarity, alignment, and execution.",
+      "Business Architecture for entrepreneurs: test what's worth building, architect how the business will work, and make it exist.",
+    images: ["/og/modern-business-architect.png"],
   },
 };
 
@@ -50,7 +60,7 @@ const siteStructuredData = {
       name: PRINCIPAL_NAME,
       url: `${SITE_URL}/martin`,
       image: `${SITE_URL}/images/martin-dubreuil-brand-portrait-primary.png`,
-      worksFor: { "@id": `${SITE_URL}/#business` },
+      sameAs: ["https://www.linkedin.com/in/martin-dubreuil-ba643724/"],
     },
     {
       "@type": "ProfessionalService",
@@ -58,6 +68,15 @@ const siteStructuredData = {
       name: SITE_NAME,
       url: `${SITE_URL}/`,
       founder: { "@id": `${SITE_URL}/#martin` },
+    },
+    {
+      "@type": "Service",
+      "@id": `${SITE_URL}/#business-architecture-service`,
+      name: "Business Architecture",
+      serviceType: "Business Architecture",
+      description: "Validation, structure, and execution support for new business ventures—testing what's worth building, architecting how the business will work, and making it exist.",
+      provider: { "@id": `${SITE_URL}/#business` },
+      url: `${SITE_URL}/work`,
     },
   ],
 };

@@ -428,6 +428,33 @@ export default function MartinPage() {
                     >
                       Serial Entrepreneur · 20+ Years International Business Development · MBA · Certified Business Coach
                     </motion.p>
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      transition={{ duration: 0.7, delay: 0.7 }}
+                      viewport={{ once: true }}
+                      className="flex gap-4 mt-4 text-xs text-[#1a1816]/50"
+                    >
+                      <a
+                        href="https://www.linkedin.com/in/martin-dubreuil-ba643724/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Martin Dubreuil on LinkedIn"
+                        className="hover:text-[#1a1816]/70 transition"
+                      >
+                        LinkedIn
+                      </a>
+                      <span className="text-[#1a1816]/30">·</span>
+                      <a
+                        href="https://dubreuil.substack.com/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Martin Dubreuil's Substack"
+                        className="hover:text-[#1a1816]/70 transition"
+                      >
+                        Substack
+                      </a>
+                    </motion.div>
                   </figcaption>
                 </figure>
               </motion.div>

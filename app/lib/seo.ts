@@ -33,11 +33,21 @@ export function createPageMetadata({
       siteName: SITE_NAME,
       type: "website",
       locale: "en_US",
+      images: [
+        {
+          url: "/og/modern-business-architect.png",
+          width: 1200,
+          height: 630,
+          alt: "The Modern Business Architect — Ideas are easy. Businesses are architected.",
+          type: "image/png",
+        },
+      ],
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title,
       description,
+      images: ["/og/modern-business-architect.png"],
     },
   };
 }

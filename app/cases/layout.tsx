@@ -9,5 +9,5 @@ export const metadata = {
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return <><PageStructuredData name={title} description={description} path="/cases" />{children}</>;
+  return <>{children}</>;
 }

@@ -4,6 +4,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Navigation from "@/app/components/Navigation";
+import { PageStructuredData } from "@/app/components/PageStructuredData";
 
 export default function CasesPage() {
   const cases = [
@@ -56,6 +57,11 @@ export default function CasesPage() {
 
   return (
     <>
+      <PageStructuredData
+        name="Business Architecture Cases"
+        description="Anonymized cases showing how evidence and business architecture can kill, find, validate, evolve or create an opportunity."
+        path="/cases"
+      />
       <Navigation />
 
       {/* PAGE PADDING — Account for fixed navbar */}

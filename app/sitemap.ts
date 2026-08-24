@@ -11,8 +11,9 @@ const publicRoutes = [
   "/cases/validate-it",
   "/cases/evolve-it",
   "/cases/create-it",
-  "/thinking",
   "/lets-talk",
+  // /thinking is excluded while it is a noindex placeholder
+  // Restore to publicRoutes only when substantive THINKING content launches and index is restored to true
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
