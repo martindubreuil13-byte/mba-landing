@@ -48,11 +48,14 @@ export default function WorkPage() {
 
                 {/* State 01 */}
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.9 }}
-                  viewport={{ once: false, margin: "-200px" }}
+                  initial="hidden"
+                  whileInView="visible"
+                  exit="hidden"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: { opacity: 1, transition: { duration: 0.9 } }
+                  }}
+                  viewport={{ once: true, margin: "-100px" }}
                   className="mb-20"
                 >
                   <p className="text-xs tracking-widest uppercase text-[#6b1f1f] font-semibold mb-3">Situation 01</p>
@@ -68,11 +71,14 @@ export default function WorkPage() {
 
                 {/* State 02 */}
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.9, delay: 0.4 }}
-                  viewport={{ once: false, margin: "-200px" }}
+                  initial="hidden"
+                  whileInView="visible"
+                  exit="hidden"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: { opacity: 1, transition: { duration: 0.9 } }
+                  }}
+                  viewport={{ once: true, margin: "-100px" }}
                   className="mb-20"
                 >
                   <p className="text-xs tracking-widest uppercase text-[#6b1f1f] font-semibold mb-3">Situation 02</p>
@@ -88,11 +94,14 @@ export default function WorkPage() {
 
                 {/* State 03 */}
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.9, delay: 0.8 }}
-                  viewport={{ once: false, margin: "-200px" }}
+                  initial="hidden"
+                  whileInView="visible"
+                  exit="hidden"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: { opacity: 1, transition: { duration: 0.9 } }
+                  }}
+                  viewport={{ once: true, margin: "-100px" }}
                   className="mb-20"
                 >
                   <p className="text-xs tracking-widest uppercase text-[#6b1f1f] font-semibold mb-3">Situation 03</p>
@@ -108,11 +117,14 @@ export default function WorkPage() {
 
                 {/* State 04 */}
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.9, delay: 1.2 }}
-                  viewport={{ once: false, margin: "-200px" }}
+                  initial="hidden"
+                  whileInView="visible"
+                  exit="hidden"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: { opacity: 1, transition: { duration: 0.9 } }
+                  }}
+                  viewport={{ once: true, margin: "-100px" }}
                   className="mb-20"
                 >
                   <p className="text-xs tracking-widest uppercase text-[#6b1f1f] font-semibold mb-3">Situation 04</p>
@@ -365,34 +377,34 @@ export default function WorkPage() {
                     The outcome is a decision:
                   </motion.p>
 
-                  <div className="grid grid-cols-3 gap-6 md:gap-8">
-                    <motion.p
+                  <div className="flex flex-wrap gap-4 md:gap-6">
+                    <motion.span
                       initial={{ opacity: 0, y: 10 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: 0.6 }}
                       viewport={{ once: true }}
-                      className="text-2xl md:text-3xl font-light leading-tight text-[#1a1816]"
+                      className="text-2xl md:text-3xl font-light leading-tight text-[#1a1816] whitespace-nowrap"
                     >
                       PROCEED.
-                    </motion.p>
-                    <motion.p
+                    </motion.span>
+                    <motion.span
                       initial={{ opacity: 0, y: 10 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: 0.7 }}
                       viewport={{ once: true }}
-                      className="text-2xl md:text-3xl font-light leading-tight text-[#1a1816]"
+                      className="text-2xl md:text-3xl font-light leading-tight text-[#1a1816] whitespace-nowrap"
                     >
                       RESHAPE.
-                    </motion.p>
-                    <motion.p
+                    </motion.span>
+                    <motion.span
                       initial={{ opacity: 0, y: 10 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: 0.8 }}
                       viewport={{ once: true }}
-                      className="text-2xl md:text-3xl font-light leading-tight text-[#1a1816]"
+                      className="text-2xl md:text-3xl font-light leading-tight text-[#1a1816] whitespace-nowrap"
                     >
                       WALK AWAY.
-                    </motion.p>
+                    </motion.span>
                   </div>
                 </div>
 
