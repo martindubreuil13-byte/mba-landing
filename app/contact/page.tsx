@@ -4,7 +4,7 @@ import { Button } from "@/app/components/ui/Button";
 
 export default function ContactPage() {
   return (
-    <section className="w-full px-6 md:px-12 lg:px-24 py-32">
+    <main className="w-full px-6 md:px-12 lg:px-24 py-32">
 
       <div className="max-w-2xl flex flex-col items-start gap-10">
 
@@ -73,6 +73,6 @@ export default function ContactPage() {
 
       </div>
 
-    </section>
+    </main>
   );
 }

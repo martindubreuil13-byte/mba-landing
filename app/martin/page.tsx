@@ -14,7 +14,7 @@ export default function MartinPage() {
       {/* PAGE PADDING — Account for fixed navbar */}
       <div className="h-16" />
 
-      <div className="w-full bg-white text-[#1a1816]">
+      <main data-progressive-reveal className="w-full bg-white text-[#1a1816]">
 
         {/* ============================================================
             OPENING: CREDIBILITY FOUNDATION
@@ -721,7 +721,7 @@ export default function MartinPage() {
         {/* Breathing room for future content */}
         <div className="h-24 md:h-32" />
 
-      </div>
+      </main>
     </>
   );
 }

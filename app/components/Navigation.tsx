@@ -41,13 +41,14 @@ export default function Navigation() {
   return (
     <>
       {/* DESKTOP NAVIGATION */}
-      <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 border-b border-[#1a1816]/8 px-6 md:px-12 lg:px-16 h-16 items-center justify-between bg-white/95 backdrop-blur-sm">
+      <nav aria-label="Primary navigation" className="hidden md:flex fixed top-0 left-0 right-0 z-50 border-b border-[#1a1816]/8 px-6 md:px-12 lg:px-16 h-16 items-center justify-between bg-white/95 backdrop-blur-sm">
         <Link href="/" className="text-xs tracking-widest font-medium hover:opacity-60 transition">MBA</Link>
         <div className="flex gap-8 text-xs tracking-wide">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
+              aria-current={isActive(link.href) ? "page" : undefined}
               className={`${baseClass} ${isActive(link.href) ? activeClass : inactiveClass}`}
             >
               {link.label}
@@ -57,12 +58,15 @@ export default function Navigation() {
       </nav>
 
       {/* MOBILE NAVIGATION */}
-      <nav className="flex md:hidden fixed top-0 left-0 right-0 z-50 border-b border-[#1a1816]/8 px-6 h-16 items-center justify-between bg-white/95 backdrop-blur-sm">
+      <nav aria-label="Mobile navigation" className="flex md:hidden fixed top-0 left-0 right-0 z-50 border-b border-[#1a1816]/8 px-6 h-16 items-center justify-between bg-white/95 backdrop-blur-sm">
         <Link href="/" className="text-xs tracking-widest font-medium hover:opacity-60 transition">MBA</Link>
         <div className="text-xs tracking-wide text-[#1a1816]/70">
           {getCurrentSectionName()}
         </div>
         <button
+          type="button"
+          aria-expanded={mobileMenuOpen}
+          aria-controls="mobile-navigation-menu"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="text-xs tracking-wide text-[#1a1816] hover:text-[#6b1f1f] transition font-medium"
         >
@@ -74,6 +78,7 @@ export default function Navigation() {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
+            id="mobile-navigation-menu"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -84,6 +89,7 @@ export default function Navigation() {
             <div className="h-16 border-b border-[#1a1816]/8 px-6 flex items-center justify-between">
               <div className="text-xs tracking-widest font-medium">MENU</div>
               <button
+                type="button"
                 onClick={() => setMobileMenuOpen(false)}
                 className="text-xs tracking-wide text-[#1a1816]/50 hover:text-[#1a1816] transition"
               >
@@ -102,6 +108,7 @@ export default function Navigation() {
                 >
                   <Link
                     href={link.href}
+                    aria-current={isActive(link.href) ? "page" : undefined}
                     onClick={() => setMobileMenuOpen(false)}
                     className={`text-lg md:text-xl font-light leading-relaxed transition ${
                       isActive(link.href)

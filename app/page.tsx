@@ -36,7 +36,8 @@ export default function Home() {
       <Navigation />
 
       {/* HERO — ONE VERTICAL COMPOSITION */}
-      <motion.div
+      <motion.main
+        data-progressive-reveal
         ref={heroRef}
         className="sticky top-0 w-full h-screen bg-[#f5f1ed] text-[#1a1816] flex flex-col justify-center relative px-6 md:px-12 lg:px-16 overflow-hidden"
       >
@@ -54,6 +55,7 @@ export default function Home() {
 
         {/* GLASS LAYER — Subtle depth */}
         <motion.div
+          data-noscript-ignore
           className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/10 to-transparent pointer-events-none"
           style={{ opacity: glassOpacity }}
         />
@@ -119,16 +121,16 @@ export default function Home() {
             }}
           >
             <Link href="/work">
-              <motion.button
+              <motion.span
                 className="text-sm font-semibold tracking-widest uppercase text-[#6b1f1f] border-b-2 border-[#6b1f1f] pb-1 transition-all hover:border-[#6b1f1f]/60 cursor-pointer"
                 whileHover={reducedMotion ? {} : { x: 3 }}
               >
                 Let's find out →
-              </motion.button>
+              </motion.span>
             </Link>
           </motion.div>
         </div>
-      </motion.div>
+      </motion.main>
 
       {/* SCROLL BUFFER — Space for Movement I scroll choreography completion */}
       <div className="h-[120vh] bg-gradient-to-b from-[#f5f1ed] via-[#faf8f6] to-white" />

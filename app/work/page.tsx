@@ -14,7 +14,7 @@ export default function WorkPage() {
       {/* PAGE PADDING — Account for fixed navbar */}
       <div className="h-16" />
 
-      <div className="w-full bg-white text-[#1a1816]">
+      <main data-progressive-reveal className="w-full bg-white text-[#1a1816]">
 
         {/* ============================================================
             MOVEMENT II: RECOGNITION / WHERE ARE YOU?
@@ -32,11 +32,11 @@ export default function WorkPage() {
               viewport={{ once: true, margin: "-50px" }}
               className="mb-24 md:mb-32 max-w-3xl"
             >
-              <h2 className="text-5xl md:text-6xl lg:text-7xl font-light leading-tight tracking-tight mb-8">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-light leading-tight tracking-tight mb-8">
                 Where
                 <br />
                 are you?
-              </h2>
+              </h1>
               <p className="text-base md:text-lg text-[#1a1816]/60 leading-relaxed max-w-2xl">
                 Most people arrive here from one of a few starting points.
               </p>
@@ -818,7 +818,7 @@ export default function WorkPage() {
         {/* Breathing room for future content */}
         <div className="h-24 md:h-32" />
 
-      </div>
+      </main>
     </>
   );
 }

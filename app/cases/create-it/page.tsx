@@ -13,7 +13,7 @@ export default function CreateItCasePage() {
       {/* PAGE PADDING */}
       <div className="h-16" />
 
-      <div className="w-full bg-white text-[#1a1816]">
+      <main data-progressive-reveal className="w-full bg-white text-[#1a1816]">
 
         {/* ============================================================
             OPENING
@@ -609,7 +609,7 @@ export default function CreateItCasePage() {
         {/* Breathing room */}
         <div className="h-24 md:h-32" />
 
-      </div>
+      </main>
     </>
   );
 }
