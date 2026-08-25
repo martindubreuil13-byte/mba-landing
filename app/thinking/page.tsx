@@ -62,7 +62,7 @@ export default function ThinkingPage() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
               viewport={{ once: true, margin: "-50px" }}
-              className="max-w-3xl mb-32 md:mb-44"
+              className="max-w-3xl mb-20 md:mb-28"
             >
               <Link href="/thinking/your-business-idea-is-worth-nothing" className="group block">
                 <motion.div
@@ -150,7 +150,7 @@ export default function ThinkingPage() {
                     whileInView={{ opacity: 1 }}
                     transition={{ duration: 0.8, delay: 0.3 }}
                     viewport={{ once: true }}
-                    className="text-lg md:text-xl font-light leading-relaxed text-[#1a1816]/70"
+                    className="text-lg md:text-xl font-light leading-relaxed text-[#1a1816]/75"
                   >
                     Building something is not the same as building a business. The difference lies in customers, acquisition, economics, adaptability and the architecture around the product.
                   </motion.p>

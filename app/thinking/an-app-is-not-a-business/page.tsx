@@ -580,7 +580,7 @@ export default function ArticlePage() {
               </p>
 
               <p style={{ marginBottom: "2.5rem" }}>
-                The first sale matters. A lot. But as I've written before, as assumptions start looking like evidence, what actually deserves to become a business needs architecture. There's a {" "}
+                The first sale matters. A lot. But as I've written before, as assumptions start looking like evidence, what actually deserves to become a business needs architecture. There's an {" "}
                 <Link href="/thinking/your-business-idea-is-worth-nothing" className="border-b-2 border-[#6b1f1f] hover:border-[#6b1f1f]/60 text-[#6b1f1f] transition-colors">
                   earlier piece on testing whether an idea has a real chance of becoming one
                 </Link>.
