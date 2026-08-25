@@ -3,7 +3,7 @@ import { SITE_URL, PRINCIPAL_NAME, SITE_NAME, serializeJsonLd } from "@/app/lib/
 import type { Metadata } from "next";
 
 const title = "Your Business Idea Is Worth Nothing | Martin Dubreuil";
-const description = "An idea doesn't become valuable because you had it. First, it has to survive reality.";
+const description = "A business idea has no value simply because you had it. Learn how to challenge an idea, test it against reality, and find out whether it is actually worth building.";
 const path = "/thinking/your-business-idea-is-worth-nothing";
 const canonicalUrl = `${SITE_URL}${path}`;
 const ogImageUrl = "https://modernbusinessarchitect.com/og/your-business-idea-is-worth-nothing.png";
