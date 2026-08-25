@@ -14,6 +14,7 @@ const publicRoutes = [
   "/lets-talk",
   "/thinking",
   "/thinking/your-business-idea-is-worth-nothing",
+  "/thinking/an-app-is-not-a-business",
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

@@ -749,6 +749,13 @@ export default function ArticlePage() {
                 How should that business work?
               </p>
 
+              <p style={{ marginBottom: "3.5rem" }}>
+                It's the question of whether building an app, service or platform actually means you've built a business—or whether {" "}
+                <Link href="/thinking/an-app-is-not-a-business" className="border-b-2 border-[#6b1f1f] hover:border-[#6b1f1f]/60 text-[#6b1f1f] transition-colors">
+                  the real architecture lies in what surrounds the product
+                </Link>.
+              </p>
+
               <p style={{ marginBottom: "1.75rem" }}>
                 Then comes another question:
               </p>
