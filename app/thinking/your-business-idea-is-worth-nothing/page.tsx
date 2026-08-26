@@ -750,6 +750,14 @@ export default function ArticlePage() {
               </p>
 
               <p style={{ marginBottom: "3.5rem" }}>
+                {" "}
+                <Link href="/answers/what-is-business-architecture" className="border-b-2 border-[#6b1f1f] hover:border-[#6b1f1f]/60 text-[#6b1f1f] transition-colors">
+                  Business Architecture
+                </Link>
+                {" "} answers that question by connecting the customer, offer, pricing, economics, delivery, acquisition and execution into one coherent system.
+              </p>
+
+              <p style={{ marginBottom: "3.5rem" }}>
                 It's the question of whether building an app, service or platform actually means you've built a business—or whether {" "}
                 <Link href="/thinking/an-app-is-not-a-business" className="border-b-2 border-[#6b1f1f] hover:border-[#6b1f1f]/60 text-[#6b1f1f] transition-colors">
                   the real architecture lies in what surrounds the product

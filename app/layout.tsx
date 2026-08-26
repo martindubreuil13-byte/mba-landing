@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { PRINCIPAL_NAME, SITE_NAME, SITE_URL, serializeJsonLd } from "@/app/lib/seo";
+import Footer from "@/app/components/Footer";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -109,6 +110,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(siteStructuredData) }}
         />
         {children}
+        <Footer />
         <noscript>
           <style>{`[data-progressive-reveal] [style*="opacity:0"]:not([data-noscript-ignore]) { opacity: 1 !important; transform: none !important; }`}</style>
         </noscript>

@@ -789,6 +789,27 @@ export default function WorkPage() {
               </p>
             </motion.div>
 
+            {/* Optional — Learn what Business Architecture means */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7 }}
+              viewport={{ once: true, margin: "-50px" }}
+              className="mb-12 md:mb-16 max-w-3xl"
+            >
+              <p className="text-sm text-[#1a1816]/60 mb-3">
+                Want a deeper understanding?
+              </p>
+              <Link href="/answers/what-is-business-architecture" className="inline-block">
+                <motion.span
+                  className="text-sm font-semibold tracking-widest uppercase text-[#6b1f1f] border-b-2 border-[#6b1f1f] pb-1 transition-all hover:border-[#6b1f1f]/60"
+                  whileHover={{ x: 2 }}
+                >
+                  What Is Business Architecture? →
+                </motion.span>
+              </Link>
+            </motion.div>
+
             {/* Narrative CTA to Martin */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
