@@ -994,6 +994,13 @@ export default function ArticlePage() {
                 That's why building an app doesn't mean you've built a business.
               </p>
 
+              <p style={{ marginBottom: "3.5rem" }}>
+                For a closer look at what this actually means, there's a detailed answer to {" "}
+                <Link href="/answers/what-is-business-architecture" className="border-b-2 border-[#6b1f1f] hover:border-[#6b1f1f]/60 text-[#6b1f1f] transition-colors">
+                  the question "What is Business Architecture?"
+                </Link>
+              </p>
+
               <h2 style={{ fontSize: "1.5rem", fontWeight: "300", marginTop: "3rem", marginBottom: "1.75rem", lineHeight: "1.4", color: "#1a1816" }}>Build the business around the product</h2>
 
               <p style={{ marginBottom: "1.75rem" }}>
