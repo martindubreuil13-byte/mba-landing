@@ -174,6 +174,67 @@ export default function AnswersPage() {
           </div>
         </section>
 
+        {/* Answer 3 */}
+        <section className="w-full px-6 md:px-12 lg:px-16 py-32 md:py-44">
+          <div className="max-w-6xl">
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true, margin: "-50px" }}
+              className="max-w-3xl md:max-w-xl"
+            >
+              <Link href="/answers/how-do-i-know-if-my-business-idea-is-actually-viable" className="group block">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                  viewport={{ once: true }}
+                  className="space-y-8"
+                >
+                  <div>
+                    <h2 className="text-2xl md:text-3xl lg:text-4xl font-light leading-tight text-[#1a1816] group-hover:text-[#6b1f1f] transition-colors">
+                      How Do I Know If My Business Idea Is Actually Viable?
+                    </h2>
+                  </div>
+
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    transition={{ duration: 0.8, delay: 0.3 }}
+                    viewport={{ once: true }}
+                    className="border-t border-[#1a1816]/8 pt-8 flex items-center gap-4"
+                  >
+                    <div className="flex flex-col gap-1">
+                      <p className="text-sm text-[#1a1816]/60">Martin Dubreuil</p>
+                      <p className="text-sm text-[#1a1816]/50">August 26, 2026</p>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              </Link>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.4 }}
+                viewport={{ once: true }}
+                className="mt-12"
+              >
+                <Link href="/answers/how-do-i-know-if-my-business-idea-is-actually-viable" className="inline-block">
+                  <motion.span
+                    className="text-sm font-semibold tracking-widest uppercase text-[#6b1f1f] border-b-2 border-[#6b1f1f] pb-1 transition-all hover:border-[#6b1f1f]/60 cursor-pointer"
+                    whileHover={{ x: 2 }}
+                  >
+                    Read →
+                  </motion.span>
+                </Link>
+              </motion.div>
+            </motion.div>
+
+          </div>
+        </section>
+
         {/* Breathing room */}
         <div className="h-24 md:h-32" />
 

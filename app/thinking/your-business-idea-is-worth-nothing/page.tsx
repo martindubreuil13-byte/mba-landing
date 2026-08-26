@@ -741,6 +741,10 @@ export default function ArticlePage() {
                 Can this idea become a business?
               </p>
 
+              <p style={{ marginBottom: "3.5rem" }}>
+                <Link href="/answers/how-do-i-know-if-my-business-idea-is-actually-viable" className="border-b-2 border-[#6b1f1f] hover:border-[#6b1f1f]/60 text-[#6b1f1f] transition-colors">How do I know if my business idea is actually viable?</Link>
+              </p>
+
               <p style={{ marginBottom: "1.75rem" }}>
                 Business Architecture asks:
               </p>
