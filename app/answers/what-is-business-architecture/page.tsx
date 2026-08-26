@@ -487,6 +487,13 @@ export default function AnswerPage() {
                 Sometimes practical execution support.
               </p>
 
+              <p style={{ marginBottom: "2.5rem" }}>
+                If you want to go deeper into the role itself, I {" "}
+                <Link href="/answers/what-does-a-business-architect-do" className="border-b-2 border-[#6b1f1f] hover:border-[#6b1f1f]/60 text-[#6b1f1f] transition-colors">
+                  explain what a Business Architect actually does here
+                </Link>.
+              </p>
+
               <p style={{ marginBottom: "3.5rem" }}>
                 The category matters less than the outcome: a business that makes sense as a system and can survive contact with reality.
               </p>
