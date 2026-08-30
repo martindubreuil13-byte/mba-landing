@@ -1,0 +1,50 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat > *)",
+      "Bash(chmod +x /tmp/prod_verification.sh)",
+      "Bash(/tmp/prod_verification.sh)",
+      "Bash(curl -s \"https://modernbusinessarchitect.com/sitemap.xml\")",
+      "Bash(curl -s \"https://modernbusinessarchitect.com/robots.txt\")",
+      "Bash(curl -s http://localhost:3000/thinking/your-business-idea-is-worth-nothing)",
+      "Bash(curl -s -k -o /dev/null -w \"HTTP %{http_code}\\\\n\" https://modernbusinessarchitect.com/thinking)",
+      "Bash(curl -s -k https://modernbusinessarchitect.com/thinking)",
+      "Bash(curl -s -k -o /dev/null -w \"HTTP %{http_code}\\\\n\" https://modernbusinessarchitect.com/thinking/your-business-idea-is-worth-nothing)",
+      "Bash(curl -s -k https://modernbusinessarchitect.com/thinking/your-business-idea-is-worth-nothing)",
+      "Bash(curl -s -k -o /dev/null -w \"HTTP %{http_code}\\\\n\" https://modernbusinessarchitect.com/og/your-business-idea-is-worth-nothing.png)",
+      "Bash(curl -s -k -I https://modernbusinessarchitect.com/og/your-business-idea-is-worth-nothing.png)",
+      "Bash(curl -s -k https://modernbusinessarchitect.com/sitemap.xml)",
+      "Bash(curl -s -I -k https://modernbusinessarchitect.com/og/your-business-idea-is-worth-nothing.png)",
+      "Bash(curl -s -k https://modernbusinessarchitect.com/og/your-business-idea-is-worth-nothing.png)",
+      "Bash(curl -s -I -k https://modernbusinessarchitect.com/thinking/your-business-idea-is-worth-nothing)",
+      "Bash(xxd -l 16 -p)",
+      "Bash(curl -s -k https://modernbusinessarchitect.com/)",
+      "Bash(curl -s -k https://modernbusinessarchitect.com/work)",
+      "Bash(curl -s -k https://modernbusinessarchitect.com/martin)",
+      "Bash(curl -s -k https://modernbusinessarchitect.com/cases)",
+      "Bash(curl -s -k https://modernbusinessarchitect.com/cases/kill-it)",
+      "Bash(curl -s -o /dev/null -w \"https://modernbusinessarchitect.com/answers: %{http_code}\\\\n\" https://modernbusinessarchitect.com/answers)",
+      "Bash(curl -s -o /dev/null -w \"https://modernbusinessarchitect.com/answers/what-does-a-business-architect-do: %{http_code}\\\\n\" https://modernbusinessarchitect.com/answers/what-does-a-business-architect-do)",
+      "Bash(curl -s -o /dev/null -w \"https://modernbusinessarchitect.com/answers/what-is-business-architecture: %{http_code}\\\\n\" https://modernbusinessarchitect.com/answers/what-is-business-architecture)",
+      "Bash(curl -s -o /dev/null -w \"https://modernbusinessarchitect.com/og/what-does-a-business-architect-do.png: %{http_code}\\\\n\" https://modernbusinessarchitect.com/og/what-does-a-business-architect-do.png)",
+      "Bash(curl -s -o /dev/null -w \"https://modernbusinessarchitect.com/: %{http_code}\\\\n\" https://modernbusinessarchitect.com/)",
+      "Bash(curl -s http://localhost:3000/answers/how-do-i-know-if-my-business-idea-is-actually-viable)",
+      "Bash(curl -s http://localhost:3000/answers)",
+      "Bash(curl -s http://localhost:3000/sitemap.xml)",
+      "Bash(python3 /tmp/create_og_answer3.py)",
+      "Bash(curl -s http://localhost:3000/thinking)",
+      "Bash(grep -v '^$')",
+      "Bash(curl -s https://modernbusinessarchitect.com/thinking)",
+      "Bash(curl -s https://modernbusinessarchitect.com/answers/how-do-i-know-if-my-business-idea-is-actually-viable)",
+      "Bash(curl -s https://modernbusinessarchitect.com/thinking/the-brutal-truth-about-startup-fundraising)",
+      "Bash(curl -s https://modernbusinessarchitect.com)",
+      "Bash(curl -s https://modernbusinessarchitect.com/answers)",
+      "Bash(curl -I https://modernbusinessarchitect.com/thinking)",
+      "Bash(curl -I https://modernbusinessarchitect.com/answers/how-do-i-know-if-my-business-idea-is-actually-viable)",
+      "Bash(curl -I https://modernbusinessarchitect.com/thinking/the-brutal-truth-about-startup-fundraising)"
+    ],
+    "additionalDirectories": [
+      "/tmp"
+    ]
+  }
+}

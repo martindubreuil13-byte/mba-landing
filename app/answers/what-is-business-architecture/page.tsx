@@ -619,6 +619,14 @@ export default function AnswerPage() {
                     Explore business architecture work →
                   </motion.span>
                 </Link>
+                <Link href="/work-with-me" className="block">
+                  <motion.span
+                    className="text-sm font-semibold tracking-widest uppercase text-[#1a1816]/60 border-b-2 border-[#1a1816]/30 pb-1 transition-all hover:text-[#1a1816] hover:border-[#1a1816]/60"
+                    whileHover={{ x: 2 }}
+                  >
+                    Explore ways to work together →
+                  </motion.span>
+                </Link>
                 <Link href="/martin" className="block">
                   <motion.span
                     className="text-sm font-semibold tracking-widest uppercase text-[#1a1816]/60 border-b-2 border-[#1a1816]/30 pb-1 transition-all hover:text-[#1a1816] hover:border-[#1a1816]/60"

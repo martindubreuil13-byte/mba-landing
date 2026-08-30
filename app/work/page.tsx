@@ -810,6 +810,27 @@ export default function WorkPage() {
               </Link>
             </motion.div>
 
+            {/* Narrative CTA to Work With Me */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true, margin: "-50px" }}
+              className="max-w-3xl mb-16 md:mb-20"
+            >
+              <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70 mb-12">
+                Ready to start?
+              </p>
+              <Link href="/work-with-me" className="inline-block">
+                <motion.span
+                  className="text-sm font-semibold tracking-widest uppercase text-[#6b1f1f] border-b-2 border-[#6b1f1f] pb-1 transition-all hover:border-[#6b1f1f]/60 cursor-pointer"
+                  whileHover={{ x: 2 }}
+                >
+                  Explore ways to work together →
+                </motion.span>
+              </Link>
+            </motion.div>
+
             {/* Narrative CTA to Martin */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -819,9 +840,7 @@ export default function WorkPage() {
               className="max-w-3xl"
             >
               <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70 mb-12">
-                So, who will you
-                <br />
-                be architecting with?
+                Want to know who you'd be working with?
               </p>
               <Link href="/martin" className="inline-block">
                 <motion.button
