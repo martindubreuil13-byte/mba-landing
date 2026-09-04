@@ -434,7 +434,7 @@ export default function AnswerPage() {
 
 <p style={{ marginBottom: "3.5rem" }}>The objective is to find the business.</p>
 
-<p style={{ marginBottom: "2.5rem" }}>Sometimes the real opportunity is sitting beside the idea you started with.</p>
+<p style={{ marginBottom: "2.5rem" }}>Sometimes <Link href="/answers/i-built-an-app-how-do-i-turn-it-into-a-business" className="text-[#6b1f1f] border-b border-[#6b1f1f] hover:text-[#6b1f1f]/80 hover:border-[#6b1f1f]/80 transition-colors">the real opportunity is sitting beside the idea you started with</Link>.</p>
 
 <h2 style={{ fontSize: "1.5rem", fontWeight: "300", marginTop: "3rem", marginBottom: "1.75rem", lineHeight: "1.4", color: "#1a1816" }}>When should you kill the idea?</h2>
 

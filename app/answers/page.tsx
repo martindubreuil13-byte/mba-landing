@@ -8,11 +8,32 @@ import Navigation from "@/app/components/Navigation";
 export default function AnswersPage() {
   const answers = [
     {
+      href: "/answers/i-built-an-app-how-do-i-turn-it-into-a-business",
+      number: "006",
+      title: "I Built an App. How Do I Turn It Into a Business?",
+      date: "September 4, 2026",
+      featured: true,
+    },
+    {
+      href: "/answers/how-do-i-get-investors-for-my-business-idea",
+      number: "005",
+      title: "How Do I Get Investors for My Business Idea?",
+      date: "September 4, 2026",
+      featured: false,
+    },
+    {
+      href: "/answers/i-have-a-business-idea-but-no-money-what-should-i-do",
+      number: "004",
+      title: "I Have a Business Idea but No Money. What Should I Do?",
+      date: "September 4, 2026",
+      featured: false,
+    },
+    {
       href: "/answers/how-do-i-know-if-my-business-idea-is-actually-viable",
       number: "003",
       title: "How Do I Know If My Business Idea Is Actually Viable?",
       date: "August 26, 2026",
-      featured: true,
+      featured: false,
     },
     {
       href: "/answers/what-does-a-business-architect-do",

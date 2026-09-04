@@ -18,7 +18,7 @@ export default function Footer() {
           {/* Desktop layout */}
           <div className="hidden md:flex flex-wrap items-center gap-3 text-xs text-[#1a1816]/60">
             <Link href="/answers" className="hover:text-[#1a1816] transition-colors">
-              Q&A
+              Answers
             </Link>
             <span>·</span>
             <Link href="/work-with-me" className="hover:text-[#1a1816] transition-colors">
@@ -54,44 +54,40 @@ export default function Footer() {
           </div>
 
           {/* Mobile layout */}
-          <div className="md:hidden space-y-4">
-            <div className="flex flex-wrap gap-3 text-xs text-[#1a1816]/60">
-              <Link href="/answers" className="hover:text-[#1a1816] transition-colors">
-                Q&A
+          <div className="md:hidden space-y-6">
+            <nav className="space-y-4 text-xs text-[#1a1816]/60">
+              <Link href="/answers" className="block hover:text-[#1a1816] transition-colors">
+                Answers
               </Link>
-              <span>·</span>
+              <Link href="/work-with-me" className="block hover:text-[#1a1816] transition-colors">
+                Ways to Work Together
+              </Link>
               <a
                 href="https://www.linkedin.com/in/martin-dubreuil-ba643724/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-[#1a1816] transition-colors"
+                className="block hover:text-[#1a1816] transition-colors"
               >
                 LinkedIn
               </a>
-              <span>·</span>
               <a
                 href="https://dubreuil.substack.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-[#1a1816] transition-colors"
+                className="block hover:text-[#1a1816] transition-colors"
               >
                 Substack
               </a>
-              <span>·</span>
-              <Link href="/martin" className="hover:text-[#1a1816] transition-colors">
+              <Link href="/martin" className="block hover:text-[#1a1816] transition-colors">
                 Martin
               </Link>
-              <span>·</span>
-              <Link href="/lets-talk" className="hover:text-[#1a1816] transition-colors">
+              <Link href="/lets-talk" className="block hover:text-[#1a1816] transition-colors">
                 Let&apos;s Talk
               </Link>
-            </div>
+            </nav>
 
-            <div className="flex items-center justify-between text-xs">
-              <Link href="/work-with-me" className="hover:text-[#1a1816] transition-colors text-[#1a1816]/60">
-                Ways to Work Together
-              </Link>
-              <span className="text-[#1a1816]/40">© 2026</span>
+            <div className="pt-6 border-t border-[#1a1816]/8">
+              <span className="text-xs text-[#1a1816]/40">© 2026</span>
             </div>
           </div>
         </div>
