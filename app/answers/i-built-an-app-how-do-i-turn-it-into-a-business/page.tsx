@@ -1046,6 +1046,10 @@ export default function AnswerPage() {
                 The market still gets a vote.
               </p>
 
+              <p style={{ marginBottom: "3.5rem" }}>
+                As <Link href="/thinking/the-being-economy" className="text-[#6b1f1f] border-b border-[#6b1f1f] hover:text-[#6b1f1f]/80 hover:border-[#6b1f1f]/80 transition-colors">execution becomes easier</Link>, what you choose to build — and why — becomes more important, not less.
+              </p>
+
               <h2 style={{ fontSize: "1.5rem", fontWeight: "300", marginTop: "3rem", marginBottom: "1.75rem", lineHeight: "1.4", color: "#1a1816" }}>This is where Business Architecture begins</h2>
 
               <p style={{ marginBottom: "1.75rem" }}>

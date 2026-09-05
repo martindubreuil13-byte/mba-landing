@@ -714,6 +714,22 @@ export default function ThinkingPage() {
                       </p>
                     </motion.div>
                   </Link>
+                  <Link href="/thinking/the-being-economy" className="group block">
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      transition={{ duration: 0.7, delay: 0.2 }}
+                      viewport={{ once: true }}
+                      className="space-y-2"
+                    >
+                      <h3 className="text-lg font-light text-[#1a1816] group-hover:text-[#6b1f1f] transition-colors">
+                        The Being Economy
+                      </h3>
+                      <p className="text-sm text-[#1a1816]/65 leading-relaxed">
+                        What becomes economically valuable as knowledge and execution grow more abundant.
+                      </p>
+                    </motion.div>
+                  </Link>
                 </div>
               </div>
 

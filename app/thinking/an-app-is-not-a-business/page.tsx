@@ -512,7 +512,7 @@ export default function ArticlePage() {
               </p>
 
               <p style={{ marginBottom: "2.5rem" }}>
-                When building becomes easier, building the wrong thing becomes easier too.
+                When <Link href="/thinking/the-being-economy" className="text-[#6b1f1f] border-b border-[#6b1f1f] hover:text-[#6b1f1f]/80 hover:border-[#6b1f1f]/80 transition-colors">building becomes easier</Link>, building the wrong thing becomes easier too.
               </p>
 
               <p style={{ marginBottom: "1.75rem" }}>
