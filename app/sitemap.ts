@@ -20,10 +20,15 @@ const publicRoutes = [
   "/thinking/the-fastest-way-to-build-the-wrong-business",
   "/thinking/your-life-is-perfectly-designed-to-kill-your-business-before-it-starts",
   "/thinking/the-brutal-truth-about-startup-fundraising",
+  "/thinking/the-being-economy",
+  "/thinking/the-business-architects-frame",
   "/answers",
   "/answers/what-is-business-architecture",
   "/answers/what-does-a-business-architect-do",
   "/answers/how-do-i-know-if-my-business-idea-is-actually-viable",
+  "/answers/i-have-a-business-idea-but-no-money-what-should-i-do",
+  "/answers/how-do-i-get-investors-for-my-business-idea",
+  "/answers/i-built-an-app-how-do-i-turn-it-into-a-business",
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

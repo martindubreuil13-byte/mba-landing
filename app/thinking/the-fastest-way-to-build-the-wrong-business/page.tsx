@@ -730,6 +730,23 @@ export default function ThinkingPage() {
                       </p>
                     </motion.div>
                   </Link>
+
+                  <Link href="/thinking/the-business-architects-frame" className="group block">
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      transition={{ duration: 0.7, delay: 0.3 }}
+                      viewport={{ once: true }}
+                      className="space-y-2"
+                    >
+                      <h3 className="text-lg font-light text-[#1a1816] group-hover:text-[#6b1f1f] transition-colors">
+                        The Business Architect's FRAME™
+                      </h3>
+                      <p className="text-sm text-[#1a1816]/65 leading-relaxed">
+                        The five-question methodology for turning an idea into a business that can exist, learn and evolve.
+                      </p>
+                    </motion.div>
+                  </Link>
                 </div>
               </div>
 

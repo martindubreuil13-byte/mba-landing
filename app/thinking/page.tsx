@@ -8,13 +8,22 @@ import Navigation from "@/app/components/Navigation";
 export default function ThinkingPage() {
   const articles = [
     {
+      href: "/thinking/the-business-architects-frame",
+      category: "Business Architecture",
+      number: "008",
+      title: "The Business Architect's FRAME™",
+      standfirst: "An idea is not a business. FRAME is the five-question discipline — Find, Reality-Test, Architect, Make, Evolve — that decides whether one deserves to become the other, and keeps deciding after it does.",
+      date: "September 19, 2026",
+      featured: true,
+    },
+    {
       href: "/thinking/the-being-economy",
       category: "Business Architecture",
       number: "007",
       title: "The Being Economy",
       standfirst: "As AI makes knowledge cheaper and execution more abundant, human judgment, trust, reputation, relationships and accountability may become more economically valuable.",
       date: "September 5, 2026",
-      featured: true,
+      featured: false,
     },
     {
       href: "/thinking/the-brutal-truth-about-startup-fundraising",
