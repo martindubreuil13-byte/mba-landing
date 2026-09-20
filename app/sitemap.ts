@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/app/lib/seo";
+import { listPublishedResources } from "@/app/lib/resources/queries";
 
 const publicRoutes = [
   "/",
@@ -13,6 +14,8 @@ const publicRoutes = [
   "/cases/evolve-it",
   "/cases/create-it",
   "/lets-talk",
+  "/resources",
+  "/privacy",
   "/thinking",
   "/thinking/your-business-idea-is-worth-nothing",
   "/thinking/an-app-is-not-a-business",
@@ -31,8 +34,24 @@ const publicRoutes = [
   "/answers/i-built-an-app-how-do-i-turn-it-into-a-business",
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  return publicRoutes.map((path) => ({
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const staticEntries = publicRoutes.map((path) => ({
     url: new URL(path, SITE_URL).toString(),
   }));
+
+  // Resources are DB-driven (unlike the hardcoded arrays above), so the
+  // sitemap picks up newly published ones automatically. Fails soft: if
+  // Supabase isn't configured (e.g. at build time in a fresh environment),
+  // the sitemap still generates with just the static routes.
+  try {
+    const resources = await listPublishedResources();
+    const resourceEntries = resources.map((r) => ({
+      url: new URL(`/resources/${r.slug}`, SITE_URL).toString(),
+      lastModified: r.updated_at,
+    }));
+    return [...staticEntries, ...resourceEntries];
+  } catch (error) {
+    console.error("Sitemap: failed to load resources, falling back to static routes.", error);
+    return staticEntries;
+  }
 }

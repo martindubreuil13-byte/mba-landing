@@ -21,6 +21,10 @@ export default function Footer() {
               Answers
             </Link>
             <span>·</span>
+            <Link href="/resources" className="hover:text-[#1a1816] transition-colors">
+              Free Resources
+            </Link>
+            <span>·</span>
             <Link href="/work-with-me" className="hover:text-[#1a1816] transition-colors">
               Ways to Work Together
             </Link>
@@ -58,6 +62,9 @@ export default function Footer() {
             <nav className="space-y-4 text-xs text-[#1a1816]/60">
               <Link href="/answers" className="block hover:text-[#1a1816] transition-colors">
                 Answers
+              </Link>
+              <Link href="/resources" className="block hover:text-[#1a1816] transition-colors">
+                Free Resources
               </Link>
               <Link href="/work-with-me" className="block hover:text-[#1a1816] transition-colors">
                 Ways to Work Together

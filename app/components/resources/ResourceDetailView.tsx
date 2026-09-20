@@ -1,0 +1,107 @@
+"use client";
+
+import { motion } from "framer-motion";
+import Navigation from "@/app/components/Navigation";
+import ResourceCover from "@/app/components/resources/ResourceCover";
+import ResourceRequestForm from "@/app/components/resources/ResourceRequestForm";
+
+type Props = {
+  slug: string;
+  title: string;
+  shortDescription: string;
+  longDescription: string | null;
+  resourceType: string;
+  audience: string | null;
+  coverUrl: string;
+};
+
+export default function ResourceDetailView({
+  slug,
+  title,
+  shortDescription,
+  longDescription,
+  resourceType,
+  audience,
+  coverUrl,
+}: Props) {
+  const paragraphs = (longDescription ?? "")
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  return (
+    <>
+      <Navigation />
+      <div className="h-16" />
+      <main data-progressive-reveal className="w-full bg-white text-[#1a1816]">
+        <article className="w-full px-6 md:px-12 lg:px-16 py-40 md:py-56">
+          <div className="max-w-5xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true, margin: "-50px" }}
+              className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-12 md:gap-16"
+            >
+              <div className="w-full max-w-[280px]">
+                <ResourceCover coverUrl={coverUrl} title={title} />
+              </div>
+
+              <div className="space-y-8">
+                <div>
+                  <div className="flex items-baseline gap-3 mb-6">
+                    <p className="text-xs tracking-widest uppercase text-[#6b1f1f] font-semibold">
+                      {resourceType}
+                    </p>
+                    {audience && (
+                      <p className="text-xs tracking-widest uppercase text-[#1a1816]/40">
+                        {audience}
+                      </p>
+                    )}
+                  </div>
+                  <h1 className="text-4xl md:text-5xl font-light leading-tight tracking-tight mb-6">
+                    {title}
+                  </h1>
+                  <p className="text-xl md:text-2xl font-light leading-relaxed text-[#1a1816]/80">
+                    {shortDescription}
+                  </p>
+                </div>
+
+                {paragraphs.length > 0 && (
+                  <div className="space-y-5 text-base md:text-lg leading-relaxed text-[#1a1816]/80 max-w-2xl">
+                    {paragraphs.map((p, i) => (
+                      <p key={i}>{p}</p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        </article>
+
+        {/* FORM */}
+        <section className="w-full px-6 md:px-12 lg:px-16 py-24 md:py-32 border-t border-[#1a1816]/8 bg-[#f5f1ed]">
+          <div className="max-w-xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true, margin: "-50px" }}
+              className="border border-[#1a1816]/10 bg-white p-8 md:p-12 space-y-8"
+            >
+              <div>
+                <p className="text-xs tracking-widest uppercase text-[#6b1f1f] font-semibold mb-3">
+                  Get the free guide
+                </p>
+                <h2 className="text-2xl md:text-3xl font-light text-[#1a1816]">{title}</h2>
+              </div>
+              <ResourceRequestForm resourceSlug={slug} resourceTitle={title} />
+            </motion.div>
+          </div>
+        </section>
+
+        <div className="h-24 md:h-32" />
+      </main>
+    </>
+  );
+}
