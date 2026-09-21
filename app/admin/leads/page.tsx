@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { requireAdmin } from "@/app/lib/supabase/admin-session";
 import { getResourceStats, listLeadsAdmin } from "@/app/lib/resources/queries";
+import { getAssessmentSummaryByLead } from "@/app/lib/assessment/queries";
 import AdminShell from "@/app/components/admin/AdminShell";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -17,7 +19,11 @@ function StatTile({ label, value }: { label: string; value: number }) {
 
 export default async function AdminLeadsPage() {
   await requireAdmin();
-  const [leads, stats] = await Promise.all([listLeadsAdmin(), getResourceStats()]);
+  const [leads, stats, assessmentSummary] = await Promise.all([
+    listLeadsAdmin(),
+    getResourceStats(),
+    getAssessmentSummaryByLead(),
+  ]);
 
   return (
     <AdminShell>
@@ -61,10 +67,13 @@ export default async function AdminLeadsPage() {
                 <th className="py-3 pr-4">First acquired</th>
                 <th className="py-3 pr-4">Last interaction</th>
                 <th className="py-3 pr-4">Resources</th>
+                <th className="py-3 pr-4">Reality Check</th>
               </tr>
             </thead>
             <tbody>
-              {leads.map((lead) => (
+              {leads.map((lead) => {
+                const summary = assessmentSummary.get(lead.id);
+                return (
                 <tr key={lead.id} className="border-b border-[#1a1816]/8">
                   <td className="py-3 pr-4">{lead.first_name}</td>
                   <td className="py-3 pr-4 text-[#1a1816]/70">{lead.email}</td>
@@ -85,8 +94,18 @@ export default async function AdminLeadsPage() {
                   <td className="py-3 pr-4 text-[#1a1816]/70">
                     {lead.resource_count} — {lead.resource_titles.join(", ")}
                   </td>
+                  <td className="py-3 pr-4 text-[#1a1816]/70">
+                    {summary ? (
+                      <Link href="/admin/assessments" className="text-[#6b1f1f] hover:underline">
+                        {summary.latestScore}/100 ({summary.count}×)
+                      </Link>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>

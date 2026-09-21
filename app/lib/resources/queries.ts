@@ -1,10 +1,7 @@
 import "server-only";
 import { getServiceClient } from "@/app/lib/supabase/service";
+import { upsertLeadPreservingOptIn } from "@/app/lib/leads/upsert";
 import type { Lead, LeadWithStats, Resource, ResourceRequest, ResourceType } from "./types";
-
-function normalizeEmail(email: string) {
-  return email.trim().toLowerCase();
-}
 
 // ============================================================
 // RESOURCES — public reads
@@ -136,55 +133,13 @@ export type CaptureLeadInput = {
 
 export async function captureLeadAndRequestResource(input: CaptureLeadInput) {
   const supabase = getServiceClient();
-  const email = normalizeEmail(input.email);
-  const now = new Date().toISOString();
 
-  const { data: existingLead, error: lookupError } = await supabase
-    .from("leads")
-    .select("*")
-    .eq("email", email)
-    .maybeSingle();
-
-  if (lookupError) throw new Error(`Failed to look up lead: ${lookupError.message}`);
-
-  let lead: Lead;
-
-  if (existingLead) {
-    // Returning visitor: update profile fields, but never flip a prior
-    // opt-in back to false just because this box was left unchecked.
-    const shouldPromoteOptIn = input.ongoing_content_opt_in && !existingLead.ongoing_content_opt_in;
-
-    const { data: updatedLead, error: updateError } = await supabase
-      .from("leads")
-      .update({
-        first_name: input.first_name,
-        country: input.country ?? existingLead.country,
-        ...(shouldPromoteOptIn
-          ? { ongoing_content_opt_in: true, ongoing_content_opt_in_at: now }
-          : {}),
-      })
-      .eq("id", existingLead.id)
-      .select()
-      .single();
-
-    if (updateError) throw new Error(`Failed to update lead: ${updateError.message}`);
-    lead = updatedLead;
-  } else {
-    const { data: newLead, error: insertError } = await supabase
-      .from("leads")
-      .insert({
-        first_name: input.first_name,
-        email,
-        country: input.country ?? null,
-        ongoing_content_opt_in: input.ongoing_content_opt_in,
-        ongoing_content_opt_in_at: input.ongoing_content_opt_in ? now : null,
-      })
-      .select()
-      .single();
-
-    if (insertError) throw new Error(`Failed to create lead: ${insertError.message}`);
-    lead = newLead;
-  }
+  const lead: Lead = await upsertLeadPreservingOptIn({
+    first_name: input.first_name,
+    email: input.email,
+    country: input.country,
+    ongoing_content_opt_in: input.ongoing_content_opt_in,
+  });
 
   const { data: request, error: requestError } = await supabase
     .from("resource_requests")

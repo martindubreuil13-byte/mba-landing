@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { PRINCIPAL_NAME, SITE_NAME, SITE_URL, serializeJsonLd } from "@/app/lib/seo";
 import Footer from "@/app/components/Footer";
+import AnalyticsPageview from "@/app/components/AnalyticsPageview";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -100,7 +101,7 @@ export default function RootLayout({
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-VWKDNXD9JD');
+            gtag('config', 'G-VWKDNXD9JD', { send_page_view: false });
           `}
         </Script>
       </head>
@@ -109,6 +110,11 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(siteStructuredData) }}
         />
+        {/* send_page_view is disabled above — this fires every page_view
+            (initial loads and client-side navigations alike) with any
+            UUID-shaped path segment redacted, so identifiers like an
+            assessment result ID never reach analytics. */}
+        <AnalyticsPageview />
         {children}
         <Footer />
         <noscript>

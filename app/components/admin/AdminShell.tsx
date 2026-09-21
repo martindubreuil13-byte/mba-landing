@@ -10,6 +10,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   const isResources = pathname.startsWith("/admin/resources");
   const isLeads = pathname.startsWith("/admin/leads");
+  const isAssessments = pathname.startsWith("/admin/assessments");
 
   const handleSignOut = async () => {
     const supabase = getBrowserClient();
@@ -39,6 +40,14 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               }`}
             >
               Leads
+            </Link>
+            <Link
+              href="/admin/assessments"
+              className={`text-sm tracking-wide ${
+                isAssessments ? "text-[#6b1f1f] font-semibold" : "text-[#1a1816]/60 hover:text-[#1a1816]"
+              }`}
+            >
+              Reality Check
             </Link>
           </nav>
         </div>

@@ -16,7 +16,7 @@ export default function PrivacyPage() {
               <h1 className="text-3xl md:text-4xl font-light leading-tight mb-4">
                 What this site collects, and why
               </h1>
-              <p className="text-[#1a1816]/60 text-sm">Last updated September 20, 2026.</p>
+              <p className="text-[#1a1816]/60 text-sm">Last updated September 21, 2026.</p>
             </div>
 
             <div className="space-y-6 text-base leading-relaxed text-[#1a1816]/85">
@@ -60,14 +60,36 @@ export default function PrivacyPage() {
                 and it will be actioned directly.
               </p>
 
+              <h2 className="text-xl font-light pt-4">The Business Idea Reality Check</h2>
+              <p>
+                This free interactive assessment asks 13 questions about a business idea and
+                calculates a score using a fixed, documented scoring method — not by AI judgment.
+                Your written answers are sent to a third-party AI provider (OpenAI) solely to (a)
+                classify your open-ended answers against that fixed scoring rubric, and (b) write
+                the plain-language explanation you see in your result. That provider does not use
+                this data to train its models. The result, your answers, and the underlying score
+                are stored against your contact details the same way a resource request is, so you
+                can return to a result and so the methodology can be reviewed and improved. You can
+                retake the assessment for the same idea later or for a different one — nothing is
+                deleted or overwritten.
+              </p>
+              <p>
+                Individual assessment responses are not published or shared as individual research
+                data. Anonymized, aggregated information across assessments may be used to improve
+                the methodology, study patterns in how business ideas develop, and create broader
+                research or educational material.
+              </p>
+
               <h2 className="text-xl font-light pt-4">How it's stored</h2>
               <p>
-                Resource requests and contact details are stored in a Postgres database (hosted
-                via Supabase) that only this site's server can access — the database is never
-                exposed publicly, and downloadable files are served through short-lived, controlled
-                links rather than a public file listing. Your information is not sold, and is not
-                shared with third parties except the service providers needed to run this site
-                (database hosting and transactional email delivery).
+                Resource requests, assessment responses and contact details are stored in a
+                Postgres database (hosted via Supabase) that only this site's server can access —
+                the database is never exposed publicly, and downloadable files are served through
+                short-lived, controlled links rather than a public file listing. Your information
+                is not sold, and is not shared with third parties except the service providers
+                needed to run this site (database hosting, transactional email delivery, and — for
+                the Business Idea Reality Check specifically — AI-assisted classification and
+                writing, as described above).
               </p>
 
               <h2 className="text-xl font-light pt-4">Getting in touch</h2>

@@ -2,6 +2,7 @@ import Navigation from "@/app/components/Navigation";
 import ResourcesIndexList, {
   type ResourceListItem,
 } from "@/app/components/resources/ResourcesIndexList";
+import FeaturedAssessmentCard from "@/app/components/resources/FeaturedAssessmentCard";
 import { listPublishedResources } from "@/app/lib/resources/queries";
 import { getResourceCoverUrl } from "@/app/lib/resources/storage";
 
@@ -45,6 +46,7 @@ export default async function ResourcesPage() {
         {/* RESOURCES */}
         <section className="w-full px-6 md:px-12 lg:px-16 py-32 md:py-44 border-t border-[#1a1816]/8">
           <div className="max-w-6xl">
+            <FeaturedAssessmentCard />
             <ResourcesIndexList resources={items} />
           </div>
         </section>
