@@ -123,9 +123,9 @@ export default function AnswerPage() {
               <h2 style={{ fontSize: "1.5rem", fontWeight: "300", marginTop: "3rem", marginBottom: "1.75rem", lineHeight: "1.4", color: "#1a1816" }}>10 signs you're ready</h2>
 
               {/* Numbered signs — scannable, single sentence each */}
-              <div className="not-prose my-4 border-t border-b border-[#1a1816]/10 divide-y divide-[#1a1816]/8">
+              <ol className="not-prose list-none m-0 p-0 my-4 border-t border-b border-[#1a1816]/10 divide-y divide-[#1a1816]/8">
                 {SIGNS.map((sign, index) => (
-                  <motion.div
+                  <motion.li
                     key={sign}
                     initial={{ opacity: 0, y: 8 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -136,15 +136,16 @@ export default function AnswerPage() {
                     <span
                       className="text-xl md:text-2xl font-light text-[#6b1f1f] shrink-0 w-8 md:w-10 tabular-nums"
                       style={{ fontFamily: "Georgia, serif" }}
+                      aria-hidden="true"
                     >
                       {String(index + 1).padStart(2, "0")}
                     </span>
                     <p className="text-lg md:text-xl font-light leading-snug text-[#1a1816]">
                       {sign}
                     </p>
-                  </motion.div>
+                  </motion.li>
                 ))}
-              </div>
+              </ol>
 
               <p style={{ marginTop: "3rem", marginBottom: "1.75rem" }}>
                 You don't need an MBA.
@@ -164,6 +165,14 @@ export default function AnswerPage() {
 
               <p style={{ marginBottom: "3.5rem" }}>
                 You need to be willing to find the answers that matter.
+              </p>
+
+              <p style={{ marginBottom: "3.5rem" }}>
+                If you want a more structured way to pressure-test where you actually stand, I built{" "}
+                <Link href="/resources/business-idea-reality-check" className="border-b-2 border-[#6b1f1f] hover:border-[#6b1f1f]/60 text-[#6b1f1f] transition-colors">
+                  the Business Idea Reality Check
+                </Link>{" "}
+                — thirteen questions, four to six minutes, no right answers.
               </p>
 
               <h2 style={{ fontSize: "1.5rem", fontWeight: "300", marginTop: "3rem", marginBottom: "1.75rem", lineHeight: "1.4", color: "#1a1816" }}>This is where Business Architecture comes in</h2>
@@ -198,6 +207,10 @@ export default function AnswerPage() {
                 <Link href="/thinking/the-business-architects-frame" className="border-b-2 border-[#6b1f1f] hover:border-[#6b1f1f]/60 text-[#6b1f1f] transition-colors">
                   The Business Architect's FRAME
                 </Link>.
+              </p>
+
+              <p style={{ marginBottom: "3.5rem" }}>
+                FRAME stands for Find, Reality-Test, Architect, Make, Evolve.
               </p>
 
               <p style={{ marginBottom: "1.25rem" }}>

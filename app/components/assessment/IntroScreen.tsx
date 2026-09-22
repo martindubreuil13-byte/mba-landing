@@ -2,6 +2,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 export default function IntroScreen({ onStart }: { onStart: () => void }) {
   return (
@@ -33,6 +34,14 @@ export default function IntroScreen({ onStart }: { onStart: () => void }) {
       >
         Start the Reality Check →
       </button>
+
+      <p className="text-sm leading-relaxed text-[#1a1816]/50 mt-6">
+        Not sure you're ready for 13 questions yet? Read{" "}
+        <Link href="/answers/the-10-signs-youre-serious-about-starting-a-business" className="underline hover:text-[#1a1816]/80">
+          the 10 signs you're serious about starting a business
+        </Link>{" "}
+        first.
+      </p>
 
       <p className="text-xs leading-relaxed text-[#1a1816]/45 mt-10 max-w-xl">
         Your individual responses are kept confidential and are not published as individual
