@@ -391,6 +391,13 @@ export default function AnswerPage() {
                 The objective is to understand enough of the business to make the next move intelligently.
               </p>
 
+              <p style={{ marginBottom: "3.5rem" }}>
+                Before any of that, it helps to know whether you're actually ready to do the work. I've written about{" "}
+                <Link href="/answers/the-10-signs-youre-serious-about-starting-a-business" className="border-b-2 border-[#6b1f1f] hover:border-[#6b1f1f]/60 text-[#6b1f1f] transition-colors">
+                  the 10 signs that separate a serious founder from someone who just likes the idea of starting a business
+                </Link>.
+              </p>
+
               <h2 style={{ fontSize: "1.5rem", fontWeight: "300", marginTop: "3rem", marginBottom: "1.75rem", lineHeight: "1.4", color: "#1a1816" }}>What is the difference between Business Architecture and a business plan?</h2>
 
               <p style={{ marginBottom: "2.5rem" }}>

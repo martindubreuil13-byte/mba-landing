@@ -290,7 +290,7 @@ export default function ArticlePage() {
 
 <h2 style={{ fontSize: "1.5rem", fontWeight: "300", marginTop: "3rem", marginBottom: "1.75rem", lineHeight: "1.4", color: "#1a1816" }}>Who this is for</h2>
 
-<p style={{ marginBottom: "2.5rem" }}>FRAME isn't only for the idea-stage founder staring at a blank page, although it works there too.</p>
+<p style={{ marginBottom: "2.5rem" }}>FRAME isn't only for the idea-stage founder staring at a blank page, although it works there too — if you're wondering whether you're actually ready to start, I've written about <Link href="/answers/the-10-signs-youre-serious-about-starting-a-business" className="text-[#6b1f1f] border-b border-[#6b1f1f] hover:text-[#6b1f1f]/80 hover:border-[#6b1f1f]/80 transition-colors">the signs that separate a serious founder from someone who just likes the idea of one</Link>.</p>
 
 <p style={{ marginBottom: "1.75rem" }}>It works for the aspiring entrepreneur asking whether there's actually a business inside an idea they can't stop thinking about.</p>
 

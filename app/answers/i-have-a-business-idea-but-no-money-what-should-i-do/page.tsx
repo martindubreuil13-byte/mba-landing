@@ -726,6 +726,22 @@ export default function AnswerPage() {
               <div className="pt-8 border-t border-[#1a1816]/8 space-y-8">
                 <p className="text-sm text-[#1a1816]/60 tracking-widest uppercase">Related</p>
                 <div className="space-y-6">
+                  <Link href="/answers/the-10-signs-youre-serious-about-starting-a-business" className="group block">
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      transition={{ duration: 0.7 }}
+                      viewport={{ once: true }}
+                      className="space-y-2"
+                    >
+                      <h3 className="text-lg font-light text-[#1a1816] group-hover:text-[#6b1f1f] transition-colors">
+                        The 10 Signs You're Serious About Starting a Business
+                      </h3>
+                      <p className="text-sm text-[#1a1816]/65 leading-relaxed">
+                        The mindset and behaviours that separate a serious founder from someone who just likes the idea of starting a business.
+                      </p>
+                    </motion.div>
+                  </Link>
                   <Link href="/answers/what-is-business-architecture" className="group block">
                     <motion.div
                       initial={{ opacity: 0 }}

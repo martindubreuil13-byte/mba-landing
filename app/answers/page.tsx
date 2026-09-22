@@ -8,11 +8,18 @@ import Navigation from "@/app/components/Navigation";
 export default function AnswersPage() {
   const answers = [
     {
+      href: "/answers/the-10-signs-youre-serious-about-starting-a-business",
+      number: "007",
+      title: "The 10 Signs You're Serious About Starting a Business",
+      date: "September 22, 2026",
+      featured: true,
+    },
+    {
       href: "/answers/i-built-an-app-how-do-i-turn-it-into-a-business",
       number: "006",
       title: "I Built an App. How Do I Turn It Into a Business?",
       date: "September 4, 2026",
-      featured: true,
+      featured: false,
     },
     {
       href: "/answers/how-do-i-get-investors-for-my-business-idea",
