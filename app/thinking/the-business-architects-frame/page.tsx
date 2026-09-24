@@ -168,7 +168,7 @@ export default function ArticlePage() {
 
 <p style={{ marginBottom: "2.5rem" }}>FIND starts wherever the entrepreneur actually is. Sometimes that's an observation — something is clearly broken, inconvenient, or badly served. Sometimes it's a skill looking for a problem to attach itself to. Sometimes it's a product that already exists, built by a founder who never quite got around to asking whether anyone needed it.</p>
 
-<p style={{ marginBottom: "2.5rem" }}>Wherever it starts, the job is the same. Separate the problem from the founder's preferred solution. Identify who might actually experience it. Look for real signals — urgency, existing behavior, money already being spent, workarounds already being cobbled together — rather than plausible-sounding stories.</p>
+<p style={{ marginBottom: "2.5rem" }}>Wherever it starts, the job is the same. Separate the problem from the founder's preferred solution. Identify who might actually experience it, which is a very different exercise from filling in a customer avatar; I've written separately about <Link href="/thinking/how-to-define-your-ideal-customer" className="text-[#6b1f1f] border-b border-[#6b1f1f] hover:text-[#6b1f1f]/80 hover:border-[#6b1f1f]/80 transition-colors">how to define your ideal customer</Link> properly. Look for real signals — urgency, existing behavior, money already being spent, workarounds already being cobbled together — rather than plausible-sounding stories.</p>
 
 <p style={{ marginBottom: "2.5rem" }}>FIND is discovery, not validation. Its job is to produce a focused opportunity: what might be worth solving, for whom, why it might matter, and which assumptions now need to survive contact with reality.</p>
 

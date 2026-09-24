@@ -8,11 +8,18 @@ import Navigation from "@/app/components/Navigation";
 export default function AnswersPage() {
   const answers = [
     {
+      href: "/answers/how-do-i-define-my-ideal-customer-profile",
+      number: "008",
+      title: "How Do I Define My Ideal Customer Profile?",
+      date: "September 24, 2026",
+      featured: true,
+    },
+    {
       href: "/answers/the-10-signs-youre-serious-about-starting-a-business",
       number: "007",
       title: "The 10 Signs You're Serious About Starting a Business",
       date: "September 22, 2026",
-      featured: true,
+      featured: false,
     },
     {
       href: "/answers/i-built-an-app-how-do-i-turn-it-into-a-business",

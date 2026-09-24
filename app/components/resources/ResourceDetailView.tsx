@@ -1,6 +1,8 @@
 "use client";
 
+import React from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import Navigation from "@/app/components/Navigation";
 import ResourceCover from "@/app/components/resources/ResourceCover";
 import ResourceRequestForm from "@/app/components/resources/ResourceRequestForm";
@@ -14,6 +16,33 @@ type Props = {
   audience: string | null;
   coverUrl: string;
 };
+
+// Descriptions are plain text. The one piece of markup supported is an
+// internal link, written [text](/path), so a resource can point to the
+// thinking behind it. Only site-relative paths become links.
+function renderParagraph(text: string) {
+  const parts: React.ReactNode[] = [];
+  const pattern = /\[([^\]]+)\]\((\/(?!\/)[^)\s]*)\)/g;
+  let last = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > last) parts.push(text.slice(last, match.index));
+    parts.push(
+      <Link
+        key={match.index}
+        href={match[2]}
+        className="text-[#6b1f1f] border-b border-[#6b1f1f] hover:text-[#6b1f1f]/80 hover:border-[#6b1f1f]/80 transition-colors"
+      >
+        {match[1]}
+      </Link>
+    );
+    last = match.index + match[0].length;
+  }
+
+  if (last < text.length) parts.push(text.slice(last));
+  return parts;
+}
 
 export default function ResourceDetailView({
   slug,
@@ -70,7 +99,7 @@ export default function ResourceDetailView({
                 {paragraphs.length > 0 && (
                   <div className="space-y-5 text-base md:text-lg leading-relaxed text-[#1a1816]/80 max-w-2xl">
                     {paragraphs.map((p, i) => (
-                      <p key={i}>{p}</p>
+                      <p key={i}>{renderParagraph(p)}</p>
                     ))}
                   </div>
                 )}
@@ -91,7 +120,7 @@ export default function ResourceDetailView({
             >
               <div>
                 <p className="text-xs tracking-widest uppercase text-[#6b1f1f] font-semibold mb-3">
-                  Get the free guide
+                  Get the free resource
                 </p>
                 <h2 className="text-2xl md:text-3xl font-light text-[#1a1816]">{title}</h2>
               </div>

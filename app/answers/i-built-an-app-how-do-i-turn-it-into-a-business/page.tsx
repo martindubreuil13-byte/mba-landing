@@ -541,8 +541,12 @@ export default function AnswerPage() {
                 Making something previously impossible possible might be.
               </p>
 
-              <p style={{ marginBottom: "3.5rem" }}>
+              <p style={{ marginBottom: "2.5rem" }}>
                 The stronger the reason to move, the easier the rest of the business becomes to architect.
+              </p>
+
+              <p style={{ marginBottom: "3.5rem" }}>
+                Finding that reason starts with knowing exactly who you're building for. I've written a practical guide on <Link href="/thinking/how-to-define-your-ideal-customer" className="text-[#6b1f1f] border-b border-[#6b1f1f] hover:text-[#6b1f1f]/80 hover:border-[#6b1f1f]/80 transition-colors">how to define your ideal customer</Link>, including what triggers them to move.
               </p>
 
               <h2 style={{ fontSize: "1.5rem", fontWeight: "300", marginTop: "3rem", marginBottom: "1.75rem", lineHeight: "1.4", color: "#1a1816" }}>Turn the app into an offer</h2>

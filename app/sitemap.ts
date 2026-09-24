@@ -25,6 +25,7 @@ const publicRoutes = [
   "/thinking/the-brutal-truth-about-startup-fundraising",
   "/thinking/the-being-economy",
   "/thinking/the-business-architects-frame",
+  "/thinking/how-to-define-your-ideal-customer",
   "/answers",
   "/answers/what-is-business-architecture",
   "/answers/what-does-a-business-architect-do",
@@ -33,6 +34,7 @@ const publicRoutes = [
   "/answers/how-do-i-get-investors-for-my-business-idea",
   "/answers/i-built-an-app-how-do-i-turn-it-into-a-business",
   "/answers/the-10-signs-youre-serious-about-starting-a-business",
+  "/answers/how-do-i-define-my-ideal-customer-profile",
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

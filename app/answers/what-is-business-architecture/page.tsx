@@ -209,8 +209,12 @@ export default function AnswerPage() {
                 Change the delivery model and operations may change.
               </p>
 
-              <p style={{ marginBottom: "1.75rem" }}>
+              <p style={{ marginBottom: "2.5rem" }}>
                 That is why I think of a business as architecture rather than a collection of tasks.
+              </p>
+
+              <p style={{ marginBottom: "1.75rem" }}>
+                It is also why so much of the architecture starts with the customer. I've written separately about <Link href="/thinking/how-to-define-your-ideal-customer" className="text-[#6b1f1f] border-b border-[#6b1f1f] hover:text-[#6b1f1f]/80 hover:border-[#6b1f1f]/80 transition-colors">how to define your ideal customer</Link> in a way that actually informs these decisions.
               </p>
 
               <h2 style={{ fontSize: "1.5rem", fontWeight: "300", marginTop: "3rem", marginBottom: "1.75rem", lineHeight: "1.4", color: "#1a1816" }}>Isn't Business Architecture already an established discipline?</h2>

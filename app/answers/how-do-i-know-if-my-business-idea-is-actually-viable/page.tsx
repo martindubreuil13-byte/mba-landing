@@ -182,6 +182,8 @@ export default function AnswerPage() {
 
 <p style={{ marginBottom: "3.5rem" }}>That's your business problem.</p>
 
+<p style={{ marginBottom: "3.5rem" }}>Understanding that customer properly takes more than a name and an age. I've written a practical guide on <Link href="/thinking/how-to-define-your-ideal-customer" className="text-[#6b1f1f] border-b border-[#6b1f1f] hover:text-[#6b1f1f]/80 hover:border-[#6b1f1f]/80 transition-colors">how to define your ideal customer</Link>, with a one-page map you can fill in.</p>
+
 <h2 style={{ fontSize: "1.5rem", fontWeight: "300", marginTop: "3rem", marginBottom: "1.75rem", lineHeight: "1.4", color: "#1a1816" }}>Will they actually pay?</h2>
 
 <p style={{ marginBottom: "2.5rem" }}>This is where a surprising amount of "validation" becomes theatre.</p>
@@ -600,6 +602,22 @@ export default function AnswerPage() {
               <div className="pt-8 border-t border-[#1a1816]/8 space-y-8">
                 <p className="text-sm text-[#1a1816]/60 tracking-widest uppercase">Related</p>
                 <div className="space-y-6">
+                  <Link href="/answers/how-do-i-define-my-ideal-customer-profile" className="group block">
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      transition={{ duration: 0.7 }}
+                      viewport={{ once: true }}
+                      className="space-y-2"
+                    >
+                      <h3 className="text-lg font-light text-[#1a1816] group-hover:text-[#6b1f1f] transition-colors">
+                        How Do I Define My Ideal Customer Profile?
+                      </h3>
+                      <p className="text-sm text-[#1a1816]/65 leading-relaxed">
+                        What a useful ideal customer profile includes, and why a name and an age aren't enough.
+                      </p>
+                    </motion.div>
+                  </Link>
                   <Link href="/answers/the-10-signs-youre-serious-about-starting-a-business" className="group block">
                     <motion.div
                       initial={{ opacity: 0 }}

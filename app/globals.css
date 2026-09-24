@@ -220,3 +220,32 @@ img {
     gap: 1.5rem;
   }
 }
+/* PRINT — CUSTOMER ARCHITECTURE MAP
+   "Print the map" renders a print-only copy of the map into
+   #customer-map-print-root and sets data-print-target on <html>.
+   Everything else is removed from the printed page. */
+
+#customer-map-print-root {
+  display: none;
+}
+
+@media print {
+  html[data-print-target="customer-map"],
+  html[data-print-target="customer-map"] body {
+    background: #ffffff !important;
+  }
+
+  html[data-print-target="customer-map"] body > *:not(#customer-map-print-root) {
+    display: none !important;
+  }
+
+  html[data-print-target="customer-map"] #customer-map-print-root {
+    display: block;
+    font-family: var(--font-sans);
+    color: #1a1816;
+  }
+}
+
+@page {
+  margin: 12mm;
+}

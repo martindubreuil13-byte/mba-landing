@@ -8,13 +8,22 @@ import Navigation from "@/app/components/Navigation";
 export default function ThinkingPage() {
   const articles = [
     {
+      href: "/thinking/how-to-define-your-ideal-customer",
+      category: "Business Architecture",
+      number: "009",
+      title: "How to Define Your Ideal Customer",
+      standfirst: "And no, giving them a name and an age isn't enough. Understand the human situation, the commercial reality and the journey first, then give your customer a name and a face. Includes a one-page Customer Architecture Map.",
+      date: "September 24, 2026",
+      featured: true,
+    },
+    {
       href: "/thinking/the-business-architects-frame",
       category: "Business Architecture",
       number: "008",
       title: "The Business Architect's FRAME™",
       standfirst: "An idea is not a business. FRAME is the five-question discipline — Find, Reality-Test, Architect, Make, Evolve — that decides whether one deserves to become the other, and keeps deciding after it does.",
       date: "September 19, 2026",
-      featured: true,
+      featured: false,
     },
     {
       href: "/thinking/the-being-economy",
