@@ -13,6 +13,12 @@ const excludedPaths = new Set([
 ]);
 
 function normalizeUrl(input) {
+  // Fail closed on anything that looks like several URLs run together (for
+  // example an unsplit shell variable) rather than submitting it verbatim.
+  if (/\s/.test(input)) {
+    throw new Error(`Argument contains whitespace; pass each URL separately: ${JSON.stringify(input)}`);
+  }
+
   let url;
 
   if (input.startsWith("/")) {
@@ -33,6 +39,10 @@ function normalizeUrl(input) {
     throw new Error(`URL must be a canonical production URL without credentials, ports, queries, or fragments: ${input}`);
   }
 
+  if (/%20|%09|%0a|%0d/i.test(url.pathname) || /\s/.test(decodeURIComponent(url.pathname))) {
+    throw new Error(`URL path contains an encoded space or whitespace: ${input}`);
+  }
+
   const path = url.pathname !== "/" ? url.pathname.replace(/\/+$/, "") : "/";
 
   if (
@@ -42,13 +52,6 @@ function normalizeUrl(input) {
     /^\/google[^/]*\.html$/i.test(path)
   ) {
     throw new Error(`Route is not eligible for IndexNow: ${path}`);
-  }
-
-  // When substantive THINKING content launches, /thinking and published canonical
-  // /thinking/... URLs become eligible only after they are index, follow and included
-  // appropriately in the public content architecture and sitemap.
-  if (path === "/thinking" || path.startsWith("/thinking/")) {
-    throw new Error(`THINKING is not yet eligible for IndexNow: ${path}`);
   }
 
   return new URL(path, ORIGIN).toString();
