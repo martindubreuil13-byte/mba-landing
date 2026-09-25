@@ -184,6 +184,10 @@ export default function AnswerPage() {
 
 <p style={{ marginBottom: "3.5rem" }}>A problem people complain about is interesting. A problem people do something about is an opportunity.</p>
 
+<p style={{ marginBottom: "1.75rem" }}>Want to actually do this? I turned this process into a free field guide and workbook: <em>You Want to Start a Business. Now Find One.</em> It takes you from defining the kind of life you want your business to create, through collecting your 10 observations and narrowing them to three, to choosing one idea worth investigating.</p>
+
+<p style={{ marginBottom: "3.5rem" }}><Link href="/resources/you-want-to-start-a-business-now-find-one" className={LINK_CLASS}>Get the free guide →</Link></p>
+
 <h2 style={H2_STYLE}>How do I know which ideas are worth investigating?</h2>
 
 <p style={{ marginBottom: "2.5rem" }}>At the end of the week, start eliminating.</p>
