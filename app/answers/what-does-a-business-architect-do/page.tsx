@@ -231,6 +231,14 @@ export default function AnswerPage() {
                 Architect the entrepreneur before the enterprise.
               </p>
 
+              <p style={{ marginBottom: "3.5rem" }}>
+                And if the entrepreneur arrives with ambition but no idea yet, that isn't a problem. It's just a different starting point. I've written about{" "}
+                <Link href="/answers/how-do-i-find-a-business-idea" className="border-b-2 border-[#6b1f1f] hover:border-[#6b1f1f]/60 text-[#6b1f1f] transition-colors">
+                  how to find a business idea
+                </Link>{" "}
+                worth investigating.
+              </p>
+
               <h2 style={{ fontSize: "1.5rem", fontWeight: "300", marginTop: "3rem", marginBottom: "1.75rem", lineHeight: "1.4", color: "#1a1816" }}>2. Architect the idea</h2>
 
               <p style={{ marginBottom: "2.5rem" }}>

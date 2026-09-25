@@ -35,6 +35,7 @@ const publicRoutes = [
   "/answers/i-built-an-app-how-do-i-turn-it-into-a-business",
   "/answers/the-10-signs-youre-serious-about-starting-a-business",
   "/answers/how-do-i-define-my-ideal-customer-profile",
+  "/answers/how-do-i-find-a-business-idea",
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

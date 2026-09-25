@@ -263,6 +263,14 @@ export default function AnswerPage() {
                 And then: How should that business work?
               </p>
 
+              <p style={{ marginBottom: "3.5rem" }}>
+                Sometimes it begins even before there's an idea at all. If that's where you are, I've written about{" "}
+                <Link href="/answers/how-do-i-find-a-business-idea" className="border-b-2 border-[#6b1f1f] hover:border-[#6b1f1f]/60 text-[#6b1f1f] transition-colors">
+                  how to find a business idea
+                </Link>{" "}
+                by observing what's actually happening around you.
+              </p>
+
               <h2 style={{ fontSize: "1.5rem", fontWeight: "300", marginTop: "3rem", marginBottom: "1.75rem", lineHeight: "1.4", color: "#1a1816" }}>Business Architecture for entrepreneurs</h2>
 
               <p style={{ marginBottom: "2.5rem" }}>

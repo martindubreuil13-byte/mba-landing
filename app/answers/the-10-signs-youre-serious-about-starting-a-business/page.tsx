@@ -218,7 +218,10 @@ export default function AnswerPage() {
               </p>
 
               <p style={{ marginBottom: "2.5rem" }}>
-                Find what we're really dealing with. That may mean finding the right business idea, defining an existing idea properly, identifying the real problem and customer, or discovering the business opportunity hidden inside something that's already been built.
+                Find what we're really dealing with. That may mean{" "}
+                <Link href="/answers/how-do-i-find-a-business-idea" className="border-b-2 border-[#6b1f1f] hover:border-[#6b1f1f]/60 text-[#6b1f1f] transition-colors">
+                  finding the right business idea
+                </Link>, defining an existing idea properly, identifying the real problem and customer, or discovering the business opportunity hidden inside something that's already been built.
               </p>
 
               <p style={{ marginBottom: "1.25rem" }}>
