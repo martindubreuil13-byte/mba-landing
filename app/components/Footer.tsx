@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import PickMyBrain from "@/app/components/PickMyBrain";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -12,6 +13,8 @@ export default function Footer() {
   }
 
   return (
+    <>
+    <PickMyBrain />
     <footer className="w-full bg-[#f5f1ed] text-[#1a1816]">
       <div className="px-6 md:px-12 lg:px-16 py-6 md:py-5">
         <div className="max-w-6xl mx-auto">
@@ -100,5 +103,6 @@ export default function Footer() {
         </div>
       </div>
     </footer>
+    </>
   );
 }

@@ -11,6 +11,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const isResources = pathname.startsWith("/admin/resources");
   const isLeads = pathname.startsWith("/admin/leads");
   const isAssessments = pathname.startsWith("/admin/assessments");
+  const isPickMyBrain = pathname.startsWith("/admin/pick-my-brain");
 
   const handleSignOut = async () => {
     const supabase = getBrowserClient();
@@ -48,6 +49,14 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               }`}
             >
               Reality Check
+            </Link>
+            <Link
+              href="/admin/pick-my-brain"
+              className={`text-sm tracking-wide ${
+                isPickMyBrain ? "text-[#6b1f1f] font-semibold" : "text-[#1a1816]/60 hover:text-[#1a1816]"
+              }`}
+            >
+              Pick My Brain
             </Link>
           </nav>
         </div>

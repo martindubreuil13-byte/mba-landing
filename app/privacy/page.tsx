@@ -80,9 +80,22 @@ export default function PrivacyPage() {
                 research or educational material.
               </p>
 
+              <h2 className="text-xl font-light pt-4">Pick My Brain</h2>
+              <p>
+                When you search the site with Pick My Brain, the site records what you typed, which
+                pages it suggested, which one you opened (if any) and the page you searched from.
+                It does not record your name, email or IP address with a search. Searches are
+                used to understand what visitors are looking for and what's worth writing next.
+              </p>
+              <p>
+                If you choose to send a question through Ask Martin, the site stores the question
+                with the name and email you provide, and emails it to Martin. Those details are
+                used only in connection with that question — they are not added to the shortlist.
+              </p>
+
               <h2 className="text-xl font-light pt-4">How it's stored</h2>
               <p>
-                Resource requests, assessment responses and contact details are stored in a
+                Resource requests, assessment responses, searches, questions and contact details are stored in a
                 Postgres database (hosted via Supabase) that only this site's server can access —
                 the database is never exposed publicly, and downloadable files are served through
                 short-lived, controlled links rather than a public file listing. Your information
