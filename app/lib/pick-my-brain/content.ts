@@ -37,6 +37,22 @@ export type DiscoveryRecord = {
 export const STATIC_DISCOVERY_RECORDS: DiscoveryRecord[] = [
   // ANSWERS
   {
+    href: "/answers/how-do-you-build-a-product-if-you-cannot-get-funding",
+    type: "Answer",
+    title: "How Do You Build a Product If You Cannot Get Funding?",
+    description: "Validate the problem, build the smallest proof of concept, and explore funding routes beyond investors.",
+    intents: [
+      "How do I build a product without funding?",
+      "I can't get funding for my startup. What should I do?",
+      "What are the alternatives to startup funding?",
+      "How do I build an MVP with no money?",
+      "How do I create a proof of concept for investors?",
+      "How do I get business funding?",
+      "Why won't investors fund my idea?",
+    ],
+    topics: ["funding", "no funding", "startup funding alternatives", "MVP", "minimum viable product", "proof of concept", "prototype", "pre-orders", "investors", "bootstrapping", "validation"],
+  },
+  {
     href: "/answers/how-do-i-find-a-business-idea",
     type: "Answer",
     title: "How Do I Find a Business Idea?",

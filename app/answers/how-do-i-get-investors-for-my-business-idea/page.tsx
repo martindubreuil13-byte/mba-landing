@@ -1058,6 +1058,22 @@ export default function AnswerPage() {
               <div className="pt-8 border-t border-[#1a1816]/8 space-y-8">
                 <p className="text-sm text-[#1a1816]/60 tracking-widest uppercase">Related</p>
                 <div className="space-y-6">
+                  <Link href="/answers/how-do-you-build-a-product-if-you-cannot-get-funding" className="group block">
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      transition={{ duration: 0.7 }}
+                      viewport={{ once: true }}
+                      className="space-y-2"
+                    >
+                      <h3 className="text-lg font-light text-[#1a1816] group-hover:text-[#6b1f1f] transition-colors">
+                        How Do You Build a Product If You Cannot Get Funding?
+                      </h3>
+                      <p className="text-sm text-[#1a1816]/65 leading-relaxed">
+                        Validate the problem, build the smallest proof of concept, and explore funding routes beyond investors.
+                      </p>
+                    </motion.div>
+                  </Link>
                   <Link href="/answers/i-have-a-business-idea-but-no-money-what-should-i-do" className="group block">
                     <motion.div
                       initial={{ opacity: 0 }}
