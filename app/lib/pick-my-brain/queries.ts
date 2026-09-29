@@ -1,6 +1,9 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { getServiceClient } from "@/app/lib/supabase/service";
+import type { PmbQuestionStatus } from "./constants";
+
+export { PMB_STATUSES, PMB_STATUS_LABELS, type PmbQuestionStatus } from "./constants";
 
 export type LoggedResult = { href: string; type: string; title: string; score: number };
 
@@ -27,7 +30,20 @@ export type QuestionRow = {
   search_id: string | null;
   page_path: string | null;
   email_sent: boolean;
+  status: PmbQuestionStatus;
 };
+
+/** Enriched for the admin view only — derived from data already loaded, never stored. */
+export type QuestionRowAdmin = QuestionRow & {
+  leadId: string | null;
+  similarRequestCount: number;
+};
+
+export async function updateQuestionStatus(id: string, status: PmbQuestionStatus) {
+  const supabase = getServiceClient();
+  const { error } = await supabase.from("pmb_questions").update({ status }).eq("id", id);
+  if (error) throw new Error(`Failed to update question status: ${error.message}`);
+}
 
 /**
  * Rate-limit key for a visitor. The IP is hashed so no raw address is ever
@@ -138,7 +154,7 @@ export type PickMyBrainReport = {
   totals: { searches: number; matched: number; unmatched: number; clicked: number; questions: number };
   unanswered: QueryGroup[];
   asking: ContentDemand[];
-  questions: QuestionRow[];
+  questions: QuestionRowAdmin[];
   recent: SearchRow[];
 };
 
@@ -164,9 +180,10 @@ export async function getPickMyBrainReport(): Promise<PickMyBrainReport> {
   const supabase = getServiceClient();
   const since = new Date(Date.now() - REPORT_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
-  const [{ data: searchData, error: searchError }, { data: questionData, error: questionError }] = await Promise.all([
+  const [{ data: searchData, error: searchError }, { data: questionData, error: questionError }, { data: leadsData }] = await Promise.all([
     supabase.from("pmb_searches").select("*").gte("created_at", since).order("created_at", { ascending: false }).limit(5000),
     supabase.from("pmb_questions").select("*").order("created_at", { ascending: false }).limit(500),
+    supabase.from("leads").select("id, email"),
   ]);
   if (searchError) throw new Error(`Failed to load searches: ${searchError.message}`);
   if (questionError) throw new Error(`Failed to load questions: ${questionError.message}`);
@@ -174,6 +191,31 @@ export async function getPickMyBrainReport(): Promise<PickMyBrainReport> {
   const searches = (searchData ?? []) as SearchRow[];
   const questions = (questionData ?? []) as QuestionRow[];
   const matched = searches.filter((s) => s.matched);
+
+  // Associated lead (by email — pmb_questions has no lead_id FK) and
+  // "similar requests" (other searches sharing the same normalized query as
+  // the search that led to this question, if any) are both derived here
+  // rather than stored, since both are fully reconstructable from existing
+  // data.
+  const leadIdByEmail = new Map<string, string>();
+  for (const l of (leadsData ?? []) as { id: string; email: string }[]) {
+    leadIdByEmail.set(l.email.trim().toLowerCase(), l.id);
+  }
+  const searchById = new Map(searches.map((s) => [s.id, s]));
+  const countByNormalizedQuery = new Map<string, number>();
+  for (const s of searches) {
+    const key = s.normalized_query || s.query.toLowerCase();
+    countByNormalizedQuery.set(key, (countByNormalizedQuery.get(key) ?? 0) + 1);
+  }
+  const questionsAdmin: QuestionRowAdmin[] = questions.map((q) => {
+    const linkedSearch = q.search_id ? searchById.get(q.search_id) : undefined;
+    const key = linkedSearch ? linkedSearch.normalized_query || linkedSearch.query.toLowerCase() : null;
+    return {
+      ...q,
+      leadId: leadIdByEmail.get(q.email.trim().toLowerCase()) ?? null,
+      similarRequestCount: key ? Math.max(0, (countByNormalizedQuery.get(key) ?? 1) - 1) : 0,
+    };
+  });
 
   // What people are asking, grouped by the content that answered them:
   // differently worded searches for the same thing land on the same page.
@@ -201,7 +243,7 @@ export async function getPickMyBrainReport(): Promise<PickMyBrainReport> {
     },
     unanswered: groupQueries(searches.filter((s) => !s.matched)),
     asking: [...demand.values()].sort((a, b) => b.searches - a.searches),
-    questions,
+    questions: questionsAdmin,
     recent: searches.slice(0, 50),
   };
 }

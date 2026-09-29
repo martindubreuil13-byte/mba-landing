@@ -10,7 +10,6 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   const isResources = pathname.startsWith("/admin/resources");
   const isLeads = pathname.startsWith("/admin/leads");
-  const isAssessments = pathname.startsWith("/admin/assessments");
   const isPickMyBrain = pathname.startsWith("/admin/pick-my-brain");
 
   const handleSignOut = async () => {
@@ -22,10 +21,10 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   return (
     <div className="min-h-screen bg-[#f5f1ed] text-[#1a1816]">
-      <header className="border-b border-[#1a1816]/10 px-6 md:px-12 py-6 flex items-center justify-between">
-        <div className="flex items-center gap-8">
+      <header className="border-b border-[#1a1816]/10 px-6 md:px-12 py-6 flex flex-col md:flex-row md:items-center justify-between gap-5">
+        <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8 min-w-0">
           <p className="text-sm font-semibold tracking-widest uppercase text-[#1a1816]">Admin</p>
-          <nav className="flex items-center gap-6">
+          <nav className="flex flex-wrap items-center gap-x-5 gap-y-3">
             <Link
               href="/admin/resources"
               className={`text-sm tracking-wide ${
@@ -41,14 +40,6 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               }`}
             >
               Leads
-            </Link>
-            <Link
-              href="/admin/assessments"
-              className={`text-sm tracking-wide ${
-                isAssessments ? "text-[#6b1f1f] font-semibold" : "text-[#1a1816]/60 hover:text-[#1a1816]"
-              }`}
-            >
-              Reality Check
             </Link>
             <Link
               href="/admin/pick-my-brain"

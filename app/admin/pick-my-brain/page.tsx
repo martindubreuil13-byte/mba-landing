@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { requireAdmin } from "@/app/lib/supabase/admin-session";
 import { getPickMyBrainReport } from "@/app/lib/pick-my-brain/queries";
 import AdminShell from "@/app/components/admin/AdminShell";
+import PmbStatusSelect from "@/app/components/admin/PmbStatusSelect";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -84,24 +86,38 @@ export default async function AdminPickMyBrainPage() {
               <thead>
                 <tr className="text-left border-b border-[#1a1816]/15 text-[#1a1816]/50 uppercase text-xs tracking-widest">
                   <th className="py-3 pr-4">Question</th>
-                  <th className="py-3 pr-4">Name</th>
-                  <th className="py-3 pr-4">Email</th>
-                  <th className="py-3 pr-4">Asked on</th>
+                  <th className="py-3 pr-4">Associated person</th>
                   <th className="py-3 pr-4">Date</th>
+                  <th className="py-3 pr-4">Similar requests</th>
+                  <th className="py-3 pr-4">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {report.questions.map((q) => (
                   <tr key={q.id} className="border-b border-[#1a1816]/8 align-top">
-                    <td className="py-3 pr-4 max-w-md whitespace-pre-wrap">{q.question}</td>
-                    <td className="py-3 pr-4">{q.name}</td>
-                    <td className="py-3 pr-4 text-[#1a1816]/70">
-                      <a href={`mailto:${q.email}`} className="hover:text-[#6b1f1f]">
-                        {q.email}
-                      </a>
+                    <td className="py-3 pr-4 max-w-md whitespace-pre-wrap">
+                      {q.question}
+                      {q.page_path && <span className="block text-xs text-[#1a1816]/40 mt-1">Asked on {q.page_path}</span>}
                     </td>
-                    <td className="py-3 pr-4 text-[#1a1816]/60">{q.page_path ?? "—"}</td>
+                    <td className="py-3 pr-4 text-[#1a1816]/70">
+                      {q.leadId ? (
+                        <Link href={`/admin/leads/${q.leadId}`} className="text-[#6b1f1f] hover:underline">
+                          {q.name}
+                        </Link>
+                      ) : (
+                        q.name
+                      )}
+                      <span className="block text-xs text-[#1a1816]/40">
+                        <a href={`mailto:${q.email}`} className="hover:text-[#6b1f1f]">
+                          {q.email}
+                        </a>
+                      </span>
+                    </td>
                     <td className="py-3 pr-4 text-[#1a1816]/60 whitespace-nowrap">{formatDate(q.created_at)}</td>
+                    <td className="py-3 pr-4">{q.similarRequestCount > 0 ? `+${q.similarRequestCount}` : "—"}</td>
+                    <td className="py-3 pr-4">
+                      <PmbStatusSelect id={q.id} status={q.status} />
+                    </td>
                   </tr>
                 ))}
               </tbody>

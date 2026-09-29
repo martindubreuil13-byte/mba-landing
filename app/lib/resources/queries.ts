@@ -13,6 +13,7 @@ export async function listPublishedResources(): Promise<Resource[]> {
     .from("resources")
     .select("*")
     .eq("published", true)
+    .eq("archived", false)
     .order("featured", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -27,6 +28,7 @@ export async function getPublishedResourceBySlug(slug: string): Promise<Resource
     .select("*")
     .eq("slug", slug)
     .eq("published", true)
+    .eq("archived", false)
     .maybeSingle();
 
   if (error) throw new Error(`Failed to load resource: ${error.message}`);
@@ -37,7 +39,7 @@ export async function getPublishedResourceBySlug(slug: string): Promise<Resource
 // RESOURCES — admin
 // ============================================================
 
-export type ResourceWithRequestCount = Resource & { request_count: number };
+export type ResourceWithRequestCount = Resource & { request_count: number; unique_leads_count: number };
 
 export async function listAllResourcesAdmin(): Promise<ResourceWithRequestCount[]> {
   const supabase = getServiceClient();
@@ -49,14 +51,22 @@ export async function listAllResourcesAdmin(): Promise<ResourceWithRequestCount[
   if (error) throw new Error(`Failed to load resources: ${error.message}`);
   if (!resources || resources.length === 0) return [];
 
-  const { data: requests } = await supabase.from("resource_requests").select("resource_id");
+  const { data: requests } = await supabase.from("resource_requests").select("resource_id, lead_id");
 
   const counts = new Map<string, number>();
+  const uniqueLeadsByResource = new Map<string, Set<string>>();
   for (const r of requests ?? []) {
     counts.set(r.resource_id, (counts.get(r.resource_id) ?? 0) + 1);
+    const set = uniqueLeadsByResource.get(r.resource_id) ?? new Set<string>();
+    set.add(r.lead_id);
+    uniqueLeadsByResource.set(r.resource_id, set);
   }
 
-  return resources.map((r) => ({ ...r, request_count: counts.get(r.id) ?? 0 }));
+  return resources.map((r) => ({
+    ...r,
+    request_count: counts.get(r.id) ?? 0,
+    unique_leads_count: uniqueLeadsByResource.get(r.id)?.size ?? 0,
+  }));
 }
 
 export async function getResourceById(id: string): Promise<Resource | null> {

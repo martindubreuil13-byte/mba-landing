@@ -32,8 +32,22 @@ export type Resource = {
   cover_image_path: string | null;
   published: boolean;
   featured: boolean;
+  archived: boolean;
   created_at: string;
   updated_at: string;
+};
+
+export type ResourceStatus = "draft" | "published" | "archived";
+
+export function resourceStatus(resource: Pick<Resource, "published" | "archived">): ResourceStatus {
+  if (resource.archived) return "archived";
+  return resource.published ? "published" : "draft";
+}
+
+export const RESOURCE_STATUS_LABELS: Record<ResourceStatus, string> = {
+  draft: "Draft",
+  published: "Published",
+  archived: "Archived",
 };
 
 export type Lead = {

@@ -1,24 +1,22 @@
 import { NextResponse } from "next/server";
 import { getAdminUser } from "@/app/lib/supabase/admin-session";
-import { listLeadsAdmin } from "@/app/lib/resources/queries";
+import {
+  DEFAULT_LEAD_FILTERS,
+  filterUnifiedLeads,
+  leadsToCsv,
+  listUnifiedLeadsAdmin,
+  type LeadFilters,
+} from "@/app/lib/leads/admin-queries";
 
-const CSV_COLUMNS = [
-  "first_name",
-  "email",
-  "country",
-  "ongoing_content_opt_in",
-  "ongoing_content_opt_in_at",
-  "created_at",
-  "last_interaction_at",
-  "resources_requested",
-  "original_source",
-] as const;
+const FILTER_KEYS = Object.keys(DEFAULT_LEAD_FILTERS) as (keyof LeadFilters)[];
 
-function csvCell(value: string) {
-  if (/[",\n]/.test(value)) {
-    return `"${value.replace(/"/g, '""')}"`;
+function parseFilters(searchParams: URLSearchParams): LeadFilters {
+  const filters = { ...DEFAULT_LEAD_FILTERS };
+  for (const key of FILTER_KEYS) {
+    const value = searchParams.get(key);
+    if (value !== null) filters[key] = value;
   }
-  return value;
+  return filters;
 }
 
 export async function GET(req: Request) {
@@ -26,32 +24,26 @@ export async function GET(req: Request) {
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
-  const subscribersOnly = searchParams.get("subscribersOnly") === "true";
+  const kind = searchParams.get("kind") || (searchParams.get("subscribersOnly") === "true" ? "subscribers" : "all");
 
-  const leads = await listLeadsAdmin();
-  const rows = subscribersOnly ? leads.filter((l) => l.ongoing_content_opt_in) : leads;
+  const leads = await listUnifiedLeadsAdmin();
 
-  const lines = [CSV_COLUMNS.join(",")];
-  for (const lead of rows) {
-    lines.push(
-      [
-        lead.first_name,
-        lead.email,
-        lead.country ?? "",
-        lead.ongoing_content_opt_in ? "true" : "false",
-        lead.ongoing_content_opt_in_at ?? "",
-        lead.created_at,
-        lead.last_interaction_at,
-        lead.resource_titles.join("; "),
-        lead.original_source ?? "",
-      ]
-        .map((v) => csvCell(String(v)))
-        .join(",")
-    );
+  let rows = leads;
+  let filename = "all-leads.csv";
+
+  if (kind === "shortlisted") {
+    rows = leads.filter((l) => l.shortlisted);
+    filename = "shortlisted-leads.csv";
+  } else if (kind === "subscribers") {
+    rows = leads.filter((l) => l.subscription_status === "subscribed");
+    filename = "subscribers.csv";
+  } else if (kind === "filtered") {
+    const filters = parseFilters(searchParams);
+    rows = filterUnifiedLeads(leads, filters);
+    filename = "filtered-leads.csv";
   }
 
-  const csv = lines.join("\n");
-  const filename = subscribersOnly ? "shortlist-subscribers.csv" : "all-leads.csv";
+  const csv = `﻿${leadsToCsv(rows)}`;
 
   return new NextResponse(csv, {
     headers: {

@@ -24,18 +24,32 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   const contentType = req.headers.get("content-type") ?? "";
 
-  // Lightweight JSON PATCH: used for the publish/unpublish toggle.
+  // Lightweight JSON PATCH: used for the publish/unpublish/archive toggles.
+  // Archiving/restoring is always allowed even on an archived resource —
+  // it's the one action that changes archived state. Any other JSON PATCH
+  // on an already-archived resource is rejected: archived resources are
+  // read-only everywhere except this toggle.
   if (contentType.includes("application/json")) {
     const body = await req.json();
     const patch: Record<string, boolean> = {};
+    if (typeof body.archived === "boolean") patch.archived = body.archived;
     if (typeof body.published === "boolean") patch.published = body.published;
     if (typeof body.featured === "boolean") patch.featured = body.featured;
+
+    const onlyTogglingArchived = Object.keys(patch).every((k) => k === "archived");
+    if (existing.archived && !onlyTogglingArchived) {
+      return NextResponse.json({ error: "This resource is archived and read-only. Restore it first." }, { status: 409 });
+    }
 
     const resource = await updateResource(id, patch);
     return NextResponse.json({ success: true, resource });
   }
 
   // Full edit form: multipart, optionally replacing the file/cover.
+  if (existing.archived) {
+    return NextResponse.json({ error: "This resource is archived and read-only. Restore it first." }, { status: 409 });
+  }
+
   const formData = await req.formData();
 
   const title = String(formData.get("title") ?? "").trim();
