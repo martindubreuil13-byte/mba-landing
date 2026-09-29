@@ -80,6 +80,22 @@ export default function PrivacyPage() {
                 research or educational material.
               </p>
 
+              <h2 className="text-xl font-light pt-4">The Napkin Principle</h2>
+              <p>
+                This free interactive exercise asks about the price, direct costs and monthly operating costs of a
+                business idea, and calculates a required transaction volume using a fixed, documented arithmetic
+                method — no AI is used to calculate or interpret any part of it. You can complete the exercise and
+                see your full on-screen result without providing an email address. Your answers and the calculated
+                result are stored so the exercise can be revisited and improved, whether or not you go on to join
+                the community.
+              </p>
+              <p>
+                After your result is shown, you can optionally provide your name and email to join The Modern
+                Business Architecture Community and receive a fuller emailed breakdown. That's a separate, explicit
+                choice recorded with a timestamp and the exact wording you agreed to — declining it means nothing is
+                emailed and no marketing consent is recorded, but your on-screen result is unaffected either way.
+              </p>
+
               <h2 className="text-xl font-light pt-4">Pick My Brain</h2>
               <p>
                 When you search the site with Pick My Brain, the site records what you typed, which
@@ -95,7 +111,7 @@ export default function PrivacyPage() {
 
               <h2 className="text-xl font-light pt-4">How it's stored</h2>
               <p>
-                Resource requests, assessment responses, searches, questions and contact details are stored in a
+                Resource requests, assessment responses, Napkin Principle results, searches, questions and contact details are stored in a
                 Postgres database (hosted via Supabase) that only this site's server can access —
                 the database is never exposed publicly, and downloadable files are served through
                 short-lived, controlled links rather than a public file listing. Your information

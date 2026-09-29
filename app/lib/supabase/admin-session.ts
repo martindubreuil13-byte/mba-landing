@@ -2,6 +2,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createServerClient } from "@supabase/ssr";
+import { isAllowedAdminEmail } from "./admin-authorization";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
@@ -49,7 +50,7 @@ export async function getAdminUser() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user || user.email?.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+  if (!user || !isAllowedAdminEmail(user.email, ADMIN_EMAIL)) {
     return null;
   }
 

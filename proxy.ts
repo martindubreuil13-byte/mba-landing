@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isAllowedAdminEmail } from "@/app/lib/supabase/admin-authorization";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
@@ -36,9 +37,7 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isAdmin = Boolean(
-    user && ADMIN_EMAIL && user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()
-  );
+  const isAdmin = isAllowedAdminEmail(user?.email, ADMIN_EMAIL);
 
   const { pathname } = request.nextUrl;
   const isApiAdminRoute = pathname.startsWith("/api/admin/");

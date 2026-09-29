@@ -1,0 +1,25 @@
+import { describe, expect, it } from "vitest";
+import { DEFAULT_FILTERS, filterNapkin, paginateNapkin, recordsToCsv, sortNapkin, summarizeNapkin, type NapkinAdminRecord } from "./admin-model";
+
+function record(overrides: Partial<NapkinAdminRecord> = {}): NapkinAdminRecord {
+  return {
+    id:"1",form_version:"napkin-principle-v1.1",calculation_version:"napkin-calc-v1.1",lead_id:"lead",created_at:"2026-09-28T10:00:00Z",joined_at:"2026-09-28T10:01:00Z",business_name:"A, Business",currency:"USD",selling_price:10,money_remaining_per_transaction:6,monthly_operating_cost:600,required_transactions_per_month:100,interpretation_category:"coherent",
+    raw_inputs:{businessName:"A, Business",businessStage:"operating",whatItSells:"Advice",currency:"USD",transactionSingular:"session",transactionPlural:"sessions",sellingPrice:10,directCostItems:[],monthlyCostItems:[],tradingDaysPerMonth:20,openingHoursPerDay:8,capacityUnits:null,capacityUnitLabel:null,expectedMonthlyVolume:120,maxMonthlyCapacity:140,seasonality:null,reachability:null,priceConfidence:null,directCostConfidence:null,monthlyCostConfidence:null,volumeEvidence:"<script>alert(1)</script>"},
+    calculation_result:{contribution:{totalDirectCost:4,moneyRemainingPerTransaction:6,contributionPercent:60},survival:{monthlyOperatingCost:600,requiredPerMonthExact:100,requiredPerMonthRounded:100},observable:{perMonth:100,perWeek:null,perTradingDay:5,perOpeningHour:.625,perCapacityUnit:null},gapExpectedVsRequired:1.2,gapCapacityVsRequired:1.4,interpretation:{category:"coherent",summary:"Works",weakestAssumption:{field:null,label:"None",level:null}}},
+    consent_copy_version:"v1",consent_at:"2026-09-28T10:01:00Z",marketing_consent:true,source:"resource",medium:null,campaign:"launch",referrer:null,utm_source:null,utm_medium:null,utm_campaign:null,utm_content:null,email_sent:true,email_sent_at:"2026-09-28T10:02:00Z",email_error:null,cta_clicked:"conversation",cta_clicked_at:"2026-09-28T10:03:00Z",
+    lead:{id:"lead",first_name:"Alex",email:"alex@example.com",ongoing_content_opt_in:true,ongoing_content_opt_in_at:"2026-09-28T10:01:00Z",ongoing_content_opt_out_at:null},admin:null,...overrides,
+  };
+}
+
+describe("Napkin admin model", () => {
+  it("keeps completions distinct from community members and consent states",()=>{const rows=[record(),record({id:"2",lead:null,lead_id:null,marketing_consent:false,email_sent:false,cta_clicked:null})];expect(summarizeNapkin(rows)).toMatchObject({completed:2,communityMembers:1,declined:1,subscribed:1,delivered:1,ctaClicks:1});});
+  it("counts unsubscribed contacts and excludes them from subscribed count",()=>{const r=record({lead:{...record().lead!,ongoing_content_opt_in:false,ongoing_content_opt_out_at:"2026-09-29T00:00:00Z"}});expect(summarizeNapkin([r])).toMatchObject({subscribed:0,unsubscribed:1});});
+  it("filters search, stage, currency, date and interpretation",()=>{const f={...DEFAULT_FILTERS,query:"alex",stage:"operating",currency:"USD",from:"2026-09-01",to:"2026-09-30",interpretation:"coherent"};expect(filterNapkin([record()],f)).toHaveLength(1);expect(filterNapkin([record()],{...f,query:"missing"})).toHaveLength(0);});
+  it("filters delivery, CTA and subscription state",()=>{expect(filterNapkin([record()],{...DEFAULT_FILTERS,email:"delivered",cta:"yes",subscribed:"yes"})).toHaveLength(1);});
+  it("sorts newest first and reverses direction",()=>{const rows=[record({id:"old",created_at:"2020-01-01T00:00:00Z"}),record({id:"new"})];expect(sortNapkin(rows,DEFAULT_FILTERS)[0].id).toBe("new");expect(sortNapkin(rows,{...DEFAULT_FILTERS,direction:"asc"})[0].id).toBe("old");});
+  it("paginates deterministically",()=>{const rows=Array.from({length:30},(_,i)=>record({id:String(i)}));expect(paginateNapkin(rows,2,25)).toMatchObject({currentPage:2,totalPages:2,total:30});expect(paginateNapkin(rows,2,25).rows).toHaveLength(5);});
+  it("exports only valid, consented, currently subscribed emails",()=>{const declined=record({id:"2",marketing_consent:false});const unsub=record({id:"3",lead:{...record().lead!,ongoing_content_opt_in:false,ongoing_content_opt_out_at:"2026-09-29"}});const invalid=record({id:"4",lead:{...record().lead!,email:"bad"}});const csv=recordsToCsv([record(),declined,unsub,invalid],"community");expect(csv).toContain("alex@example.com");expect(csv.split("alex@example.com")).toHaveLength(2);});
+  it("escapes commas, quotes and newlines in CSV",()=>{const csv=recordsToCsv([record({business_name:'A, "Business"\nLtd'})],"all");expect(csv).toContain('"A, ""Business""\nLtd"');});
+  it("handles older v1.0 submissions with optional answers absent",()=>{const old=record({form_version:"napkin-principle-v1.0",raw_inputs:{...record().raw_inputs,expectedMonthlyVolume:null,maxMonthlyCapacity:null}});expect(()=>filterNapkin([old],DEFAULT_FILTERS)).not.toThrow();});
+  it("treats user-entered HTML as inert CSV text rather than evaluating it",()=>{expect(recordsToCsv([record({business_name:"<img src=x onerror=alert(1)>"})],"all")).toContain("<img src=x onerror=alert(1)>");});
+});
