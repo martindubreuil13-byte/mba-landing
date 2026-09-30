@@ -37,6 +37,23 @@ export type DiscoveryRecord = {
 export const STATIC_DISCOVERY_RECORDS: DiscoveryRecord[] = [
   // ANSWERS
   {
+    href: "/answers/how-should-i-use-ai-in-my-business",
+    type: "Answer",
+    title: "How Should I Use AI in My Business?",
+    description: "Start with value, process and intelligence rather than tools: a Business Architecture approach to human and artificial intelligence.",
+    intents: [
+      "How should I use AI in my business?",
+      "Should I use AI in my business?",
+      "Where should I use AI in my business?",
+      "What should I automate with AI?",
+      "Are AI agents the future of business?",
+      "What is an AI-first business?",
+      "Can AI create a competitive advantage?",
+      "What does Architecting Intelligence mean?",
+    ],
+    topics: ["AI", "artificial intelligence", "AI for business", "AI automation", "AI agents", "Architecting Intelligence", "human intelligence", "intelligence-first", "Business Architecture", "automation"],
+  },
+  {
     href: "/answers/how-do-you-build-a-product-if-you-cannot-get-funding",
     type: "Answer",
     title: "How Do You Build a Product If You Cannot Get Funding?",
