@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { getPublishedResourceBySlug } from "@/app/lib/resources/queries";
 import { createPageMetadata, SITE_URL, PRINCIPAL_NAME, serializeJsonLd } from "@/app/lib/seo";
 import { PageStructuredData } from "@/app/components/PageStructuredData";
+import { getResourceConfig } from "@/app/lib/resources/config";
+import { getGuideContent } from "@/app/lib/resources/guides";
 
 export async function generateMetadata({
   params,
@@ -50,6 +52,7 @@ export default async function Layout({
     inLanguage: "en",
     isAccessibleForFree: true,
     audience: resource.audience ?? undefined,
+    ...onlineGuideStructuredData(resource.slug, path),
   };
 
   return (
@@ -62,4 +65,26 @@ export default async function Layout({
       {children}
     </>
   );
+}
+
+/** For resources with a full online guide: reading time and the guide's sections. */
+function onlineGuideStructuredData(slug: string, path: string) {
+  const config = getResourceConfig(slug);
+  const content = config ? getGuideContent(slug) : null;
+  if (!config || !content) return {};
+  return {
+    timeRequired: config.timeRequired,
+    learningResourceType: config.kind,
+    hasPart: content.sections.map((section) => ({
+      "@type": "WebPageElement",
+      "@id": `${SITE_URL}${path}#${section.id}`,
+      url: `${SITE_URL}${path}#${section.id}`,
+      name:
+        section.kind === "invitation"
+          ? section.heading
+          : section.kind === "cover"
+            ? section.heading.map((p) => (typeof p === "string" ? p : p.em)).join("")
+            : section.heading.map((p) => (typeof p === "string" ? p : p.em)).join(""),
+    })),
+  };
 }

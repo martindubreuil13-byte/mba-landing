@@ -3,6 +3,8 @@ import { confirmOptIn } from "@/app/lib/leads/consent";
 import { verifyConfirmationToken } from "@/app/lib/leads/confirmation-token";
 import { hashEvidence } from "@/app/lib/leads/evidence";
 import { checkRateLimit, getClientIp } from "@/app/lib/rateLimit";
+import { recordResourceEvent } from "@/app/lib/resources/event-store";
+import { getResourceById } from "@/app/lib/resources/queries";
 
 /**
  * Confirms a community signup (confirmed opt-in). POST only: the /confirm page
@@ -37,8 +39,10 @@ export async function POST(req: Request) {
     const result = await confirmOptIn(check.leadId, { ipHash: hashEvidence(ip), userAgentHash: hashEvidence(req.headers.get("user-agent")) });
 
     if (result.status === "confirmed") {
-      // The append-only consent_records row written by confirmOptIn is the evidence. Feature-specific
-      // analytics are deliberately not recorded here.
+      const resource = result.sourceResourceId ? await getResourceById(result.sourceResourceId) : null;
+      if (resource) {
+        await recordResourceEvent({ name: "resource_opt_in_confirmed", resource, leadId: check.leadId, metadata: { consent_record_id: result.recordId } });
+      }
       return NextResponse.json({ success: true, status: "confirmed" });
     }
     if (result.status === "already_confirmed") return NextResponse.json({ success: true, status: "already_confirmed" });
