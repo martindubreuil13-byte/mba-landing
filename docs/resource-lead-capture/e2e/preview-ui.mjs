@@ -26,7 +26,7 @@ async function submit(email, viewport) {
   const cta = page.locator('[data-cta-location="top"]');
   await cta.getByRole("button", { name: /get the printable guide/i }).click();
   await cta.getByLabel("Email address").fill(email);
-  const [download] = await Promise.all([page.waitForEvent("download", { timeout: 20000 }), cta.getByRole("button", { name: /send me the guide/i }).click()]);
+  const [download] = await Promise.all([page.waitForEvent("download", { timeout: 20000 }), cta.getByRole("button", { name: /email me the printable guide/i }).click()]);
   const heading = cta.getByRole("heading", { name: "Your printable guide is downloading." });
   await heading.waitFor();
   const result = {

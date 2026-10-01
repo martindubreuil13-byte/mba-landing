@@ -6,8 +6,6 @@
  * To change the wording (or replace the button-plus-disclosure with a checkbox):
  * add a NEW entry with a new id and point resource configs at it. Never edit a
  * published entry in place; old consent records keep the id they agreed to.
- *
- * LEGAL REVIEW REQUIRED before production launch.
  */
 export type ConsentCopy = {
   id: string;
@@ -32,16 +30,16 @@ export const CONSENT_COPY: Record<string, ConsentCopy> = {
       "By continuing, you agree to receive marketing emails from Martin Dubreuil and The Modern Business Architect. You can unsubscribe at any time and keep the guide. Read the Privacy Policy.",
     privacyLinkText: "Privacy Policy",
   },
-  // v1.1: confirmed opt-in. The guide is delivered immediately; community emails
-  // start only after the reader confirms their address from the email.
+  // v1.1: confirmed opt-in. The guide is delivered immediately; the email invites the reader to confirm, and
+  // community emails start only after that explicit confirmation (the POST on the confirmation page).
   "resource-guide-consent-v1.1": {
     id: "resource-guide-consent-v1.1",
     method: "button_disclosure",
-    buttonLabel: "Send me the guide + join the community",
+    buttonLabel: "Email me the printable guide",
     communityNote:
-      "You will also be invited to join the Modern Business Architect community: once you confirm your email address, you will receive occasional emails from Martin with practical ideas, new resources, updates and relevant offers.",
+      "We’ll email your guide and invite you to confirm whether you’d like to join the Modern Business Architect community.",
     disclosure:
-      "By continuing, you agree to receive marketing emails from Martin Dubreuil and The Modern Business Architect once you confirm your email address. You can unsubscribe at any time and keep the guide. Read the Privacy Policy.",
+      "The confirmation invitation is optional. Marketing emails begin only if you actively confirm. You can keep the guide either way and unsubscribe at any time. Read the Privacy Policy.",
     privacyLinkText: "Privacy Policy",
   },
 };

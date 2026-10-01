@@ -41,10 +41,10 @@ for (const [name, size] of Object.entries(sizes)) {
   const emailInput = topCta.getByLabel("Email address");
   await emailInput.waitFor();
   check(`[${name}] top CTA opens the form and focuses the email field`, await emailInput.evaluate((el) => el === document.activeElement));
-  check(`[${name}] form shows the agreed copy`, await topCta.getByText("Receive the complete PDF to download, print, complete and keep.").isVisible() && await topCta.getByText(/You will also be invited to join the Modern Business Architect community: once you confirm your email address/).isVisible());
-  const btn = topCta.getByRole("button", { name: /send me the guide \+ join the community/i });
+  check(`[${name}] form shows the agreed copy`, await topCta.getByText("Receive the complete PDF to download, print, complete and keep.").isVisible() && await topCta.getByText(/We’ll email your guide and invite you to confirm whether you’d like to join the Modern Business Architect community\./).isVisible());
+  const btn = topCta.getByRole("button", { name: /email me the printable guide/i });
   check(`[${name}] button states both actions`, await btn.isVisible());
-  const disclosure = topCta.getByText(/By continuing, you agree to receive marketing emails from Martin Dubreuil and The Modern Business Architect once you confirm your email address\. You can unsubscribe at any time and keep the guide\./);
+  const disclosure = topCta.getByText(/The confirmation invitation is optional\. Marketing emails begin only if you actively confirm\. You can keep the guide either way and unsubscribe at any time\./);
   check(`[${name}] consent disclosure visible beside the form`, await disclosure.isVisible());
   check(`[${name}] privacy policy linked`, (await topCta.getByRole("link", { name: "Privacy Policy" }).getAttribute("href")) === "/privacy");
   check(`[${name}] no checkbox anywhere in the form`, (await topCta.locator('input[type="checkbox"]').count()) === 0);
@@ -101,10 +101,10 @@ for (const loc of ["mid-guide", "end"]) {
   if (loc === "end") await page.screenshot({ path: "shots/desktop-06-end-cta.png" });
   await cta.getByRole("button", { name: /get the printable guide/i }).click();
   await cta.getByLabel("Email address").waitFor();
-  check(`[${loc}] CTA opens the SAME form component (one form on page)`, (await page.locator("[data-cta-location] form").count()) === 1 && await cta.getByRole("button", { name: /send me the guide \+ join the community/i }).isVisible());
+  check(`[${loc}] CTA opens the SAME form component (one form on page)`, (await page.locator("[data-cta-location] form").count()) === 1 && await cta.getByRole("button", { name: /email me the printable guide/i }).isVisible());
   const email = `delivered+ui-${loc}-${run}@resend.dev`;
   await cta.getByLabel("Email address").fill(email);
-  const [dl] = await Promise.all([page.waitForEvent("download"), cta.getByRole("button", { name: /send me the guide/i }).click()]);
+  const [dl] = await Promise.all([page.waitForEvent("download"), cta.getByRole("button", { name: /email me the printable guide/i }).click()]);
   check(`[${loc}] download starts`, dl.suggestedFilename().endsWith(".pdf"));
   await cta.getByRole("heading", { name: "Your printable guide is downloading." }).waitFor();
   const lead = await lastLead(email);
@@ -224,7 +224,7 @@ for (const [name, size] of Object.entries(sizes)) {
   await p0.goto(URL, { waitUntil: "networkidle" });
   await p0.locator('[data-cta-location="top"]').getByRole("button", { name: /get the printable guide/i }).click();
   await p0.getByLabel("Email address").fill(email);
-  await Promise.all([p0.waitForEvent("download"), p0.getByRole("button", { name: /send me the guide/i }).click()]);
+  await Promise.all([p0.waitForEvent("download"), p0.getByRole("button", { name: /email me the printable guide/i }).click()]);
   await p0.getByRole("heading", { name: "Your printable guide is downloading." }).waitFor();
   await c0.close();
   const lead = await lastLead(email);

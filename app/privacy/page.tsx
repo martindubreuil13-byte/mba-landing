@@ -1,6 +1,4 @@
 /* eslint-disable react/no-unescaped-entities */
-// LEGAL REVIEW REQUIRED before production: the "Online guides and printable editions" section
-// describes the confirmed opt-in model for printable guides (consent-copy v1.1).
 import Navigation from "@/app/components/Navigation";
 
 export default function PrivacyPage() {
@@ -50,24 +48,26 @@ export default function PrivacyPage() {
               </p>
               <p>
                 The printable edition (a PDF to download, print, complete and keep) is available when
-                you enter your email address and use the button that says it will send you the guide
-                and invite you to join the community. Submitting the form does two things. First, it
-                delivers the guide: the PDF downloads immediately and a copy is emailed to you, and
-                neither depends on anything else. Second, it records your request to receive marketing
-                emails from Martin Dubreuil and The Modern Business Architect, together with the exact
-                wording you saw, the time, the page and the button you used.
+                you enter your email address and use the button that says it will email you the guide.
+                Submitting the form delivers the guide: the PDF downloads immediately and a copy is
+                emailed to you, and neither depends on anything else. The form is not a marketing
+                sign-up. The same email invites you to confirm whether you would like to join the
+                community, and that confirmation is optional.
               </p>
               <p>
-                That request does not start marketing emails. The email containing your guide includes
-                a link to confirm your address; community emails begin only if you confirm, and
-                addresses that are not confirmed are not added to the mailing list. Community emails may
+                Marketing emails from Martin Dubreuil and The Modern Business Architect begin only if
+                you actively confirm, by opening the link in that email and pressing the confirmation
+                button. If you do not confirm, you are not added to the mailing list and receive no
+                marketing emails. To keep a record of what you were shown and chose, the site stores
+                that you were invited to confirm and, if you confirm, that you did, each with the exact
+                wording you saw, the time, the page and the button you used. Community emails may
                 include educational material, new resources, updates and occasional relevant offers.
               </p>
               <p>
                 You can withdraw at any time using the unsubscribe link in any email, or by emailing
                 Martin. Unsubscribing stops all marketing emails, keeps a record that you did, and does
-                not take the guide away from you. If you later ask for a resource and agree again, that
-                is recorded as a new request.
+                not take the guide away from you. If you later request a resource and confirm again, that
+                is recorded separately.
               </p>
               <p>
                 To understand which guides are useful, the site counts anonymous activity on the guide

@@ -118,7 +118,7 @@ const emailHtml = async (providerId) => (await fetch(`${process.env.RESEND_API_B
   let c = await consents(lead.id);
   eq("B8 exactly one consent record, action opt_in_requested", c.map((x) => x.action), ["opt_in_requested"]);
   check("B9 request evidence: version, method, source, CTA, url", c[0].wording_version === CONSENT && c[0].method === "button_disclosure" && c[0].source_type === "guide" && c[0].source_resource_id === resource.id && c[0].cta_location === "mid-guide" && c[0].source_url === `/resources/${SLUG}`);
-  check("B10 exact wording stored (server-side from version table, incl. confirm wording)", c[0].wording_text.includes("SEND ME THE GUIDE + JOIN THE COMMUNITY") && c[0].wording_text.includes("once you confirm your email address") && c[0].wording_text.includes("By continuing, you agree to receive marketing emails from Martin Dubreuil and The Modern Business Architect"));
+  check("B10 exact wording stored (server-side from version table, incl. confirm wording)", c[0].wording_text.includes("EMAIL ME THE PRINTABLE GUIDE") && c[0].wording_text.includes("invite you to confirm whether you’d like to join") && c[0].wording_text.includes("Marketing emails begin only if you actively confirm"));
   check("B11 IP/UA stored only as hashes", /^[0-9a-f]{32}$/.test(c[0].ip_hash) && /^[0-9a-f]{32}$/.test(c[0].user_agent_hash) && !/\b10\.\d+\.\d+\.\d+\b/.test(JSON.stringify(c[0])) && !JSON.stringify(c[0]).includes("Mozilla"));
   const reqs = await requests(lead.id);
   eq("B12 one request row", reqs.length, 1);
