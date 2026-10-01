@@ -9,6 +9,11 @@ alter table public.resources
 alter table public.pmb_questions
   add column if not exists status text not null default 'new';
 
+-- Idempotent: 20260929084610 (same change, applied first in some environments) already created this
+-- constraint, so drop it by name before adding it. Safe on production and on a fresh database.
+alter table public.pmb_questions
+  drop constraint if exists pmb_questions_status_check;
+
 alter table public.pmb_questions
   add constraint pmb_questions_status_check
   check (status = any (array['new', 'reviewing', 'planned', 'answered', 'archived']));

@@ -1,5 +1,6 @@
 import "server-only";
 import { getServiceClient } from "@/app/lib/supabase/service";
+import { consentStatusOf } from "@/app/lib/leads/consent";
 import { bandFor, OVERALL_BANDS } from "@/app/lib/assessment/config";
 import { INTERPRETATION_LABELS, type InterpretationCategory } from "@/app/lib/napkin/config";
 import type { Lead } from "@/app/lib/resources/types";
@@ -93,7 +94,7 @@ function resourceTitle(resource: ResourceRequestRow["resource"]) {
 // UNIFIED LEADS TABLE
 // ============================================================
 
-export type SubscriptionStatus = "subscribed" | "unsubscribed" | "never_subscribed";
+export type SubscriptionStatus = "subscribed" | "pending_confirmation" | "unsubscribed" | "suppressed" | "never_subscribed";
 
 export type UnifiedLeadRow = {
   id: string;
@@ -112,15 +113,24 @@ export type UnifiedLeadRow = {
   pmb_count: number;
 };
 
+/**
+ * Marketing audience = "subscribed" only (confirmed opt-in). Pending leads asked to
+ * join but have not confirmed their email, so they are excluded from subscriber exports.
+ */
 function subscriptionStatus(lead: Lead): SubscriptionStatus {
-  if (lead.ongoing_content_opt_in) return "subscribed";
-  if (lead.ongoing_content_opt_in_at || lead.ongoing_content_opt_out_at) return "unsubscribed";
+  const consent = consentStatusOf({ ...lead, suppressed_at: lead.suppressed_at ?? null, consent_requested_at: lead.consent_requested_at ?? null });
+  if (consent === "suppressed") return "suppressed";
+  if (consent === "opted_in") return "subscribed";
+  if (consent === "pending" && lead.consent_requested_at) return "pending_confirmation";
+  if (consent === "opted_out") return "unsubscribed";
   return "never_subscribed";
 }
 
 export const SUBSCRIPTION_STATUS_LABELS: Record<SubscriptionStatus, string> = {
   subscribed: "Subscribed",
+  pending_confirmation: "Awaiting confirmation",
   unsubscribed: "Unsubscribed",
+  suppressed: "Suppressed",
   never_subscribed: "Never subscribed",
 };
 

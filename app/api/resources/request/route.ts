@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
 import { getPublishedResourceBySlug, captureLeadAndRequestResource } from "@/app/lib/resources/queries";
-import { SITE_URL } from "@/app/lib/seo";
+import { appBaseUrl } from "@/app/lib/resources/base-url";
+import { createResend } from "@/app/lib/email-client";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -69,12 +69,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 
-  const downloadUrl = `${SITE_URL}/api/resources/download?token=${request.id}`;
+  const downloadUrl = `${appBaseUrl()}/api/resources/download?token=${request.id}`;
 
   // Best-effort confirmation email — never blocks or fails the response.
   if (process.env.RESEND_API_KEY) {
     try {
-      const resend = new Resend(process.env.RESEND_API_KEY);
+      const resend = createResend();
       await resend.emails.send({
         from: "Martin <martin@mindrasolutions.com>",
         to: email,

@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
+import { assertDatabaseAllowed } from "@/app/lib/deployment";
 
 /**
  * Privileged, server-only Supabase client (service_role key).
@@ -16,6 +17,9 @@ export function getServiceClient() {
       "Supabase is not configured: set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY."
     );
   }
+
+  // A preview / development deployment must never use the production database.
+  assertDatabaseAllowed(url);
 
   return createClient(url, serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },

@@ -1,0 +1,25 @@
+import { createHash, randomUUID } from "node:crypto";
+import { NextResponse } from "next/server";
+import { checkRateLimit, getClientIp } from "@/app/lib/rateLimit";
+import { classifyTransition, REVIEW_FALLBACK } from "@/app/lib/programs/classify";
+import { cleanText, validateApplication, type Attribution } from "@/app/lib/programs/corporate-transition";
+import { createApplication, updateMailState } from "@/app/lib/programs/queries";
+import { adminMessage, applicantMessage, sendProgramEmail } from "@/app/lib/programs/email";
+
+const hash = (s: string) => s ? createHash("sha256").update(s).digest("hex") : null;
+export async function POST(req: Request) {
+  let body: Record<string, unknown>; try { body = await req.json(); } catch { return NextResponse.json({ error: "Invalid request." }, { status: 400 }); }
+  if (cleanText(body.website, 100)) return NextResponse.json({ error: "Invalid submission." }, { status: 400 });
+  const ip = getClientIp(req); if (!(await checkRateLimit(`transition:${hash(ip)}`, 3600, 8))) return NextResponse.json({ error: "Too many attempts. Please try again later." }, { status: 429 });
+  const parsed = validateApplication(body.answers); if (!parsed.data) return NextResponse.json({ error: "Please check your answers.", fieldErrors: parsed.errors }, { status: 400 });
+  const attribution = (body.attribution && typeof body.attribution === "object" ? body.attribution : {}) as Attribution;
+  const idempotencyKey = cleanText(body.idempotencyKey, 100) || randomUUID();
+  let qualification = REVIEW_FALLBACK; try { qualification = await classifyTransition(parsed.data); } catch (e) { console.error("Transition qualification failed; routing to review:", e instanceof Error ? e.message : "unknown"); }
+  let application; let reused; try { ({ application, reused } = await createApplication(parsed.data, attribution, qualification, idempotencyKey, { ipHash: hash(ip), userAgentHash: hash(req.headers.get("user-agent") || "") })); } catch (e) { console.error("Transition application persistence failed:", e instanceof Error ? e.message : "unknown"); return NextResponse.json({ error: "We couldn’t save your application. Please try again." }, { status: 500 }); }
+  if (!reused) {
+    const msg = applicantMessage(qualification.route, parsed.data.firstName);
+    try { await sendProgramEmail(parsed.data.email, msg.subject, msg.text); await updateMailState(application.id, { applicant_email_status: "queued", applicant_email_error: null }); } catch (e) { await updateMailState(application.id, { applicant_email_status: "failed", applicant_email_error: e instanceof Error ? e.message.slice(0, 500) : "Unknown email error" }); }
+    const admin = process.env.ADMIN_EMAIL; if (admin) { const msg2 = adminMessage(application.id, `${parsed.data.firstName} ${parsed.data.lastName}`, qualification.route, qualification.preCallSummary); try { await sendProgramEmail(admin, msg2.subject, msg2.text); await updateMailState(application.id, { admin_notification_status: "queued", admin_notification_error: null }); } catch (e) { await updateMailState(application.id, { admin_notification_status: "failed", admin_notification_error: e instanceof Error ? e.message.slice(0, 500) : "Unknown email error" }); } }
+  }
+  return NextResponse.json({ success: true, applicationId: application.id, route: application.ai_route });
+}

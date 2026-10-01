@@ -1,6 +1,6 @@
 import "server-only";
-import { Resend } from "resend";
-import { SITE_URL } from "@/app/lib/seo";
+import { createResend } from "@/app/lib/email-client";
+import { appBaseUrl } from "@/app/lib/resources/base-url";
 import { INTERPRETATION_LABELS, PRELIMINARY_DISCLAIMER } from "./config";
 import { formatCount, formatCurrency } from "./format";
 import { generateArchitecturalLevers, generatePersonalizedQuestions } from "./personalization";
@@ -28,8 +28,8 @@ export function buildNapkinBreakdownEmailHtml(params: NapkinBreakdownEmailParams
   const { firstName, inputs, result } = params;
   const currency = inputs.currency;
   const { contribution, survival, observable, interpretation, gapExpectedVsRequired, gapCapacityVsRequired } = result;
-  const resultUrl = `${SITE_URL}/resources/napkin-principle`;
-  const unsubscribeUrl = `${SITE_URL}/unsubscribe/napkin?token=${encodeURIComponent(createUnsubscribeToken(params.leadId))}`;
+  const resultUrl = `${appBaseUrl()}/resources/napkin-principle`;
+  const unsubscribeUrl = `${appBaseUrl()}/unsubscribe/napkin?token=${encodeURIComponent(createUnsubscribeToken(params.leadId))}`;
   const dateLabel = new Date(params.completedAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
   const questions = generatePersonalizedQuestions({
@@ -132,7 +132,7 @@ export function buildNapkinBreakdownEmailHtml(params: NapkinBreakdownEmailParams
         result exposed a gap — or an assumption you cannot yet defend — the next step is to examine the architecture
         of the business.
       </p>
-      <a href="${SITE_URL}/lets-talk" style="display:inline-block;background:#6b1f1f;color:#fff;text-decoration:none;padding:12px 24px;font-size:13px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Discuss the business with Martin →</a>
+      <a href="${appBaseUrl()}/lets-talk" style="display:inline-block;background:#6b1f1f;color:#fff;text-decoration:none;padding:12px 24px;font-size:13px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Discuss the business with Martin →</a>
     </div>
 
     <p style="font-size:13px;color:#888;margin-top:24px;"><a href="${resultUrl}" style="color:#6b1f1f;">Run the calculator again →</a></p>
@@ -143,7 +143,7 @@ export function buildNapkinBreakdownEmailHtml(params: NapkinBreakdownEmailParams
     <p style="font-size:11px;color:#999;line-height:1.6;">
       The Modern Business Architect · Martin Dubreuil<br/>
       You're receiving this because you joined the community after completing The Napkin Principle at ${esc(resultUrl)}.
-      <a href="${SITE_URL}/privacy" style="color:#999;">Privacy</a> · <a href="${unsubscribeUrl}" style="color:#999;">Unsubscribe</a>
+      <a href="${appBaseUrl()}/privacy" style="color:#999;">Privacy</a> · <a href="${unsubscribeUrl}" style="color:#999;">Unsubscribe</a>
     </p>
   </div></body></html>`;
 }
@@ -165,7 +165,7 @@ export function buildNapkinBreakdownEmailText(params: NapkinBreakdownEmailParams
     gapCapacityVsRequired: result.gapCapacityVsRequired,
     weakestAssumptionField: interpretation.weakestAssumption.field,
   });
-  const unsubscribeUrl = `${SITE_URL}/unsubscribe/napkin?token=${encodeURIComponent(createUnsubscribeToken(params.leadId))}`;
+  const unsubscribeUrl = `${appBaseUrl()}/unsubscribe/napkin?token=${encodeURIComponent(createUnsubscribeToken(params.leadId))}`;
 
   return [
     "THE NAPKIN PRINCIPLE — FULL BREAKDOWN",
@@ -193,8 +193,8 @@ export function buildNapkinBreakdownEmailText(params: NapkinBreakdownEmailParams
     ...levers.map((lever) => `- ${lever}`),
     "",
     PRELIMINARY_DISCLAIMER,
-    `Discuss the business with Martin: ${SITE_URL}/lets-talk`,
-    `Privacy: ${SITE_URL}/privacy`,
+    `Discuss the business with Martin: ${appBaseUrl()}/lets-talk`,
+    `Privacy: ${appBaseUrl()}/privacy`,
     `Unsubscribe: ${unsubscribeUrl}`,
   ].filter(Boolean).join("\n");
 }
@@ -213,7 +213,7 @@ export async function sendNapkinBreakdownEmail(
   }
 
   try {
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    const resend = createResend();
     const html = buildNapkinBreakdownEmailHtml(params);
     const text = buildNapkinBreakdownEmailText(params);
     const result = await resend.emails.send({
@@ -224,7 +224,7 @@ export async function sendNapkinBreakdownEmail(
       html,
       text,
       headers: {
-        "List-Unsubscribe": `<${SITE_URL}/unsubscribe/napkin?token=${encodeURIComponent(createUnsubscribeToken(params.leadId))}>`,
+        "List-Unsubscribe": `<${appBaseUrl()}/unsubscribe/napkin?token=${encodeURIComponent(createUnsubscribeToken(params.leadId))}>`,
       },
     });
     if (result.error) return { ok: false, error: result.error.message };

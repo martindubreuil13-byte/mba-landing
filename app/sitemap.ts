@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/app/lib/seo";
+import { isProductionDeployment } from "@/app/lib/deployment";
 import { listPublishedResources } from "@/app/lib/resources/queries";
 
 const publicRoutes = [
@@ -41,6 +42,9 @@ const publicRoutes = [
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // Non-production deployments publish no URLs (and never read the database for this).
+  if (!isProductionDeployment()) return [];
+
   const staticEntries = publicRoutes.map((path) => ({
     url: new URL(path, SITE_URL).toString(),
   }));
