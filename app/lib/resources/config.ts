@@ -37,11 +37,21 @@ export type ResourceConfig = {
   /** Email wording specific to this resource. */
   email: {
     subject: (title: string) => string;
+    /** Inbox preview text (hidden in the body). */
+    previewText: string;
+    /** Subtitle under the title. */
+    tagline: string;
+    /** Opening paragraphs before the download button (the form collects email only, so no salutation name). */
     opening: string[];
+    /** Body paragraphs after the download button; a paragraph may carry a bold lead-in. */
+    body: { lead?: string; text: string }[];
+    /** The "small suggestion" box. */
+    suggestion: { heading: string; text: string };
     /** Shown to readers who are already subscribed. */
     communityNote: string;
-    /** Shown above the confirm button to readers whose community signup awaits confirmation. */
-    confirmNote: string;
+    /** Optional community confirmation block, shown only while a signup awaits confirmation. */
+    confirm: { heading: string; text: string; button: string; reassurance: string };
+    signoff: { name: string; role: string; tagline: string };
   };
 };
 
@@ -72,14 +82,28 @@ const CONFIGS: ResourceConfig[] = [
     },
     email: {
       subject: (title) => `Your guide: ${title}`,
-      opening: [
-        "Here is your printable copy of Build the Bridge First.",
-        "Download it, work through the exercises and keep it for whenever the idea of building something of your own becomes more than a passing thought.",
+      previewText: "A practical guide for deciding what to build before leaving what you know.",
+      tagline: "A practical guide for your move from corporate life to entrepreneurship",
+      opening: ["Hello,", "Here it is.", "You can download your copy of Build the Bridge First below and keep it for whenever you need to think clearly about what comes next."],
+      body: [
+        { text: "This guide is not designed to convince you to quit your job." },
+        { text: "It is designed to help you answer a more useful question:" },
+        { lead: "What would need to be true for your next move to become a credible business, not simply an escape?", text: "" },
+        { text: "Take your time with it. Write in it. Challenge your assumptions. You do not need to have the perfect idea yet." },
+        { text: "You need a better way to recognize the right one." },
       ],
-      confirmNote:
-        "One more step if you would like to join the Modern Business Architect community: confirm your email address and I will send you occasional emails with practical ideas, new resources, updates and relevant offers. If you do not confirm, I will not email you again beyond this message, and the guide stays yours.",
-      communityNote:
-        "You are also now part of the Modern Business Architect community: occasional emails from me with practical ideas, new resources, updates and relevant offers. If that is not for you, the unsubscribe link below ends it and the guide stays yours.",
+      suggestion: {
+        heading: "A small suggestion",
+        text: "Do not read the guide only once. Return to the three questions whenever a new idea appears. A promising business should become clearer under examination, not more dependent on enthusiasm.",
+      },
+      communityNote: "You are also on the list for occasional practical notes from The Modern Business Architect. The unsubscribe link below ends that at any time, and the guide stays yours.",
+      confirm: {
+        heading: "Would you like to stay connected?",
+        text: "If you would like occasional practical notes, new tools and invitations from The Modern Business Architect, confirm your email below. Confirming is optional, and it is what switches those emails on.",
+        button: "Yes, keep me in the community",
+        reassurance: "No noise. No daily campaign. Just useful material when I have something worth sending. You can download the guide whether or not you confirm.",
+      },
+      signoff: { name: "Martin Dubreuil", role: "The Modern Business Architect", tagline: "Business architecture for people building what comes next" },
     },
   },
 ];
