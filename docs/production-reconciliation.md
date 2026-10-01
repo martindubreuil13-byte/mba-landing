@@ -21,7 +21,7 @@ The public resource page `/resources/<slug>` and the download route are back to 
 
 ## Migrations: nothing new is applied
 
-Production already has all ten migrations, with a schema identical to the repository. This branch adds no new migration. It only makes the repository history match production:
+Production already has all ten migrations, with a schema identical to the repository. The baseline change adds no new migration (the later confirmation change adds one additive migration, below). It only makes the repository history match production:
 
 - Restores `20260929084610_add_resource_archived_and_pmb_status.sql` (recorded in production's history; it had been deleted from the branch).
 - Makes `20260929120000_add_resource_archived_and_pmb_status.sql` idempotent (drops the named constraint before adding it), so a fresh database applies the whole sequence. Production already ran it and is unaffected.
@@ -32,3 +32,18 @@ Verified: `supabase db reset` applies all 10 migrations in order on a fresh data
 ## Privacy status
 
 `/privacy` is the `main` version. It does **not** describe the Corporate Transition application form, the AI-assisted qualification (OpenAI) of applications, application answers, or the confirmed-opt-in consent model. That disclosure still requires review and approval and is **not** part of this change.
+
+## Transition marketing-consent confirmation (second change)
+
+Problem found in production: the Transition form recorded a pending marketing request but nothing ever sent the confirmation email, so a ticked box stayed pending forever, while the page implied the visitor was on the shortlist.
+
+Correction (stacked on the baseline):
+
+- A shared, non-feature-specific confirmation email (`app/lib/leads/confirmation-email.ts`): signed 30-day confirm link, unsubscribe link and one-click header, sender identification, postal address when `MAILING_ADDRESS` is set, and the statement that nothing is sent unless the recipient confirms.
+- New Transition wording `corporate-transition-shortlist-v2` (label and footnote are stored verbatim as the consent wording and shown from the same constants). The v1 wording is superseded.
+- The apply route sends exactly one confirmation email, only for a new request: not for an unticked box, an already-subscribed lead, a suppressed lead, a repeat within ten minutes, or an idempotent retry.
+- The page says "check your inbox" only when the email was queued, and says plainly that it could not be sent when it was refused. The application is accepted either way.
+- Delivery state is stored in two new additive columns (migration `20261002090000_program_applications_consent_email.sql`): `consent_email_status` (default `not_sent`) and `consent_email_error`. Existing rows read `not_sent`, which is true.
+- The admin application page shows the applicant's live consent status and the confirmation-email state.
+- Consent evidence for Transition now uses the foundation's keyed hash (`hashEvidence`) instead of an unsalted SHA-256.
+- **No backfill:** applicants who ticked the box before this change remain pending and are not emailed. Any one-off confirmation email to them needs separate explicit approval.

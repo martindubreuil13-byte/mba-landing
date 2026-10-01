@@ -120,6 +120,24 @@ export default function PrivacyPage() {
                 research or educational material.
               </p>
 
+              {/* LEGAL REVIEW REQUIRED: draft disclosure for the Corporate to Entrepreneur Transition application and
+                  confirmed opt-in. Not approved; PR #2 must not be merged until this wording is approved. */}
+              <h2 className="text-xl font-light pt-4">The Transition application</h2>
+              <p>
+                The Corporate to Entrepreneur Transition application asks for your name, email address, country,
+                role, experience, situation, timeline and written answers about your goals and challenges. Your
+                answers are sent to a third-party AI provider (OpenAI) solely to help Martin assess whether a
+                conversation is a good fit and to suggest a reply; a person reviews every application and replies
+                to you by email. The provider does not use this data to train its models. Your application is
+                stored until you ask for it to be deleted, and it is never published.
+              </p>
+              <p>
+                Submitting an application permits transactional messages about that application. It does not
+                subscribe you to marketing. If you also tick the optional shortlist checkbox, we send you one email
+                asking you to confirm. You are subscribed only once you click the confirmation link, and every
+                email includes an unsubscribe link.
+              </p>
+
               <h2 className="text-xl font-light pt-4">The Napkin Principle</h2>
               <p>
                 This free interactive exercise asks about the price, direct costs and monthly operating costs of a
