@@ -9,6 +9,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const router = useRouter();
 
   const isResources = pathname.startsWith("/admin/resources");
+  const isGuides = pathname.startsWith("/admin/guides");
   const isLeads = pathname.startsWith("/admin/leads");
   const isPickMyBrain = pathname.startsWith("/admin/pick-my-brain");
   const isPrograms = pathname.startsWith("/admin/programs");
@@ -33,6 +34,14 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               }`}
             >
               Resources
+            </Link>
+            <Link
+              href="/admin/guides"
+              className={`text-sm tracking-wide ${
+                isGuides ? "text-[#6b1f1f] font-semibold" : "text-[#1a1816]/60 hover:text-[#1a1816]"
+              }`}
+            >
+              Guides
             </Link>
             <Link
               href="/admin/leads"

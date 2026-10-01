@@ -75,15 +75,26 @@ export function getResourceCoverUrl(resource: {
  * Short-lived signed URL for the actual gated file. Only ever generated
  * server-side, and only after a lead has been captured for this request.
  */
-export async function getSignedDownloadUrl(path: string, expiresInSeconds = 300) {
+export async function getSignedDownloadUrl(path: string, expiresInSeconds = 300, downloadFileName?: string) {
   const supabase = getServiceClient();
   const { data, error } = await supabase.storage
     .from(FILES_BUCKET)
-    .createSignedUrl(path, expiresInSeconds);
+    .createSignedUrl(path, expiresInSeconds, downloadFileName ? { download: downloadFileName } : undefined);
 
   if (error || !data) {
     throw new Error(`Failed to create signed download URL: ${error?.message}`);
   }
 
   return data.signedUrl;
+}
+
+/** Whether the gated file actually exists in storage (admin "PDF asset status"). */
+export async function resourceFileExists(path: string): Promise<boolean> {
+  const supabase = getServiceClient();
+  const slash = path.lastIndexOf("/");
+  const dir = slash >= 0 ? path.slice(0, slash) : "";
+  const name = slash >= 0 ? path.slice(slash + 1) : path;
+  const { data, error } = await supabase.storage.from(FILES_BUCKET).list(dir, { search: name, limit: 5 });
+  if (error) return false;
+  return (data ?? []).some((f) => f.name === name);
 }

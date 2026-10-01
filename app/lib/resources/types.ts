@@ -67,8 +67,10 @@ export type Lead = {
   updated_at: string;
 };
 
-/** Relationship workflow only. Consent is derived separately (see app/lib/leads/consent.ts). */
+/** Relationship workflow only. Consent and delivery are tracked separately. */
 export type LeadStatus = "new" | "engaged" | "qualified" | "contacted" | "converted" | "archived";
+
+export type DeliveryStatus = "not_tracked" | "accepted" | "queued" | "sent" | "delivered" | "bounced" | "failed";
 
 export type ResourceRequest = {
   id: string;
@@ -84,6 +86,17 @@ export type ResourceRequest = {
   utm_medium: string | null;
   utm_campaign: string | null;
   utm_content: string | null;
+  resource_action?: string;
+  session_id?: string | null;
+  cta_location?: string | null;
+  source_page_url?: string | null;
+  delivery_status?: DeliveryStatus;
+  delivery_provider_id?: string | null;
+  delivery_error?: string | null;
+  delivery_updated_at?: string | null;
+  download_count?: number;
+  first_download_at?: string | null;
+  last_download_at?: string | null;
 };
 
 export type LeadWithStats = Lead & {

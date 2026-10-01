@@ -1,4 +1,6 @@
 /* eslint-disable react/no-unescaped-entities */
+// LEGAL REVIEW REQUIRED before production: the "Online guides and printable editions" section
+// describes the confirmed opt-in model for printable guides (consent-copy v1.1).
 import Navigation from "@/app/components/Navigation";
 
 export default function PrivacyPage() {
@@ -16,7 +18,7 @@ export default function PrivacyPage() {
               <h1 className="text-3xl md:text-4xl font-light leading-tight mb-4">
                 What this site collects, and why
               </h1>
-              <p className="text-[#1a1816]/60 text-sm">Last updated September 21, 2026.</p>
+              <p className="text-[#1a1816]/60 text-sm">Last updated October 1, 2026.</p>
             </div>
 
             <div className="space-y-6 text-base leading-relaxed text-[#1a1816]/85">
@@ -26,9 +28,9 @@ export default function PrivacyPage() {
                 formal legal advice.
               </p>
 
-              <h2 className="text-xl font-light pt-4">When you request a free resource</h2>
+              <h2 className="text-xl font-light pt-4">When you request other free resources</h2>
               <p>
-                To access a guide, checklist or other free resource, this site asks for your
+                To access a checklist, worksheet or other free resource that is not one of the printable guides described below, this site asks for your
                 first name and email address, and optionally your country. Providing this
                 information unlocks the resource immediately — it does not depend on agreeing to
                 receive anything further.
@@ -39,6 +41,44 @@ export default function PrivacyPage() {
                 campaign/UTM parameters in the link). This is used to understand which content is
                 useful to people and where it's being shared — not to track you individually
                 across the web.
+              </p>
+
+              <h2 className="text-xl font-light pt-4">Online guides and printable editions</h2>
+              <p>
+                Some guides, such as Build the Bridge First, can be read in full on this site without
+                providing any personal information: no email, no account and no password.
+              </p>
+              <p>
+                The printable edition (a PDF to download, print, complete and keep) is available when
+                you enter your email address and use the button that says it will send you the guide
+                and invite you to join the community. Submitting the form does two things. First, it
+                delivers the guide: the PDF downloads immediately and a copy is emailed to you, and
+                neither depends on anything else. Second, it records your request to receive marketing
+                emails from Martin Dubreuil and The Modern Business Architect, together with the exact
+                wording you saw, the time, the page and the button you used.
+              </p>
+              <p>
+                That request does not start marketing emails. The email containing your guide includes
+                a link to confirm your address; community emails begin only if you confirm, and
+                addresses that are not confirmed are not added to the mailing list. Community emails may
+                include educational material, new resources, updates and occasional relevant offers.
+              </p>
+              <p>
+                You can withdraw at any time using the unsubscribe link in any email, or by emailing
+                Martin. Unsubscribing stops all marketing emails, keeps a record that you did, and does
+                not take the guide away from you. If you later ask for a resource and agree again, that
+                is recorded as a new request.
+              </p>
+              <p>
+                To understand which guides are useful, the site counts anonymous activity on the guide
+                page: page views, whether the guide was started or reached the end, and which
+                printable-guide button was used. These counts use a random identifier that lasts only for
+                that browser tab session and contains no personal information; no email is attached to
+                them. If you then request the printable guide, that session's activity on the same guide
+                page is linked to your contact record. The site does not record these counts if your
+                browser sends a Global Privacy Control or Do Not Track signal. When you request the
+                printable guide, the site also stores a one-way scrambled form of your IP address and
+                browser details as evidence that the request was made, not the raw values.
               </p>
 
               <h2 className="text-xl font-light pt-4">The shortlist (ongoing content)</h2>
@@ -116,7 +156,8 @@ export default function PrivacyPage() {
                 the database is never exposed publicly, and downloadable files are served through
                 short-lived, controlled links rather than a public file listing. Your information
                 is not sold, and is not shared with third parties except the service providers
-                needed to run this site (database hosting, transactional email delivery, and — for
+                needed to run this site: Supabase (database hosting and file storage), Resend
+                (email delivery, including delivery status such as delivered or bounced) and — for
                 the Business Idea Reality Check specifically — AI-assisted classification and
                 writing, as described above).
               </p>
