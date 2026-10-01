@@ -1,3 +1,5 @@
+Subject: Your guide is ready: Build the Bridge First
+
 A practical guide for deciding what to build before leaving what you know.
 
 BUILD THE BRIDGE FIRST
@@ -35,6 +37,9 @@ Download the guide again: https://preview.example.test/api/resources/download?to
 Privacy: https://preview.example.test/privacy
 Unsubscribe: https://preview.example.test/unsubscribe?token=v1.lead-1.FQJetEGRg8eV5VjaLMF1oiEXohXr66fLAdz7g5Z1tIo
 Sent by Martin Dubreuil, The Modern Business Architect (https://preview.example.test)
-[MAILING_ADDRESS from environment: preview placeholder]
+MINDRA
+Narva mnt 5
+10117 Tallinn
+Estonia
 Questions: reply to this email or write to martin@mindrasolutions.com.
 You are receiving this because you asked for Build the Bridge First and are subscribed to emails from The Modern Business Architect.

@@ -1,3 +1,5 @@
+Subject: Your guide is ready: Build the Bridge First
+
 A practical guide for deciding what to build before leaving what you know.
 
 BUILD THE BRIDGE FIRST
@@ -26,7 +28,7 @@ Do not read the guide only once. Return to the three questions whenever a new id
 
 WOULD YOU LIKE TO STAY CONNECTED?
 If you would like occasional practical notes, new tools and invitations from The Modern Business Architect, confirm your email below. Confirming is optional, and it is what switches those emails on.
-Yes, keep me in the community: https://preview.example.test/confirm?token=c1.lead-1.1793456603.UNoYN8R3ph1l-ix4Ywn0iKiz_sWNtgXH_JaYSzKcypI
+Yes, keep me in the community: https://preview.example.test/confirm?token=c1.lead-1.1793457821.gmVgZFNit9NnG3lKFl9YiAiaGTE3MwUvcF7869vlxHo
 No noise. No daily campaign. Just useful material when I have something worth sending. You can download the guide whether or not you confirm.
 
 Martin Dubreuil
@@ -38,6 +40,9 @@ Download the guide again: https://preview.example.test/api/resources/download?to
 Privacy: https://preview.example.test/privacy
 Unsubscribe or cancel request: https://preview.example.test/unsubscribe?token=v1.lead-1.FQJetEGRg8eV5VjaLMF1oiEXohXr66fLAdz7g5Z1tIo
 Sent by Martin Dubreuil, The Modern Business Architect (https://preview.example.test)
-[MAILING_ADDRESS from environment: preview placeholder]
+MINDRA
+Narva mnt 5
+10117 Tallinn
+Estonia
 Questions: reply to this email or write to martin@mindrasolutions.com.
 You are receiving this one-off email because you asked for Build the Bridge First. You will only receive further emails from The Modern Business Architect if you confirm your email address.

@@ -150,8 +150,8 @@ const emailHtml = async (providerId) => (await fetch(`${process.env.RESEND_API_B
 
   // --- the real email: contains the guide link AND a confirm link
   const html = await emailHtml(reqs[0].delivery_provider_id);
-  check("B27 email has download link, confirm button, unsubscribe", html.includes("Download the PDF") && html.includes("Yes, confirm my email") && html.includes("Unsubscribe"));
-  check("B28 email does not call the reader subscribed", !html.includes("part of the Modern Business Architect community") && html.includes("I will not email you again beyond this message"));
+  check("B27 email has download link, confirm button, unsubscribe", html.includes("Download the guide") && html.includes("Yes, keep me in the community") && html.includes("Unsubscribe"));
+  check("B28 email does not call the reader subscribed", !html.includes("on the list for occasional practical notes") && html.includes("Confirming is optional") && html.includes("whether or not you confirm"));
   const confirmUrl = html.match(/href="([^"]*\/confirm\?token=[^"]+)"/)?.[1];
   check("B29 confirm link present in the sent email", !!confirmUrl);
   const tok = decodeURIComponent(new URL(confirmUrl.replace(/&amp;/g, "&")).searchParams.get("token"));
@@ -194,7 +194,7 @@ const emailHtml = async (providerId) => (await fetch(`${process.env.RESEND_API_B
   check("C8 submitted event says existing", (await events({ lead_id: lead.id, event_name: "resource_form_submitted" }))[0].metadata.consent === "existing");
   eq("C9 delivery queued", (await requests(lead.id))[0].delivery_status, "queued");
   const html = await emailHtml((await requests(lead.id))[0].delivery_provider_id);
-  check("C10 subscriber email has no confirm button", !html.includes("confirm my email") && html.includes("part of the Modern Business Architect community"));
+  check("C10 subscriber email has no confirm button", !html.includes("Yes, keep me in the community") && html.includes("on the list for occasional practical notes"));
 }
 
 // ---------------------------------------------------------------- D. previously unsubscribed
@@ -231,7 +231,7 @@ const emailHtml = async (providerId) => (await fetch(`${process.env.RESEND_API_B
   eq("E6 a (forged) confirm link cannot activate a suppressed lead", (await confirmLead(confirmToken(lead.id))).status, 400);
   eq("E7 still not subscribed", (await leadByEmail(email)).ongoing_content_opt_in, false);
   const html = await emailHtml((await requests(lead.id))[0].delivery_provider_id);
-  check("E8 email is a one-off with no confirm offer", html.includes("No further marketing emails will be sent") && !html.includes("confirm my email"));
+  check("E8 email is a one-off with no confirm offer", html.includes("No further marketing emails will be sent") && !html.includes("Yes, keep me in the community"));
 }
 
 // ---------------------------------------------------------------- F. non-subscriber lead
