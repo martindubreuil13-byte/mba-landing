@@ -48,8 +48,12 @@ export function buildDeliveryLinks(requestId: string, leadId: string) {
   };
 }
 
-function mailingAddress(): string | null {
-  return process.env.MAILING_ADDRESS?.trim() || null;
+/** Postal address lines from MAILING_ADDRESS: real line breaks or a literal "\\n" between lines. Never hardcoded. */
+function mailingAddressLines(): string[] {
+  return (process.env.MAILING_ADDRESS ?? "")
+    .split(/\r?\n|\\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
 }
 
 const BURGUNDY = "#6b1f1f";
@@ -61,7 +65,7 @@ export function buildDeliveryEmail(params: DeliveryEmailParams) {
   const e = config.email;
   const links = buildDeliveryLinks(requestId, leadId);
   const subject = e.subject(resource.title);
-  const address = mailingAddress();
+  const addressLines = mailingAddressLines();
   const consent = params.consent ?? "active";
   const unsubscribeLabel = consent === "pending" ? "Unsubscribe or cancel request" : "Unsubscribe";
   const reason =
@@ -117,7 +121,7 @@ ${confirmBlock}
 <p style="margin:0;font-family:${SANS};font-size:12px;line-height:1.8;color:#7a726b;">
 <a href="${links.downloadUrl}" style="color:${BURGUNDY};">Download the guide again</a> · <a href="${links.privacyUrl}" style="color:${BURGUNDY};">Privacy</a> · <a href="${links.unsubscribePage}" style="color:${BURGUNDY};">${unsubscribeLabel}</a><br>
 Sent by Martin Dubreuil · The Modern Business Architect · <a href="${appBaseUrl()}" style="color:#7a726b;">${esc(appBaseUrl().replace(/^https?:\/\//, ""))}</a><br>
-${address ? `${esc(address)}<br>` : ""}Questions: reply to this email or write to ${REPLY_TO}.<br>
+${addressLines.length ? `${addressLines.map(esc).join("<br>")}<br>` : ""}Questions: reply to this email or write to ${REPLY_TO}.<br>
 ${esc(reason)}</p>
 </td></tr>
 </table></td></tr></table>
@@ -149,7 +153,7 @@ ${esc(reason)}</p>
     `Privacy: ${links.privacyUrl}`,
     `${unsubscribeLabel}: ${links.unsubscribePage}`,
     `Sent by Martin Dubreuil, The Modern Business Architect (${appBaseUrl()})`,
-    ...(address ? [address] : []),
+    ...addressLines,
     `Questions: reply to this email or write to ${REPLY_TO}.`,
     reason,
   ].join("\n");

@@ -41,7 +41,7 @@ One email to the authorised admin address only (`e2e/inbox-test.mjs`; screenshot
 
 | # | Check | Result |
 |---|---|---|
-| 1 | Subject "Your guide: Build The Bridge First"; sender "Martin Dubreuil <martin@mindrasolutions.com>"; preheader "Your printable copy of Build The Bridge First, ready to download."; sender identification, Privacy Policy, Unsubscribe and plain-text version present; renders cleanly at 700 px and 390 px. Resend reports `delivered` | Pass |
+| 1 | Subject "Your guide is ready: Build the Bridge First"; sender "Martin Dubreuil <martin@mindrasolutions.com>"; preheader "Your printable copy of Build The Bridge First, ready to download."; sender identification, Privacy Policy, Unsubscribe and plain-text version present; renders cleanly at 700 px and 390 px. Resend reports `delivered` | Pass |
 | 2 | Download link from the email serves the corrected PDF as an attachment (byte-identical) | Pass |
 | 3 | "Yes, confirm my email" opens `/confirm` with a button; opening it did not confirm | Pass |
 | 4 | Before the click: admin Leads shows "Awaiting confirmation"; guide page shows consent "Pending"; not in the subscribers export | Pass |

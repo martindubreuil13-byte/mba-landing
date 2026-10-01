@@ -81,7 +81,7 @@ const CONFIGS: ResourceConfig[] = [
       },
     },
     email: {
-      subject: (title) => `Your guide: ${title}`,
+      subject: () => "Your guide is ready: Build the Bridge First",
       previewText: "A practical guide for deciding what to build before leaving what you know.",
       tagline: "A practical guide for your move from corporate life to entrepreneurship",
       opening: ["Hello,", "Here it is.", "You can download your copy of Build the Bridge First below and keep it for whenever you need to think clearly about what comes next."],

@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 process.env.NAPKIN_UNSUBSCRIBE_SECRET = "test-secret";
@@ -24,7 +25,7 @@ afterEach(() => {
 describe("guide delivery email", () => {
   it("has the agreed subject, preview text, opening and a stable download link", () => {
     const { subject, html, text, links, previewText } = buildDeliveryEmail(params);
-    expect(subject).toBe("Your guide: Build The Bridge First");
+    expect(subject).toBe("Your guide is ready: Build the Bridge First");
     expect(previewText).toBe("A practical guide for deciding what to build before leaving what you know.");
     expect(html).toContain("A practical guide for your move from corporate life to entrepreneurship");
     expect(html).toContain("Here it is.");
@@ -86,6 +87,18 @@ describe("guide delivery email", () => {
     const withAddr = buildDeliveryEmail(params);
     expect(withAddr.html).toContain("1 Rue Test, Montréal QC");
     expect(withAddr.text).toContain("1 Rue Test, Montréal QC");
+  });
+  it("renders a multiline MAILING_ADDRESS line by line, whether it uses real line breaks or a literal \\n", () => {
+    for (const value of ["MINDRA\nNarva mnt 5\n10117 Tallinn\nEstonia", "MINDRA\\nNarva mnt 5\\n10117 Tallinn\\nEstonia", "MINDRA\r\nNarva mnt 5\r\n10117 Tallinn\r\nEstonia"]) {
+      process.env.MAILING_ADDRESS = value;
+      const { html, text } = buildDeliveryEmail(params);
+      expect(html).toContain("MINDRA<br>Narva mnt 5<br>10117 Tallinn<br>Estonia<br>");
+      expect(text).toContain("MINDRA\nNarva mnt 5\n10117 Tallinn\nEstonia\n");
+    }
+  });
+  it("does not hardcode any postal address in the source", () => {
+    const src = readFileSync("app/lib/resources/delivery-email.ts", "utf8") + readFileSync("app/lib/resources/config.ts", "utf8");
+    expect(src).not.toMatch(/Narva|Tallinn|MINDRA/);
   });
   it("production with APP_BASE_URL set uses it (local mock servers, staging)", () => {
     vi.stubEnv("APP_BASE_URL", "http://localhost:3000");

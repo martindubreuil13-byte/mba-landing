@@ -27,7 +27,7 @@ fs.writeFileSync("inbox-email.html", mail.html);
 
 // 1. subject / sender / preview text / formatting
 const preview = mail.html.match(/display:none[^>]*>([^<]+)</)?.[1];
-rec("1a subject", mail.subject === "Your guide: Build The Bridge First", mail.subject);
+rec("1a subject", mail.subject === "Your guide is ready: Build the Bridge First", mail.subject);
 rec("1b sender name + address", mail.from === "Martin Dubreuil <martin@mindrasolutions.com>", mail.from);
 rec("1c preview text (hidden preheader)", /Your printable copy of Build The Bridge First/.test(preview ?? ""), preview);
 rec("1d provider reports delivered to the inbox", mail.last_event === "delivered", mail.last_event);
