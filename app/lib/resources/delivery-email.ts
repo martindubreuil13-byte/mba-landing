@@ -60,7 +60,6 @@ export function buildDeliveryEmail(params: DeliveryEmailParams) {
   const { config, resource, requestId, leadId } = params;
   const e = config.email;
   const links = buildDeliveryLinks(requestId, leadId);
-  const resourcePage = `${appBaseUrl()}/resources/${resource.slug}`;
   const subject = e.subject(resource.title);
   const address = mailingAddress();
   const consent = params.consent ?? "active";
