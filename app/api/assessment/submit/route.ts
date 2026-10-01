@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
 import { completeAssessmentWithLead, getAssessmentById } from "@/app/lib/assessment/queries";
 import { assessmentRowToResultView } from "@/app/lib/assessment/present";
-import { SITE_URL } from "@/app/lib/seo";
+import { appBaseUrl } from "@/app/lib/resources/base-url";
+import { createResend } from "@/app/lib/email-client";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -32,7 +32,7 @@ function buildEmailHtml(params: {
     ${biggestExposure ? `<p><strong>Biggest exposure:</strong> ${biggestExposure}</p>` : ""}
     ${nextAction ? `<p><strong>What I'd do next:</strong> ${nextAction}</p>` : ""}
     <p><a href="${resultUrl}">View your full result</a></p>
-    <p>If you'd like to talk it through, <a href="${SITE_URL}/lets-talk">reach out here</a>.</p>
+    <p>If you'd like to talk it through, <a href="${appBaseUrl()}/lets-talk">reach out here</a>.</p>
     <p>— Martin</p>
   `;
 }
@@ -85,12 +85,12 @@ export async function POST(req: Request) {
   }
 
   const result = assessmentRowToResultView(assessment, lead.first_name);
-  const resultUrl = `${SITE_URL}/resources/business-idea-reality-check/result/${assessment.id}`;
+  const resultUrl = `${appBaseUrl()}/resources/business-idea-reality-check/result/${assessment.id}`;
 
   // Best-effort confirmation email — never blocks or fails the response.
   if (process.env.RESEND_API_KEY) {
     try {
-      const resend = new Resend(process.env.RESEND_API_KEY);
+      const resend = createResend();
       await resend.emails.send({
         from: "Martin <martin@mindrasolutions.com>",
         to: email,

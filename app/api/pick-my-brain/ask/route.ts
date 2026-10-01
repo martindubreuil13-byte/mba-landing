@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
 import { checkRateLimit, getClientIp } from "@/app/lib/rateLimit";
 import {
   cleanPagePath,
@@ -8,7 +7,8 @@ import {
   markQuestionEmailed,
   visitorKey,
 } from "@/app/lib/pick-my-brain/queries";
-import { SITE_URL } from "@/app/lib/seo";
+import { appBaseUrl } from "@/app/lib/resources/base-url";
+import { createResend } from "@/app/lib/email-client";
 
 const NO_INDEX = { "X-Robots-Tag": "noindex, nofollow" };
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -84,7 +84,7 @@ export async function POST(req: Request) {
   // Best-effort notification — the question is already stored in Admin.
   if (process.env.RESEND_API_KEY) {
     try {
-      const resend = new Resend(process.env.RESEND_API_KEY);
+      const resend = createResend();
       const { error } = await resend.emails.send({
         from: "Martin <martin@mindrasolutions.com>",
         to: "martin@mindrasolutions.com",
@@ -95,8 +95,8 @@ export async function POST(req: Request) {
             <p style="text-transform: uppercase; letter-spacing: 1px; font-size: 12px; color: #6b1f1f;">Pick My Brain — Ask Martin</p>
             <p style="font-size: 18px; white-space: pre-wrap;">${escapeHtml(question)}</p>
             <p><strong>From:</strong> ${escapeHtml(name)} &lt;${escapeHtml(email)}&gt;</p>
-            ${pagePath ? `<p><strong>Asked on:</strong> ${escapeHtml(`${SITE_URL}${pagePath}`)}</p>` : ""}
-            <p><a href="${SITE_URL}/admin/pick-my-brain">Open Pick My Brain in Admin</a></p>
+            ${pagePath ? `<p><strong>Asked on:</strong> ${escapeHtml(`${appBaseUrl()}${pagePath}`)}</p>` : ""}
+            <p><a href="${appBaseUrl()}/admin/pick-my-brain">Open Pick My Brain in Admin</a></p>
           </div>
         `,
       });

@@ -108,7 +108,9 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
           <select name="subscription" defaultValue={filters.subscription} className="border border-[#1a1816]/15 px-2 py-2">
             <option value="">Subscription: any</option>
             <option value="subscribed">Subscribed</option>
+            <option value="pending_confirmation">Awaiting confirmation</option>
             <option value="unsubscribed">Unsubscribed</option>
+            <option value="suppressed">Suppressed</option>
             <option value="never_subscribed">Never subscribed</option>
           </select>
         </div>

@@ -1,4 +1,5 @@
 import "server-only";
+import { applyOptOut } from "@/app/lib/leads/consent";
 import { getServiceClient } from "@/app/lib/supabase/service";
 import { upsertLeadPreservingOptIn } from "@/app/lib/leads/upsert";
 import type { Lead } from "@/app/lib/resources/types";
@@ -117,23 +118,10 @@ export async function joinNapkinCommunity(
 }
 
 export async function unsubscribeNapkinLead(leadId: string): Promise<"updated" | "already_unsubscribed" | "not_found"> {
-  const supabase = getServiceClient();
-  const { data: lead, error: lookupError } = await supabase
-    .from("leads")
-    .select("id, ongoing_content_opt_in")
-    .eq("id", leadId)
-    .maybeSingle();
-  if (lookupError) throw new Error(`Failed to load unsubscribe record: ${lookupError.message}`);
-  if (!lead) return "not_found";
-  if (!lead.ongoing_content_opt_in) return "already_unsubscribed";
-
-  const { error } = await supabase
-    .from("leads")
-    .update({ ongoing_content_opt_in: false, ongoing_content_opt_out_at: new Date().toISOString() })
-    .eq("id", leadId);
-  if (error) throw new Error(`Failed to unsubscribe lead: ${error.message}`);
-
-  return "updated";
+  // One shared opt-out path (also writes the append-only consent record) so
+  // legacy Napkin links behave exactly like the neutral /unsubscribe route.
+  const result = await applyOptOut(leadId, { method: "unsubscribe_link", wordingVersion: "unsubscribe-v1", sourceType: "napkin" });
+  return result === "already_opted_out" ? "already_unsubscribed" : result;
 }
 
 export async function markNapkinEmailSent(submissionId: string, sent: boolean, error: string | null) {

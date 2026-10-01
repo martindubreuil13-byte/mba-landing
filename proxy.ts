@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isAllowedAdminEmail } from "@/app/lib/supabase/admin-authorization";
+import { isProductionDeployment, isProductionDatabaseUrl } from "@/app/lib/deployment";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
@@ -13,6 +14,11 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
  * not the security boundary.
  */
 export async function proxy(request: NextRequest) {
+  // Non-production deployments never authenticate against (or read) the production project.
+  if (!isProductionDeployment() && isProductionDatabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL)) {
+    return new NextResponse("This preview is not connected to an isolated database.", { status: 503 });
+  }
+
   const response = NextResponse.next({ request });
 
   const supabase = createServerClient(

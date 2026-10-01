@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 
-export default function UnsubscribeForm({ token }: { token: string }) {
+export default function UnsubscribeForm({ token, endpoint = "/api/napkin/unsubscribe" }: { token: string; endpoint?: string }) {
   const [state, setState] = useState<"idle" | "submitting" | "done" | "error">("idle");
   const [message, setMessage] = useState("");
 
   async function unsubscribe() {
     setState("submitting");
     try {
-      const response = await fetch("/api/napkin/unsubscribe", {
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),

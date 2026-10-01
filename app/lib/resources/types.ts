@@ -58,9 +58,17 @@ export type Lead = {
   ongoing_content_opt_in: boolean;
   ongoing_content_opt_in_at: string | null;
   ongoing_content_opt_out_at: string | null;
+  lead_status?: LeadStatus;
+  last_activity_at?: string | null;
+  suppressed_at?: string | null;
+  suppression_reason?: string | null;
+  consent_requested_at?: string | null;
   created_at: string;
   updated_at: string;
 };
+
+/** Relationship workflow only. Consent is derived separately (see app/lib/leads/consent.ts). */
+export type LeadStatus = "new" | "engaged" | "qualified" | "contacted" | "converted" | "archived";
 
 export type ResourceRequest = {
   id: string;

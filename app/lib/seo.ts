@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { isProductionDeployment } from "./deployment";
 
 export const SITE_URL = "https://modernbusinessarchitect.com";
 export const SITE_NAME = "The Modern Business Architect";
@@ -23,9 +24,10 @@ export function createPageMetadata({
     title,
     description,
     alternates: { canonical },
-    robots: index
+    // Outside production every page is noindex, regardless of what the page asks for.
+    robots: index && isProductionDeployment()
       ? { index: true, follow: true }
-      : { index: false, follow: true },
+      : { index: false, follow: isProductionDeployment() }, 
     openGraph: {
       title,
       description,

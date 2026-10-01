@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createServerClient } from "@supabase/ssr";
 import { isAllowedAdminEmail } from "./admin-authorization";
+import { assertDatabaseAllowed } from "@/app/lib/deployment";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
@@ -12,6 +13,7 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
  * this only ever tells us who, if anyone, is signed in.
  */
 async function getSessionClient() {
+  assertDatabaseAllowed(process.env.NEXT_PUBLIC_SUPABASE_URL);
   const cookieStore = await cookies();
 
   return createServerClient(

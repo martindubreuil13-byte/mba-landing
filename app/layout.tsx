@@ -3,6 +3,7 @@ import Script from "next/script";
 import { PRINCIPAL_NAME, SITE_NAME, SITE_URL, serializeJsonLd } from "@/app/lib/seo";
 import Footer from "@/app/components/Footer";
 import AnalyticsPageview from "@/app/components/AnalyticsPageview";
+import { NOINDEX_DIRECTIVE, isProductionDeployment } from "@/app/lib/deployment";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,7 +17,8 @@ export const metadata: Metadata = {
   authors: [{ name: PRINCIPAL_NAME }],
   creator: PRINCIPAL_NAME,
   alternates: { canonical: "/" },
-  robots: { index: true, follow: true },
+  // Non-production deployments are never indexable (the X-Robots-Tag header in next.config.ts is the primary control).
+  robots: isProductionDeployment() ? { index: true, follow: true } : { index: false, follow: false },
   openGraph: {
     title: SITE_NAME,
     description:
@@ -89,21 +91,30 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const isProduction = isProductionDeployment();
   return (
     <html lang="en" className="h-full scroll-smooth">
       <head>
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-VWKDNXD9JD"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-VWKDNXD9JD', { send_page_view: false });
-          `}
-        </Script>
+        {isProduction ? (
+          <>
+            <Script
+              src="https://www.googletagmanager.com/gtag/js?id=G-VWKDNXD9JD"
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', 'G-VWKDNXD9JD', { send_page_view: false });
+              `}
+            </Script>
+          </>
+        ) : (
+          // Previews: explicit robots meta in addition to the X-Robots-Tag header, and no Google Analytics
+          // (preview traffic must not appear in production analytics).
+          <meta name="robots" content={NOINDEX_DIRECTIVE} />
+        )}
       </head>
       <body className="min-h-full flex flex-col bg-[#f5f1ed] text-[#1a1816] antialiased">
         <script

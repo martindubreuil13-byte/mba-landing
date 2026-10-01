@@ -35,12 +35,14 @@ export async function upsertLeadPreservingOptIn(input: UpsertLeadInput): Promise
   if (lookupError) throw new Error(`Failed to look up lead: ${lookupError.message}`);
 
   if (existingLead) {
-    const shouldPromoteOptIn = input.ongoing_content_opt_in && !existingLead.ongoing_content_opt_in;
+    // A lead suppressed after a spam complaint is never re-subscribed by a form.
+    const shouldPromoteOptIn =
+      input.ongoing_content_opt_in && !existingLead.ongoing_content_opt_in && !existingLead.suppressed_at;
 
     const { data: updatedLead, error: updateError } = await supabase
       .from("leads")
       .update({
-        first_name: input.first_name,
+        first_name: input.first_name || existingLead.first_name,
         country: input.country ?? existingLead.country,
         ...(shouldPromoteOptIn
           ? { ongoing_content_opt_in: true, ongoing_content_opt_in_at: now }
