@@ -19,27 +19,22 @@ const BUTTON =
   "inline-block text-sm font-semibold tracking-widest uppercase px-6 sm:px-8 py-4 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b1f1f]";
 
 /**
- * A printable-guide call to action. Opens the shared ResourceLeadForm inline
- * (no modal, no popup). Once the guide has been delivered every CTA on the page
- * turns into a quiet "download again" link.
+ * A member-benefit call to action. Opens the shared ResourceLeadForm inline (no modal, no popup). Once the form has
+ * been accepted every CTA on the page turns into a quiet "check your inbox" note: nothing is downloadable before
+ * the membership is confirmed.
  */
 export default function PrintableGuideCTA({ location, heading, body, button, secondary }: Props) {
-  const { openLocation, delivered, openForm } = useGuideExperience();
+  const { openLocation, submitted, openForm } = useGuideExperience();
   const isOpen = openLocation === location;
 
   return (
     <div data-cta-location={location} className="border border-[#1a1816]/10 bg-[#f5f1ed] p-6 md:p-10">
-      {isOpen && delivered ? (
-        <ResourceDeliverySuccess delivered={delivered} />
+      {isOpen && submitted ? (
+        <ResourceDeliverySuccess />
       ) : isOpen ? (
         <ResourceLeadForm location={location} />
-      ) : delivered ? (
-        <div className="space-y-3">
-          <p className="text-base text-[#1a1816]/75">You already have the printable guide.</p>
-          <a href={delivered.backupUrl} className={`${BUTTON} text-white bg-[#6b1f1f] hover:bg-[#6b1f1f]/90`}>
-            Download the PDF →
-          </a>
-        </div>
+      ) : submitted ? (
+        <p className="text-base text-[#1a1816]/75">Check your inbox for your confirmation email. The guide is free to read right here in the meantime.</p>
       ) : (
         <div className="space-y-5">
           {heading && <h2 className="text-2xl md:text-3xl font-light text-[#1a1816]">{heading}</h2>}

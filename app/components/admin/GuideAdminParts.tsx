@@ -72,7 +72,33 @@ function Row({ label, value, formula }: { label: string; value: string | number;
   );
 }
 
-export function FunnelTable({ s }: { s: FunnelSummary }) {
+function Section({ title }: { title: string }) {
+  return (
+    <tr>
+      <th colSpan={3} scope="colgroup" className="text-left text-xs uppercase tracking-widest text-[#6b1f1f] font-semibold pt-5 pb-1">
+        {title}
+      </th>
+    </tr>
+  );
+}
+
+/** Shown above the numbers whenever a comparison could not be made safely. */
+export function IntegrityBanner({ warnings }: { warnings: string[] }) {
+  if (warnings.length === 0) return null;
+  return (
+    <div role="alert" className="border border-[#6b1f1f]/40 bg-[#6b1f1f]/5 p-4 mb-8 text-sm">
+      <p className="font-semibold text-[#6b1f1f]">Analytics integrity warning</p>
+      <p className="text-[#1a1816]/70 mt-1">Some figures below cannot be compared safely, so their rates show “—” instead of a misleading number.</p>
+      <ul className="list-disc pl-5 mt-2 space-y-1 text-[#1a1816]/75">
+        {warnings.map((w) => (
+          <li key={w}>{w}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export function FunnelTable({ s, benefitLabel }: { s: FunnelSummary; benefitLabel: string }) {
   return (
     <div className="border border-[#1a1816]/10 bg-white p-5 overflow-x-auto">
       <table className="w-full min-w-[34rem] text-sm">
@@ -85,16 +111,26 @@ export function FunnelTable({ s }: { s: FunnelSummary }) {
           </tr>
         </thead>
         <tbody>
-          <Row label="Page views" value={s.pageViews} formula="Resource page loads. Repeat loads in the same session within 30 minutes count once." />
-          <Row label="Browser sessions" value={s.sessions} formula="Distinct anonymous per-tab session ids among page views. Not unique visitors or people: a return visit in a new tab counts again." />
+          <Section title="Public layer (no email needed)" />
+          <Row label="Public views" value={s.pageViews} formula="Resource page loads. Repeat loads in the same session within 30 minutes count once." />
+          <Row label="Browser sessions" value={s.sessions} formula="Distinct anonymous per-tab session ids among page views. Not unique people: a return visit in a new tab counts again." />
           <Row label="Online guide starts" value={s.readStarts} formula="Distinct sessions that scrolled past the cover into the first exercise page." />
           <Row label="Online guide completions" value={s.readCompletions} formula="Distinct sessions that reached the final page at least 60 seconds after starting. A proxy for reading, not proof." />
-          <Row label="Printable-guide CTA clicks" value={s.ctaClicks} formula={`All clicks, ${s.ctaSessions} distinct sessions.`} />
+          <Section title="Member-benefit interest" />
+          <Row label={`${benefitLabel} CTA clicks`} value={s.ctaClicks} formula={`All clicks, from ${s.ctaSessions} distinct sessions.`} />
           <Row label="Form opens" value={s.formOpens} formula="Times the email form was shown." />
-          <Row label="Form submissions" value={s.submissions} formula="Valid requests stored (double clicks and retries within 10 minutes count once)." />
-          <Row label="Valid opt-ins" value={s.validOptIns} formula={`New sign-ups (${s.newSignups}) + already subscribed (${s.existingSubscribers}). Excludes ${s.consentNotApplied} suppressed. New sign-ups are pending until the reader confirms.`} />
-          <Row label="Confirmed community members" value={s.confirmed} formula="Readers who confirmed their email from the guide email (counted on the day they confirmed). Only these are added to community marketing." />
-          <Row label="PDF download starts" value={s.downloadStarts} formula="Download endpoint hits (form, backup button or email). Does not prove the file finished; email security scanners can add hits." />
+          <Section title="Membership" />
+          <Row label="Membership requests" value={s.membershipRequests} formula={`Requests that asked to become a member (new or pending addresses). A further ${s.existingMemberRequests} came from confirmed members asking again.`} />
+          <Row label="Pending confirmations" value={s.pendingConfirmations} formula="Membership requests in this range that are still locked and whose address has neither confirmed nor unsubscribed." />
+          <Row label="Confirmed members" value={s.confirmedMembers} formula="Distinct people who pressed the confirmation button in this range. Only they are added to community marketing." />
+          <Section title="Benefit" />
+          <Row label={`${benefitLabel} unlocked`} value={s.benefitsFulfilled} formula={`${s.fulfilledByConfirmation} at confirmation · ${s.fulfilledExistingMember} for members who asked again. Counted once per request.`} />
+          <Row label="Download starts" value={s.downloadStarts} formula={`Download endpoint hits (confirmation page, email link). ${s.requestsDownloaded} unlocked requests downloaded at least once. Does not prove the file finished; email security scanners can add hits.`} />
+          <Section title="Delivery and outcomes" />
+          <Row label="Delivery failures" value={s.deliveryFailures} formula="Requests whose latest email bounced or failed (details below)." />
+          <Row label="Unsubscribed since requesting" value={s.unsubscribedMembers} formula="Requests in this range whose person has since unsubscribed. They keep anything already unlocked." />
+          <Row label="Suppressed since requesting" value={s.suppressedMembers} formula="Requests whose person was suppressed (e.g. a spam complaint). Never re-added by a form." />
+          <Row label="Attempts ignored (never shown to visitors)" value={s.blockedAttempts.unsubscribed + s.blockedAttempts.suppressed} formula={`${s.blockedAttempts.unsubscribed} from unsubscribed addresses and ${s.blockedAttempts.suppressed} from suppressed addresses submitted the form; nothing was sent or changed. Unsubscribed people can rejoin deliberately at /rejoin.`} />
         </tbody>
       </table>
     </div>
@@ -102,13 +138,8 @@ export function FunnelTable({ s }: { s: FunnelSummary }) {
 }
 
 export function RatesTable({ s }: { s: FunnelSummary }) {
-  const rows = [
-    { label: "View → opt-in", value: s.rates.viewToOptIn, formula: `valid opt-ins ÷ browser sessions  (${s.validOptIns} ÷ ${s.sessions})` },
-    { label: "CTA click → opt-in", value: s.rates.ctaToOptIn, formula: `valid opt-ins ÷ browser sessions with a CTA click  (${s.validOptIns} ÷ ${s.ctaSessions})` },
-    { label: "Sign-up → confirmed", value: s.rates.confirmation, formula: `confirmations ÷ new sign-ups in the same period  (${s.confirmed} ÷ ${s.newSignups}); confirmations lag, so recent periods read low` },
-    { label: "Opt-in → download", value: s.rates.optInToDownload, formula: `requests with ≥1 download ÷ requests  (${s.requestsWithDownload} ÷ ${s.requests})` },
-    { label: "Guide completion", value: s.rates.readCompletion, formula: `completions ÷ starts  (${s.readCompletions} ÷ ${s.readStarts})` },
-  ];
+  const c = s.conversions;
+  const rows = [c.viewToReadStart, c.readStartToCompletion, c.viewToCta, c.ctaToRequest, c.viewToRequest, c.requestToConfirmed, c.confirmedToFulfilled, c.fulfilledToDownloaded];
   return (
     <div className="border border-[#1a1816]/10 bg-white p-5 overflow-x-auto">
       <table className="w-full min-w-[30rem] text-sm">
@@ -117,13 +148,13 @@ export function RatesTable({ s }: { s: FunnelSummary }) {
           {rows.map((r) => (
             <tr key={r.label} className="border-t first:border-t-0 border-[#1a1816]/8">
               <th scope="row" className="text-left font-normal py-3 pr-4">{r.label}</th>
-              <td className="py-3 pr-4 text-right tabular-nums font-semibold">{formatRate(r.value)}</td>
-              <td className="py-3 text-xs text-[#1a1816]/55">{r.formula}</td>
+              <td className="py-3 pr-4 text-right tabular-nums font-semibold">{formatRate(r.rate)}</td>
+              <td className="py-3 text-xs text-[#1a1816]/55">{r.numerator} ÷ {r.denominator} {r.unit}s{r.rate === null && r.denominator > 0 ? " — not comparable (see warning)" : ""}</td>
             </tr>
           ))}
         </tbody>
       </table>
-      <p className="text-[11px] text-[#1a1816]/45 mt-3">Rates show “—” when the denominator is zero. Small counts make rates unstable; read them with the raw numbers.</p>
+      <p className="text-[11px] text-[#1a1816]/45 mt-3">Every rate compares the same unit on both sides (sessions with sessions, requests with requests, members with members) and is never capped. “—” means there is no denominator or the numerator is not a subset of it. Small counts make rates unstable.</p>
     </div>
   );
 }
@@ -138,9 +169,8 @@ export function CtaTable({ s }: { s: FunnelSummary }) {
             <th scope="col" className="text-left font-normal pb-2">CTA</th>
             <th scope="col" className="text-right font-normal pb-2">Clicks</th>
             <th scope="col" className="text-right font-normal pb-2">Form opens</th>
-            <th scope="col" className="text-right font-normal pb-2">Submissions</th>
-            <th scope="col" className="text-right font-normal pb-2">Valid opt-ins</th>
-            <th scope="col" className="text-right font-normal pb-2">Click → opt-in</th>
+            <th scope="col" className="text-right font-normal pb-2">Membership requests</th>
+            <th scope="col" className="text-right font-normal pb-2">Session click → request</th>
           </tr>
         </thead>
         <tbody>
@@ -151,9 +181,8 @@ export function CtaTable({ s }: { s: FunnelSummary }) {
                 <th scope="row" className="text-left font-normal py-3 capitalize">{loc.replace("-", " ")}</th>
                 <td className="py-3 text-right tabular-nums">{c.clicks}</td>
                 <td className="py-3 text-right tabular-nums">{c.opens}</td>
-                <td className="py-3 text-right tabular-nums">{c.submissions}</td>
-                <td className="py-3 text-right tabular-nums">{c.validOptIns}</td>
-                <td className="py-3 text-right tabular-nums">{formatRate(c.clickToOptIn)}</td>
+                <td className="py-3 text-right tabular-nums">{c.requests}</td>
+                <td className="py-3 text-right tabular-nums">{formatRate(c.clickToRequest.rate)}</td>
               </tr>
             );
           })}
@@ -176,7 +205,7 @@ export function DeliveryTable({ s }: { s: FunnelSummary }) {
         ))}
       </ul>
       <p className="text-[11px] text-[#1a1816]/45 mt-3 leading-snug">
-        “Queued” means the email provider accepted the message. Only “Delivered” (from the provider’s webhook) confirms delivery; if the webhook is not configured, emails stay at “Queued”.
+        The state of the LATEST email for each request (the confirmation email, then the benefit email once unlocked). “Queued” means the provider accepted it; only “Delivered” (from the provider’s webhook) confirms delivery.
       </p>
     </div>
   );
@@ -188,13 +217,13 @@ export function TrendChart({ days }: { days: TrendDay[] }) {
     <div className="border border-[#1a1816]/10 bg-white p-5">
       <div className="flex items-end gap-px h-28" role="img" aria-label={`Daily page views from ${days[0]?.date} to ${days[days.length - 1]?.date}`}>
         {days.map((d) => (
-          <div key={d.date} className="flex-1 flex flex-col justify-end h-full" title={`${d.date}: ${d.views} views, ${d.optIns} opt-ins`}>
+          <div key={d.date} className="flex-1 flex flex-col justify-end h-full" title={`${d.date}: ${d.views} views, ${d.requests} membership requests`}>
             <div className="bg-[#1a1816]/25" style={{ height: `${(d.views / max) * 100}%`, minHeight: d.views ? 2 : 0 }} />
-            {d.optIns > 0 && <div className="bg-[#6b1f1f] mt-px" style={{ height: 4 }} />}
+            {d.requests > 0 && <div className="bg-[#6b1f1f] mt-px" style={{ height: 4 }} />}
           </div>
         ))}
       </div>
-      <p className="text-[11px] text-[#1a1816]/50 mt-2">Grey: page views per day. Maroon marker: a day with at least one opt-in.</p>
+      <p className="text-[11px] text-[#1a1816]/50 mt-2">Grey: page views per day. Maroon marker: a day with at least one membership request.</p>
       <details className="mt-4">
         <summary className="text-xs uppercase tracking-widest text-[#1a1816]/55 cursor-pointer">Daily table</summary>
         <div className="overflow-x-auto mt-3 max-h-80 overflow-y-auto">
@@ -203,8 +232,8 @@ export function TrendChart({ days }: { days: TrendDay[] }) {
               <tr className="text-xs uppercase tracking-widest text-[#1a1816]/50">
                 <th scope="col" className="text-left font-normal pb-2">Day (UTC)</th>
                 <th scope="col" className="text-right font-normal pb-2">Views</th>
-                <th scope="col" className="text-right font-normal pb-2">Opt-ins</th>
-                <th scope="col" className="text-right font-normal pb-2">Conversion</th>
+                <th scope="col" className="text-right font-normal pb-2">Requests</th>
+                <th scope="col" className="text-right font-normal pb-2">Sessions with a request ÷ sessions</th>
               </tr>
             </thead>
             <tbody>
@@ -212,8 +241,8 @@ export function TrendChart({ days }: { days: TrendDay[] }) {
                 <tr key={d.date} className="border-t border-[#1a1816]/8">
                   <th scope="row" className="text-left font-normal py-2">{d.date}</th>
                   <td className="py-2 text-right tabular-nums">{d.views}</td>
-                  <td className="py-2 text-right tabular-nums">{d.optIns}</td>
-                  <td className="py-2 text-right tabular-nums">{formatRate(d.conversion)}</td>
+                  <td className="py-2 text-right tabular-nums">{d.requests}</td>
+                  <td className="py-2 text-right tabular-nums">{formatRate(d.conversion.rate)}</td>
                 </tr>
               ))}
             </tbody>

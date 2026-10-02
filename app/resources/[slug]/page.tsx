@@ -22,7 +22,7 @@ export default async function ResourceDetailPage({
   // Resources with a configured online guide get the read-online + printable-guide experience.
   const config = getResourceConfig(resource.slug);
   const content = config ? getGuideContent(resource.slug) : null;
-  const consent = config ? getConsentCopy(config.consentCopyId) : null;
+  const consent = config ? getConsentCopy(config.access.consentCopyId) : null;
   if (config && content && consent) {
     return (
       <OnlineGuideResourcePage

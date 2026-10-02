@@ -47,27 +47,33 @@ export default function PrivacyPage() {
                 providing any personal information: no email, no account and no password.
               </p>
               <p>
-                The printable edition (a PDF to download, print, complete and keep) is available when
-                you enter your email address and use the button that says it will email you the guide.
-                Submitting the form delivers the guide: the PDF downloads immediately and a copy is
-                emailed to you, and neither depends on anything else. The form is not a marketing
-                sign-up. The same email invites you to confirm whether you would like to join the
-                community, and that confirmation is optional.
+                The printable edition (a PDF to download, print, complete and keep) is a benefit for free
+                members of the Modern Business Architect community. To get it, you enter your email address
+                and press the button that says it will email you a confirmation link. The form only asks to
+                become a member: nothing is unlocked and no marketing starts until you confirm. We send you
+                one email with a link to a confirmation page; membership begins, and the PDF unlocks and
+                starts downloading, only when you press the confirmation button on that page. Opening the
+                link or a security scanner fetching it changes nothing. We then also email you a download
+                link that stays valid so you can come back to it.
               </p>
               <p>
-                Marketing emails from Martin Dubreuil and The Modern Business Architect begin only if
-                you actively confirm, by opening the link in that email and pressing the confirmation
-                button. If you do not confirm, you are not added to the mailing list and receive no
-                marketing emails. To keep a record of what you were shown and chose, the site stores
-                that you were invited to confirm and, if you confirm, that you did, each with the exact
-                wording you saw, the time, the page and the button you used. Community emails may
-                include educational material, new resources, updates and occasional relevant offers.
+                As a member you may receive occasional emails from Martin Dubreuil and The Modern Business
+                Architect: educational material, new resources, updates and occasional relevant offers. If
+                you do not confirm, you are not added to the mailing list and receive no marketing emails.
+                To keep a record of what you were shown and chose, the site stores that you asked to become
+                a member and, if you confirm, that you did, each with the exact wording you saw, the time,
+                the page and the button you used. If you ask for the guide again after confirming, the
+                download link is sent to your email address rather than shown on the page.
               </p>
               <p>
                 You can withdraw at any time using the unsubscribe link in any email, or by emailing
-                Martin. Unsubscribing stops all marketing emails, keeps a record that you did, and does
-                not take the guide away from you. If you later request a resource and confirm again, that
-                is recorded separately.
+                Martin. Unsubscribing stops all marketing emails, keeps a record that you did, and does not
+                take back anything you have already unlocked. A guide request form never signs an
+                unsubscribed address up again; if you change your mind you can rejoin deliberately on the{" "}
+                <a href="/rejoin" className="underline hover:text-[#1a1816]">
+                  rejoin page
+                </a>
+                , which asks for the same email confirmation.
               </p>
               <p>
                 To understand which guides are useful, the site counts anonymous activity on the guide

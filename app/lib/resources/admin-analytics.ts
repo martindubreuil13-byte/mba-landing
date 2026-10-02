@@ -38,6 +38,11 @@ export type GuideLeadRow = {
   delivery_status: DeliveryStatus;
   download_count: number;
   last_activity_at: string | null;
+  /** Locked = waiting for the membership confirmation. */
+  benefit_unlocked: boolean;
+  source: string | null;
+  medium: string | null;
+  referrer: string | null;
 };
 
 export async function getResourceAnalytics(resource: Resource, range: DateRange) {
@@ -47,7 +52,7 @@ export async function getResourceAnalytics(resource: Resource, range: DateRange)
   const events = await fetchAll<FunnelEvent>((from, to) =>
     supabase
       .from("resource_events")
-      .select("event_name, session_id, cta_location, created_at, metadata")
+      .select("event_name, session_id, cta_location, created_at, metadata, lead_id, request_id")
       .eq("resource_id", resource.id)
       .gte("created_at", start)
       .lt("created_at", end)
@@ -59,13 +64,16 @@ export async function getResourceAnalytics(resource: Resource, range: DateRange)
     id: string;
     lead_id: string;
     cta_location: string | null;
+    source: string | null;
+    medium: string | null;
+    referrer: string | null;
     lead: Lead | Lead[] | null;
   };
 
   const requests = await fetchAll<RequestWithLead>((from, to) =>
     supabase
       .from("resource_requests")
-      .select("id, lead_id, requested_at, cta_location, delivery_status, download_count, lead:leads(*)")
+      .select("id, lead_id, requested_at, cta_location, delivery_status, download_count, benefit_fulfilled_at, opted_in_this_request, source, medium, referrer, lead:leads(*)")
       .eq("resource_id", resource.id)
       .gte("requested_at", start)
       .lt("requested_at", end)
@@ -73,7 +81,11 @@ export async function getResourceAnalytics(resource: Resource, range: DateRange)
       .range(from, to)
   );
 
-  const summary = computeFunnel(events, requests);
+  const withConsent = requests.map((r) => {
+    const lead = (Array.isArray(r.lead) ? r.lead[0] : r.lead) as Lead | null;
+    return { ...r, lead_consent: lead ? consentStatusOf({ ...lead, suppressed_at: lead.suppressed_at ?? null }) : null };
+  });
+  const summary = computeFunnel(events, withConsent);
   const trend = computeTrend(events, range.from, range.to);
 
   const leads: GuideLeadRow[] = requests.map((r) => {
@@ -90,6 +102,10 @@ export async function getResourceAnalytics(resource: Resource, range: DateRange)
       delivery_status: r.delivery_status ?? "not_tracked",
       download_count: r.download_count ?? 0,
       last_activity_at: lead?.last_activity_at ?? null,
+      benefit_unlocked: !!r.benefit_fulfilled_at,
+      source: r.source ?? null,
+      medium: r.medium ?? null,
+      referrer: r.referrer ?? null,
     };
   });
 

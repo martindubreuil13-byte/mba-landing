@@ -67,7 +67,7 @@ describe("operational links use the environment-aware base URL", () => {
     expect(bad).toEqual([]);
   });
   it("links in emails are built with appBaseUrl()", () => {
-    for (const file of ["app/lib/programs/email.ts", "app/lib/resources/delivery-email.ts", "app/lib/napkin/email.ts", "app/api/resources/request/route.ts", "app/api/assessment/submit/route.ts", "app/api/pick-my-brain/ask/route.ts"]) {
+    for (const file of ["app/lib/programs/email.ts", "app/lib/resources/delivery-email.ts", "app/lib/resources/membership-email.ts", "app/lib/resources/email-layout.ts", "app/lib/napkin/email.ts", "app/api/resources/request/route.ts", "app/api/assessment/submit/route.ts", "app/api/pick-my-brain/ask/route.ts"]) {
       expect(read(path.join(ROOT, file)), file).toMatch(/appBaseUrl\(\)/);
     }
   });

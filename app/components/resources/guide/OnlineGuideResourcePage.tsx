@@ -84,6 +84,8 @@ export default function OnlineGuideResourcePage(props: Props) {
   const { slug, title, config, content, consent } = props;
   const consentProps = {
     id: consent.id,
+    heading: consent.heading ?? "",
+    benefitIntro: consent.benefitIntro ?? "",
     buttonLabel: consent.buttonLabel.toUpperCase(),
     communityNote: consent.communityNote,
     disclosure: consent.disclosure,
@@ -95,7 +97,7 @@ export default function OnlineGuideResourcePage(props: Props) {
       <Navigation />
       <div className="h-16" />
       <main className="w-full bg-white text-[#1a1816]">
-        <ResourceGuideProvider slug={slug} title={title} consent={consentProps}>
+        <ResourceGuideProvider slug={slug} title={title} consent={consentProps} checkInbox={config.access.checkInbox}>
           <ResourceEventTracker slug={slug} />
 
           <article className="w-full px-6 md:px-12 lg:px-16 pt-24 md:pt-32 pb-16 md:pb-24">

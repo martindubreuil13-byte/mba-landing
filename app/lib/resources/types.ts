@@ -97,6 +97,8 @@ export type ResourceRequest = {
   download_count?: number;
   first_download_at?: string | null;
   last_download_at?: string | null;
+  /** NULL = locked (membership request awaiting confirmation); set = the member benefit was unlocked. */
+  benefit_fulfilled_at?: string | null;
 };
 
 export type LeadWithStats = Lead & {

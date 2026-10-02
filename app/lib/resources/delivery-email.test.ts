@@ -6,9 +6,10 @@ import { getResourceConfig } from "./config";
 import { buildDeliveryEmail } from "./delivery-email";
 import { verifyUnsubscribeToken } from "@/app/lib/napkin/unsubscribe";
 import { verifyConfirmationToken } from "@/app/lib/leads/confirmation-token";
+import { verifyDownloadToken } from "./download-token";
 
 const config = getResourceConfig("build-the-bridge-first")!;
-const params = { config, resource: { title: "Build The Bridge First", slug: "build-the-bridge-first" }, requestId: "11111111-1111-1111-1111-111111111111", leadId: "lead-1" };
+const params = { config, resource: { id: "22222222-2222-2222-2222-222222222222", title: "Build The Bridge First", slug: "build-the-bridge-first" }, requestId: "11111111-1111-1111-1111-111111111111", leadId: "lead-1" };
 
 // Link-origin expectations depend on the environment, so every test states it explicitly: production by default.
 beforeEach(() => {
@@ -31,7 +32,12 @@ describe("guide delivery email", () => {
     expect(html).toContain("Here it is.");
     expect(html).toContain("What would need to be true for your next move to become a credible business, not simply an escape?");
     expect(html).toContain("A small suggestion");
-    expect(links.downloadUrl).toBe("https://modernbusinessarchitect.com/api/resources/download?token=11111111-1111-1111-1111-111111111111&via=email");
+    // Signed, request- and resource-scoped, expiring: not the bare request id.
+    expect(links.downloadUrl.startsWith("https://modernbusinessarchitect.com/api/resources/download?token=d1.")).toBe(true);
+    expect(links.downloadUrl.endsWith("&via=email")).toBe(true);
+    const token = decodeURIComponent(new URL(links.downloadUrl).searchParams.get("token")!);
+    expect(verifyDownloadToken(token)).toEqual({ ok: true, requestId: "11111111-1111-1111-1111-111111111111", resourceId: "22222222-2222-2222-2222-222222222222" });
+    expect(links.downloadUrl).not.toContain("token=11111111-1111-1111-1111-111111111111");
     expect(text).toContain(`Download the guide: ${links.downloadUrl}`);
   });
   it("has no first-name placeholder and uses a neutral salutation", () => {
@@ -134,7 +140,7 @@ describe("guide delivery email", () => {
     expect(html).not.toContain("Yes, keep me in the community");
     expect(html).not.toContain("/confirm?token");
     expect(text).not.toContain("/confirm?token");
-    expect(html).toContain("on the list for occasional practical notes");
+    expect(html).toContain("As a member you may receive occasional practical notes");
     expect(html).toContain(links.downloadUrl);
   });
   it("plain text carries the same URLs as the HTML for every consent state", () => {

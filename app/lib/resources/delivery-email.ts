@@ -3,6 +3,7 @@ import { createResend } from "@/app/lib/email-client";
 import { getServiceClient } from "@/app/lib/supabase/service";
 import { createConfirmationToken } from "@/app/lib/leads/confirmation-token";
 import { createUnsubscribeToken } from "@/app/lib/napkin/unsubscribe";
+import { createDownloadToken } from "./download-token";
 import { appBaseUrl } from "./base-url";
 import type { ResourceConfig } from "./config";
 import { canAdvanceDelivery, DELIVERY_EVENT_FOR_STATUS } from "./delivery-status";
@@ -19,7 +20,7 @@ const REPLY_TO = "martin@mindrasolutions.com";
 
 export type DeliveryEmailParams = {
   config: ResourceConfig;
-  resource: Pick<Resource, "title" | "slug">;
+  resource: Pick<Resource, "id" | "title" | "slug">;
   requestId: string;
   leadId: string;
   /**
@@ -34,12 +35,12 @@ function esc(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-export function buildDeliveryLinks(requestId: string, leadId: string) {
+export function buildDeliveryLinks(requestId: string, leadId: string, resourceId: string) {
   const base = appBaseUrl();
   const token = encodeURIComponent(createUnsubscribeToken(leadId));
   return {
-    // Stable, unguessable, per-request: the file is signed fresh on every click.
-    downloadUrl: `${base}/api/resources/download?token=${requestId}&via=email`,
+    // Signed, request- and resource-scoped, expiring (a year). The file itself is signed fresh on every click.
+    downloadUrl: `${base}/api/resources/download?token=${encodeURIComponent(createDownloadToken(requestId, resourceId))}&via=email`,
     unsubscribePage: `${base}/unsubscribe?token=${token}`,
     confirmPage: `${base}/confirm?token=${encodeURIComponent(createConfirmationToken(leadId))}`,
     unsubscribePost: `${base}/api/unsubscribe?token=${token}`,
@@ -63,7 +64,7 @@ const SANS = "Arial,Helvetica,sans-serif";
 export function buildDeliveryEmail(params: DeliveryEmailParams) {
   const { config, resource, requestId, leadId } = params;
   const e = config.email;
-  const links = buildDeliveryLinks(requestId, leadId);
+  const links = buildDeliveryLinks(requestId, leadId, resource.id);
   const subject = e.subject(resource.title);
   const addressLines = mailingAddressLines();
   const consent = params.consent ?? "active";
@@ -219,8 +220,34 @@ export async function prepareDeliveryRetry(requestId: string): Promise<void> {
     .in("delivery_status", ["failed", "not_tracked"]);
 }
 
-export async function sendDeliveryEmail(params: DeliveryEmailParams & { to: string; resource: Resource; retry?: boolean }): Promise<{ status: "queued" | "failed"; error: string | null }> {
-  const { resource, requestId, leadId } = params;
+export type BuiltEmail = { subject: string; html: string; text: string; links: { unsubscribePost: string } };
+
+/**
+ * Starts a NEW tracked delivery for a request that already had an email (e.g. the confirmation email was delivered,
+ * and now the member benefit is being emailed). Resets the state machine so the second message is tracked on its own.
+ */
+export async function beginNewDelivery(requestId: string): Promise<void> {
+  await getServiceClient()
+    .from("resource_requests")
+    .update({ delivery_status: "accepted", delivery_error: null, delivery_provider_id: null, delivery_updated_at: new Date().toISOString() })
+    .eq("id", requestId);
+}
+
+/**
+ * Sends one already-built email for a request and tracks it. "queued" means Resend accepted the message and
+ * returned an id; it is NOT delivery. Delivered/bounced arrive by webhook. Never throws.
+ */
+export async function sendTrackedResourceEmail(args: {
+  to: string;
+  built: BuiltEmail;
+  resource: Pick<Resource, "id" | "slug" | "resource_type">;
+  requestId: string;
+  leadId: string;
+  /** Distinguishes provider idempotency keys of different messages for the same request. */
+  kind: string;
+  retry?: boolean;
+}): Promise<{ status: "queued" | "failed"; error: string | null }> {
+  const { resource, requestId, leadId, built } = args;
 
   if (!process.env.RESEND_API_KEY) {
     const error = "RESEND_API_KEY is not configured.";
@@ -229,25 +256,24 @@ export async function sendDeliveryEmail(params: DeliveryEmailParams & { to: stri
   }
 
   try {
-    const { subject, html, text, links } = buildDeliveryEmail(params);
     const resend = createResend();
     const result = await resend.emails.send(
       {
         from: process.env.RESOURCE_EMAIL_FROM || DEFAULT_RESOURCE_FROM,
-        to: params.to,
+        to: args.to,
         replyTo: REPLY_TO,
-        subject,
-        html,
-        text,
+        subject: built.subject,
+        html: built.html,
+        text: built.text,
         // Lets the webhook find the request even if it fires before we stored the provider id.
         tags: [{ name: "request_id", value: requestId }],
         headers: {
-          "List-Unsubscribe": `<${links.unsubscribePost}>`,
+          "List-Unsubscribe": `<${built.links.unsubscribePost}>`,
           "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
         },
       },
       // A retry after a failure must not be swallowed by the provider's idempotency cache for the first attempt.
-      { idempotencyKey: params.retry ? `resource-delivery/${requestId}/retry-${Date.now()}` : `resource-delivery/${requestId}` }
+      { idempotencyKey: args.retry ? `resource-${args.kind}/${requestId}/retry-${Date.now()}` : `resource-${args.kind}/${requestId}` }
     );
     if (result.error || !result.data) {
       const error = result.error?.message ?? "Resend returned no message id.";
@@ -256,6 +282,19 @@ export async function sendDeliveryEmail(params: DeliveryEmailParams & { to: stri
     }
     await advanceDeliveryStatus({ requestId, next: "queued", resource, leadId, providerId: result.data.id });
     return { status: "queued", error: null };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    await advanceDeliveryStatus({ requestId, next: "failed", resource, leadId, error: message });
+    return { status: "failed", error: message };
+  }
+}
+
+/** Emails the member benefit (the download link) to a CONFIRMED member. */
+export async function sendDeliveryEmail(params: DeliveryEmailParams & { to: string; resource: Resource; retry?: boolean }): Promise<{ status: "queued" | "failed"; error: string | null }> {
+  const { resource, requestId, leadId } = params;
+  try {
+    const built = buildDeliveryEmail(params);
+    return await sendTrackedResourceEmail({ to: params.to, built, resource, requestId, leadId, kind: "delivery", retry: params.retry });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     await advanceDeliveryStatus({ requestId, next: "failed", resource, leadId, error: message });
