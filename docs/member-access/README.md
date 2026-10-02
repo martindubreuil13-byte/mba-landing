@@ -65,4 +65,4 @@ Attribution (source, medium, referrer, UTM) is copied onto the **request**; if t
 
 `config.ts` · `consent-copy.ts` · `member-access.ts` (service) · `membership-email.ts` + `email-layout.ts` (confirmation and rejoin emails) · `delivery-email.ts` (benefit email, tracked sender) · `download-token.ts` · `confirmation-context.ts` · `funnel.ts` + `admin-analytics.ts` · `app/api/resources/member-access`, `…/download`, `app/api/confirm`, `app/api/membership/rejoin` · `app/rejoin`, `app/confirm`.
 
-See also: [copy-v1.2.md](copy-v1.2.md) (all draft wording, **not legally approved**), [migration.md](migration.md), [rollout-plan.md](rollout-plan.md), [conversion-checklist.md](conversion-checklist.md), [follow-up-transition-delivery-status.md](follow-up-transition-delivery-status.md).
+See also: [copy-v1.2.md](copy-v1.2.md) (all wording; owner-approved for production, not an external legal certification), [migration.md](migration.md), [rollout-plan.md](rollout-plan.md), [conversion-checklist.md](conversion-checklist.md), [follow-up-transition-delivery-status.md](follow-up-transition-delivery-status.md).

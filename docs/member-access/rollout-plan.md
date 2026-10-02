@@ -1,6 +1,6 @@
 # Rollout plan (nothing here has been done)
 
-Approvals needed first: (1) v1.2 copy + privacy text (draft, `copy-v1.2.md`, **not legally approved**), (2) the migration, (3) the decision to change a live flow: the PDF stops downloading at once and unlocks only after confirmation.
+Approvals (all granted by the owner; operational approval, not external legal certification): (1) v1.2 copy + privacy text (`copy-v1.2.md`), (2) the migration, (3) the decision to change a live flow: the PDF no longer downloads at once and unlocks only after confirmation.
 
 1. Review `copy-v1.2.md` and the `/privacy` section; edit wording if needed (wording lives in `consent-copy.ts` / `config.ts`).
 2. Restore point + pre-state snapshot (row counts of leads, consent_records, resource_requests, resource_events, program_applications).

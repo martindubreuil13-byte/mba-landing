@@ -1,6 +1,6 @@
-# Copy for approval: member-access v1.2
+# Copy: member-access v1.2 (owner-approved)
 
-**Status: DRAFT. Not legally approved.** It states what the product does; it is not a legal opinion. Wording lives in code (`app/lib/resources/consent-copy.ts`, `app/lib/resources/config.ts`, `app/privacy/page.tsx`); the consent wording is stored verbatim with every consent record, by version id. Changing any consent wording means a **new version id**, never an edit of a published one.
+**Status: APPROVED by the owner for production (operational approval, 2026-10-02/03), wording unchanged.** This is not a claim of external legal certification, and it states what the product does rather than offering a legal opinion. Wording lives in code (`app/lib/resources/consent-copy.ts`, `app/lib/resources/config.ts`, `app/privacy/page.tsx`); the consent wording is stored verbatim with every consent record, by version id. Changing any consent wording means a **new version id**, never an edit of a published one.
 
 ## 1. Public layer and member benefit (CTA blocks on the guide page)
 

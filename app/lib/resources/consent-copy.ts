@@ -8,7 +8,7 @@
  *
  *  v1.0 / v1.1  published (the guide's PDF downloaded immediately). Kept for the history of existing records.
  *  v1.2         member-access model: the form requests free membership, the benefit unlocks on confirmation.
- *               DRAFT wording, not legally approved.
+ *               Owner-approved for production (operational approval; not an external legal certification).
  *  membership-rejoin-v1.0  the explicit rejoin flow for unsubscribed addresses.
  */
 export type ConsentCopy = {
