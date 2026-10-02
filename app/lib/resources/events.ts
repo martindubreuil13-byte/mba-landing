@@ -11,6 +11,9 @@
  *  - resource_form_opened      the email form was shown
  *  - resource_form_submitted   SERVER-ONLY: a valid request was stored
  *  - resource_opt_in_confirmed SERVER-ONLY: the reader confirmed their email; marketing is now active
+ *  - resource_benefit_fulfilled SERVER-ONLY: the member benefit was unlocked for a request (metadata.via = confirmation | existing_member)
+ *  - resource_membership_blocked SERVER-ONLY: a form submission was NOT acted on because the address is unsubscribed or
+ *                              suppressed (metadata.reason). Never shown to the visitor.
  *  - resource_download_started SERVER-ONLY: the download endpoint was hit
  *  - resource_delivery_*       SERVER-ONLY: email state changes (see delivery-status.ts)
  */
@@ -22,6 +25,8 @@ export const RESOURCE_EVENT_NAMES = [
   "resource_form_opened",
   "resource_form_submitted",
   "resource_opt_in_confirmed",
+  "resource_benefit_fulfilled",
+  "resource_membership_blocked",
   "resource_download_started",
   "resource_delivery_queued",
   "resource_delivery_sent",

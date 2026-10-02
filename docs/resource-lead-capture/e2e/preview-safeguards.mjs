@@ -23,7 +23,7 @@ process.on("unhandledRejection", (e) => { out.push(`FAIL  [${MODE}] script error
 
 const mock = async () => (await fetch(`${MOCK}/__sent`).then((r) => r.json()));
 const post = async (path, body) => { const r = await fetch(BASE + path, { method: "POST", headers: { "content-type": "application/json", "x-forwarded-for": ip(), "user-agent": UA }, body: JSON.stringify(body) }); return { status: r.status, body: await r.json().catch(() => ({})) }; };
-const guideRequest = (email) => post("/api/resources/printable-guide", { email, slug: "build-the-bridge-first", ctaLocation: "top", consentVersion: "resource-guide-consent-v1.1", sessionId: randomUUID(), pagePath: "/resources/build-the-bridge-first", attribution: {}, website: "" });
+const guideRequest = (email) => post("/api/resources/member-access", { email, slug: "build-the-bridge-first", ctaLocation: "top", consentVersion: "resource-guide-consent-v1.2", sessionId: randomUUID(), pagePath: "/resources/build-the-bridge-first", attribution: {}, website: "" });
 const legacyRequest = (email) => post("/api/resources/request", { firstName: "Sam", email, resourceSlug: "other-guide", ongoingContentOptIn: false, website: "" });
 const requestRow = async (email) => { const l = (await sb.from("leads").select("id").eq("email", email).maybeSingle()).data; return l ? (await sb.from("resource_requests").select("*").eq("lead_id", l.id).order("requested_at", { ascending: false }).limit(1).maybeSingle()).data : null; };
 const sink = (l) => `delivered+${l}-${run}@resend.dev`; // nothing is ever sent: the mock records, or the policy blocks
@@ -79,49 +79,49 @@ const legacy = await legacyRequest(sink("legacy"));
 check("legacy form returns a download link on THIS deployment, not on production", legacy.status === 200 && legacy.body.downloadUrl?.startsWith(`${BASE}/api/resources/download?token=`) && !legacy.body.downloadUrl.includes(PROD_DOMAIN), legacy.body.downloadUrl);
 
 // ---------------------------------------------------------------- email policy
+// Member access: the form sends a CONFIRMATION email (no download exists before confirmation), so the email policy decides
+// whether the request can be honoured: allowed -> neutral "check your inbox"; refused -> an honest error (502).
 await fetch(`${MOCK}/__reset`, { method: "POST" });
 const asAdmin = await guideRequest(ADMIN);
 const asOther = await guideRequest(sink("other"));
 const rowAdmin = await requestRow(ADMIN);
 const rowOther = await requestRow(sink("other"));
 const messages = await mock();
-const dl = async (r) => (await fetch(BASE + r.body.downloadUrl, { redirect: "manual" })).status;
+const NEUTRAL = JSON.stringify({ success: true, state: "check_inbox" });
 
-check("the guide download URL is returned immediately in every case", !!asAdmin.body.downloadUrl && !!asOther.body.downloadUrl);
-check("the download works for the admin and for anyone else", (await dl(asAdmin)) === 307 && (await dl(asOther)) === 307);
+check("no response ever carries a download URL, in any mode", ![asAdmin, asOther].some((r) => /download|token|http/i.test(JSON.stringify(r.body))));
+check("the request is stored LOCKED either way (nothing is unlocked before confirmation)", [rowAdmin, rowOther].every((r) => r && r.benefit_fulfilled_at === null));
 
 if (MODE === "production-mock") {
-  check("production policy: both recipients are accepted and queued", asAdmin.body.emailStatus === "queued" && asOther.body.emailStatus === "queued");
-  check("the mock received exactly the two messages", messages.length === 2 && messages.some((m) => m.to.includes(ADMIN)));
+  check("production policy: both recipients are accepted with the same neutral answer", [asAdmin, asOther].every((r) => r.status === 200 && JSON.stringify(r.body) === NEUTRAL), JSON.stringify([asAdmin.body, asOther.body]));
+  check("the mock received exactly the two confirmation messages", messages.length === 2 && messages.every((m) => /Confirm your email to unlock/.test(m.subject)) && messages.some((m) => m.to.includes(ADMIN)));
   const full = await fetch(`${MOCK}/emails/${rowOther.delivery_provider_id}`).then((r) => r.json());
-  check("their links use APP_BASE_URL", full.html.includes(`${BASE}/api/resources/download`) && full.html.includes(`${BASE}/confirm?token=`) && full.html.includes(`${BASE}/unsubscribe?token=`) && !full.html.includes(PROD_DOMAIN), "");
+  check("their links use APP_BASE_URL (confirm page + unsubscribe), contain no download link, and never point at production", full.html.includes(`${BASE}/confirm?token=`) && full.html.includes(`${BASE}/unsubscribe?token=`) && !full.html.includes("/api/resources/download") && !full.html.includes(PROD_DOMAIN), "");
 }
-// A repeat request (inside the 10-minute reuse window) must never claim an email was sent when it was not.
+// A repeat request (inside the 10-minute reuse window) must never claim an email was sent when it was not, and must never double-send.
 const repeatOther = await guideRequest(sink("other"));
 const repeatAdmin = await guideRequest(ADMIN);
 const afterRepeat = await mock();
 
 if (MODE === "preview-disabled") {
-  check("a repeat request after a blocked email still reports 'failed' (never 'already sent'), download still works", repeatAdmin.body.emailStatus === "failed" && repeatOther.body.emailStatus === "failed" && (await dl(repeatAdmin)) === 307, `${repeatAdmin.body.emailStatus}/${repeatOther.body.emailStatus}`);
+  check("email is OFF by default: both attempts are refused honestly (502), not 'check your inbox'", asAdmin.status === 502 && asOther.status === 502 && !asAdmin.body.success, `${asAdmin.status}/${asOther.status}`);
+  check("a repeat request after a blocked email is refused again (never a false 'sent')", repeatAdmin.status === 502 && repeatOther.status === 502);
   check("...and exactly one request row exists per address (the retry re-used it)", (await sb.from("resource_requests").select("id").eq("lead_id", (await sb.from("leads").select("id").eq("email", ADMIN).single()).data.id)).data.length === 1);
-  check("email is OFF by default: both attempts report a failed email", asAdmin.body.emailStatus === "failed" && asOther.body.emailStatus === "failed", `${asAdmin.body.emailStatus}/${asOther.body.emailStatus}`);
   check("not even the admin address receives anything", messages.length === 0, JSON.stringify(messages));
   check("the reason is recorded truthfully on the request", rowAdmin?.delivery_status === "failed" && /disabled in this non-production environment/.test(rowAdmin.delivery_error ?? ""), rowAdmin?.delivery_error);
   check("the failed event is recorded and no 'queued' event exists", (await sb.from("resource_events").select("event_name").eq("request_id", rowAdmin.id)).data.every((e) => e.event_name !== "resource_delivery_queued"));
 }
 if (MODE === "preview-enabled") {
-  check("repeat for the admin: truthfully 'already sent' (the first one was queued), and NO second message", repeatAdmin.body.emailStatus === "already_sent" && afterRepeat.length === 1, `${repeatAdmin.body.emailStatus}, mock=${afterRepeat.length}`);
-  check("repeat for another address: still refused ('failed'), still nothing sent", repeatOther.body.emailStatus === "failed" && afterRepeat.length === 1);
-  check("the admin address is delivered to (queued with the provider)", asAdmin.body.emailStatus === "queued", asAdmin.body.emailStatus);
-  check("any other recipient is rejected, truthfully", asOther.body.emailStatus === "failed" && /not on this environment's allowlist/.test(rowOther?.delivery_error ?? ""), rowOther?.delivery_error);
+  check("the admin address is delivered to (neutral answer, queued with the provider)", asAdmin.status === 200 && JSON.stringify(asAdmin.body) === NEUTRAL && rowAdmin.delivery_status === "queued", `${asAdmin.status} ${rowAdmin.delivery_status}`);
+  check("repeat for the admin: same neutral answer and NO second message", repeatAdmin.status === 200 && JSON.stringify(repeatAdmin.body) === NEUTRAL && afterRepeat.length === 1, `${repeatAdmin.status}, mock=${afterRepeat.length}`);
+  check("any other recipient is refused, truthfully (502 + recorded reason), and still nothing is sent", asOther.status === 502 && repeatOther.status === 502 && /not on this environment's allowlist/.test(rowOther?.delivery_error ?? ""), rowOther?.delivery_error);
   check("the mock saw exactly ONE message, addressed to ADMIN_EMAIL only", messages.length === 1 && messages[0].to.length === 1 && messages[0].to[0].toLowerCase() === ADMIN, JSON.stringify(messages.map((m) => m.to)));
   const full = await fetch(`${MOCK}/emails/${rowAdmin.delivery_provider_id}`).then((r) => r.json());
-  check("the admin email's links point at this deployment (download, confirm, unsubscribe), never production", full.html.includes(`${BASE}/api/resources/download`) && full.html.includes(`${BASE}/confirm?token=`) && full.html.includes(`${BASE}/unsubscribe?token=`) && !full.html.includes(PROD_DOMAIN));
+  check("the admin email's links point at this deployment (confirm, unsubscribe), never production, and contain no download link", full.html.includes(`${BASE}/confirm?token=`) && full.html.includes(`${BASE}/unsubscribe?token=`) && !full.html.includes("/api/resources/download") && !full.html.includes(PROD_DOMAIN));
 }
 if (MODE === "preview-misconfigured") {
-  check("repeat requests stay refused and nothing is sent", repeatAdmin.body.emailStatus === "failed" && afterRepeat.length === 0);
-  check("an allowlist containing anyone but ADMIN_EMAIL disables email entirely", asAdmin.body.emailStatus === "failed" && asOther.body.emailStatus === "failed");
-  check("the error says so, and nothing was sent", /may contain only the authorised admin address/.test(rowAdmin?.delivery_error ?? "") && messages.length === 0, rowAdmin?.delivery_error);
+  check("requests stay refused and nothing is sent", asAdmin.status === 502 && asOther.status === 502 && repeatAdmin.status === 502 && afterRepeat.length === 0);
+  check("an allowlist containing anyone but ADMIN_EMAIL disables email entirely, and the error says so", /may contain only the authorised admin address/.test(rowAdmin?.delivery_error ?? "") && messages.length === 0, rowAdmin?.delivery_error);
 }
 
 // ---------------------------------------------------------------- the other email-sending routes obey the same policy

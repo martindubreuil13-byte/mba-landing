@@ -34,7 +34,7 @@ export default async function AdminGuidesPage({ searchParams }: { searchParams: 
         <p className="text-sm text-[#1a1816]/60">No resources have the lead-capture experience configured yet.</p>
       ) : (
         <div className="border border-[#1a1816]/10 bg-white overflow-x-auto">
-          <table className="w-full min-w-[56rem] text-sm">
+          <table className="w-full min-w-[64rem] text-sm">
             <thead>
               <tr className="text-xs uppercase tracking-widest text-[#1a1816]/50 text-left">
                 <th scope="col" className="font-normal p-4">Resource</th>
@@ -44,8 +44,10 @@ export default async function AdminGuidesPage({ searchParams }: { searchParams: 
                 <th scope="col" className="font-normal p-4 text-right">Guide starts</th>
                 <th scope="col" className="font-normal p-4 text-right">Completions</th>
                 <th scope="col" className="font-normal p-4 text-right">CTA clicks</th>
-                <th scope="col" className="font-normal p-4 text-right">Opt-ins</th>
-                <th scope="col" className="font-normal p-4 text-right">View → opt-in</th>
+                <th scope="col" className="font-normal p-4 text-right">Requests</th>
+                <th scope="col" className="font-normal p-4 text-right">Confirmed</th>
+                <th scope="col" className="font-normal p-4 text-right">Unlocked</th>
+                <th scope="col" className="font-normal p-4 text-right">Session view → request</th>
               </tr>
             </thead>
             <tbody>
@@ -63,8 +65,10 @@ export default async function AdminGuidesPage({ searchParams }: { searchParams: 
                   <td className="p-4 text-right tabular-nums">{s.readStarts}</td>
                   <td className="p-4 text-right tabular-nums">{s.readCompletions}</td>
                   <td className="p-4 text-right tabular-nums">{s.ctaClicks}</td>
-                  <td className="p-4 text-right tabular-nums">{s.validOptIns}</td>
-                  <td className="p-4 text-right tabular-nums">{formatRate(s.rates.viewToOptIn)}</td>
+                  <td className="p-4 text-right tabular-nums">{s.membershipRequests}</td>
+                  <td className="p-4 text-right tabular-nums">{s.confirmedMembers}</td>
+                  <td className="p-4 text-right tabular-nums">{s.benefitsFulfilled}</td>
+                  <td className="p-4 text-right tabular-nums">{formatRate(s.conversions.viewToRequest.rate)}{s.integrityWarnings.length > 0 ? <span title="Analytics integrity warning: see the resource page" className="text-[#6b1f1f]"> ⚠</span> : null}</td>
                 </tr>
               ))}
             </tbody>

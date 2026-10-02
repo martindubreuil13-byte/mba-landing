@@ -25,12 +25,12 @@ function Disclosure({ text, linkText }: { text: string; linkText: string }) {
 }
 
 /**
- * The one email + consent form for every printable resource. Consent comes from
- * an explicit button that states both actions plus a disclosure shown directly
- * beside it; the server stores the exact wording by version id.
+ * The one email + membership-request form for every member-benefit resource. The visitor is told what is public
+ * (the online guide) and what members unlock BEFORE entering an email; consent comes from an explicit button plus a
+ * disclosure shown beside it, and the server stores the exact wording by version id.
  */
 export default function ResourceLeadForm({ location }: { location: CtaLocation }) {
-  const { slug, consent, closeForm, completeDelivery } = useGuideExperience();
+  const { slug, consent, closeForm, completeSubmission } = useGuideExperience();
   const [email, setEmail] = React.useState("");
   const [status, setStatus] = React.useState<Status>("idle");
   const [error, setError] = React.useState("");
@@ -60,7 +60,7 @@ export default function ResourceLeadForm({ location }: { location: CtaLocation }
     setError("");
 
     try {
-      const res = await fetch("/api/resources/printable-guide", {
+      const res = await fetch("/api/resources/member-access", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -83,9 +83,8 @@ export default function ResourceLeadForm({ location }: { location: CtaLocation }
         return;
       }
 
-      completeDelivery({ downloadUrl: data.downloadUrl, backupUrl: data.backupUrl, emailStatus: data.emailStatus, consent: data.consent, location });
-      // Start the download immediately. The file is served as an attachment, so the page stays put.
-      if (data.downloadUrl) window.location.assign(data.downloadUrl);
+      // Always the same state, whatever the address: no download is offered before the membership is confirmed.
+      completeSubmission({ location });
     } catch {
       setError("I could not reach the server. Check your connection and try again.");
       setStatus("error");
@@ -95,10 +94,8 @@ export default function ResourceLeadForm({ location }: { location: CtaLocation }
   return (
     <form onSubmit={onSubmit} noValidate aria-describedby={disclosureId} className="space-y-5">
       <div>
-        <h3 className="text-2xl md:text-3xl font-light text-[#1a1816] mb-3">Get the printable guide</h3>
-        <p className="text-base leading-relaxed text-[#1a1816]/75 mb-3 max-w-xl">
-          Receive the complete PDF to download, print, complete and keep.
-        </p>
+        <h3 className="text-2xl md:text-3xl font-light text-[#1a1816] mb-3">{consent.heading}</h3>
+        <p className="text-base leading-relaxed text-[#1a1816]/75 mb-3 max-w-xl">{consent.benefitIntro}</p>
         <p className="text-sm leading-relaxed text-[#1a1816]/60 max-w-xl">{consent.communityNote}</p>
       </div>
 

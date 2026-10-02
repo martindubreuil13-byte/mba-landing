@@ -13,7 +13,7 @@ import { resourceStatus } from "@/app/lib/resources/types";
 import { getServiceClient } from "@/app/lib/supabase/service";
 import { SITE_URL } from "@/app/lib/seo";
 import AdminShell from "@/app/components/admin/AdminShell";
-import { BackLink, CtaTable, DeliveryTable, FunnelTable, RangeFilter, RatesTable, Tile, TrendChart } from "@/app/components/admin/GuideAdminParts";
+import { BackLink, CtaTable, DeliveryTable, FunnelTable, IntegrityBanner, RangeFilter, RatesTable, Tile, TrendChart } from "@/app/components/admin/GuideAdminParts";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -57,11 +57,13 @@ export default async function AdminGuideDetailPage({ params, searchParams }: { p
 
       <RangeFilter range={range} action={`/admin/guides/${slug}`} />
 
+      <IntegrityBanner warnings={s.integrityWarnings} />
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <Tile label="Page views" value={s.pageViews} hint={`${s.sessions} sessions`} />
-        <Tile label="Guide completions" value={s.readCompletions} hint={`${s.readStarts} started`} />
-        <Tile label="Valid opt-ins" value={s.validOptIns} hint={`${s.newSignups} new · ${s.existingSubscribers} existing · ${s.confirmed} confirmed`} />
-        <Tile label="Download starts" value={s.downloadStarts} hint={`${s.requestsWithDownload} of ${s.requests} requests`} />
+        <Tile label="Public views" value={s.pageViews} hint={`${s.sessions} sessions · ${s.readCompletions} completed the guide`} />
+        <Tile label="Membership requests" value={s.membershipRequests} hint={`${s.pendingConfirmations} pending · ${s.confirmedMembers} confirmed`} />
+        <Tile label={`${config.access.analytics.benefitLabel} unlocked`} value={s.benefitsFulfilled} hint={`${s.fulfilledByConfirmation} at confirmation · ${s.fulfilledExistingMember} members again`} />
+        <Tile label="Download starts" value={s.downloadStarts} hint={`${s.requestsDownloaded} requests · ${s.deliveryFailures} delivery failures`} />
       </div>
 
       <section className="space-y-3 mb-10">
@@ -76,7 +78,7 @@ export default async function AdminGuideDetailPage({ params, searchParams }: { p
 
       <section className="space-y-3 mb-10">
         <h2 className="text-xs uppercase tracking-widest text-[#1a1816]/55">Funnel</h2>
-        <FunnelTable s={s} />
+        <FunnelTable s={s} benefitLabel={config.access.analytics.benefitLabel} />
       </section>
 
       <section className="space-y-3 mb-10">
@@ -90,9 +92,9 @@ export default async function AdminGuideDetailPage({ params, searchParams }: { p
       </section>
 
       <section className="space-y-3 mb-10">
-        <h2 className="text-xs uppercase tracking-widest text-[#1a1816]/55">People who requested the printable guide ({leads.length})</h2>
+        <h2 className="text-xs uppercase tracking-widest text-[#1a1816]/55">People who asked for the {config.access.memberBenefit.label} ({leads.length})</h2>
         <div className="border border-[#1a1816]/10 bg-white overflow-x-auto">
-          <table className="w-full min-w-[60rem] text-sm">
+          <table className="w-full min-w-[72rem] text-sm">
             <thead>
               <tr className="text-xs uppercase tracking-widest text-[#1a1816]/50 text-left">
                 <th scope="col" className="font-normal p-3">Name</th>
@@ -101,6 +103,8 @@ export default async function AdminGuideDetailPage({ params, searchParams }: { p
                 <th scope="col" className="font-normal p-3">Consent</th>
                 <th scope="col" className="font-normal p-3">Requested</th>
                 <th scope="col" className="font-normal p-3">CTA</th>
+                <th scope="col" className="font-normal p-3">Source</th>
+                <th scope="col" className="font-normal p-3">Benefit</th>
                 <th scope="col" className="font-normal p-3">Delivery</th>
                 <th scope="col" className="font-normal p-3">Downloads</th>
                 <th scope="col" className="font-normal p-3">Last activity</th>
@@ -108,7 +112,7 @@ export default async function AdminGuideDetailPage({ params, searchParams }: { p
             </thead>
             <tbody>
               {leads.length === 0 && (
-                <tr><td colSpan={9} className="p-4 text-[#1a1816]/55">No requests in this range.</td></tr>
+                <tr><td colSpan={11} className="p-4 text-[#1a1816]/55">No requests in this range.</td></tr>
               )}
               {leads.slice(0, 200).map((l) => (
                 <tr key={l.request_id} className="border-t border-[#1a1816]/8">
@@ -120,6 +124,8 @@ export default async function AdminGuideDetailPage({ params, searchParams }: { p
                   <td className="p-3">{CONSENT_STATUS_LABELS[l.consent_status]}</td>
                   <td className="p-3 whitespace-nowrap">{fmt(l.requested_at)}</td>
                   <td className="p-3">{l.cta_location ?? "—"}</td>
+                  <td className="p-3 whitespace-nowrap">{l.source ? `${l.source}${l.medium ? ` / ${l.medium}` : ""}` : "—"}</td>
+                  <td className="p-3">{l.benefit_unlocked ? "Unlocked" : "Locked"}</td>
                   <td className="p-3">{DELIVERY_STATUS_LABELS[l.delivery_status]}</td>
                   <td className="p-3 tabular-nums">{l.download_count}</td>
                   <td className="p-3 whitespace-nowrap">{fmt(l.last_activity_at)}</td>

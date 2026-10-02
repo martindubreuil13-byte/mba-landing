@@ -1,3 +1,5 @@
+> **Update (member-access release):** the guide flow described below (PDF downloads immediately, confirmation optional) has been superseded by the member-access model: the PDF unlocks only after the confirmation POST. See [`docs/member-access/`](../member-access/README.md). The e2e scripts here (`member-access.mjs`, `member-ui.mjs`, `preview-*.mjs`) test the new flow.
+
 # Build the Bridge First: lead-capture pilot (handoff)
 
 Status: implemented and verified locally (updated after review: confirmed opt-in, privacy policy draft, corrected PDF). **Not deployed, not migrated to production, no real leads emailed.** The only emails sent were to Resend sink addresses (`delivered|bounced|complained+x@resend.dev`) and one to the admin inbox.
