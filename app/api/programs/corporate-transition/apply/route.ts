@@ -4,7 +4,7 @@ import { checkRateLimit, getClientIp } from "@/app/lib/rateLimit";
 import { classifyTransition, REVIEW_FALLBACK } from "@/app/lib/programs/classify";
 import { cleanText, validateApplication, type Attribution } from "@/app/lib/programs/corporate-transition";
 import { createApplication, updateMailState } from "@/app/lib/programs/queries";
-import { adminMessage, applicantMessage, sendProgramEmail } from "@/app/lib/programs/email";
+import { adminMessage, applicantMessage, sendApplicantAck, sendInternalNotification } from "@/app/lib/programs/email";
 import { sendConsentConfirmationEmail } from "@/app/lib/leads/confirmation-email";
 import { hashEvidence } from "@/app/lib/leads/evidence";
 
@@ -20,8 +20,9 @@ export async function POST(req: Request) {
   let application; let reused; let lead; let consent; try { ({ application, reused, lead, consent } = await createApplication(parsed.data, attribution, qualification, idempotencyKey, { ipHash: hashEvidence(ip), userAgentHash: hashEvidence(req.headers.get("user-agent")) })); } catch (e) { console.error("Transition application persistence failed:", e instanceof Error ? e.message : "unknown"); return NextResponse.json({ error: "We couldn’t save your application. Please try again." }, { status: 500 }); }
   if (!reused) {
     const msg = applicantMessage(qualification.route, parsed.data.firstName);
-    try { await sendProgramEmail(parsed.data.email, msg.subject, msg.text); await updateMailState(application.id, { applicant_email_status: "queued", applicant_email_error: null }); } catch (e) { await updateMailState(application.id, { applicant_email_status: "failed", applicant_email_error: e instanceof Error ? e.message.slice(0, 500) : "Unknown email error" }); }
-    const admin = process.env.ADMIN_EMAIL; if (admin) { const msg2 = adminMessage(application.id, `${parsed.data.firstName} ${parsed.data.lastName}`, qualification.route, qualification.preCallSummary); try { await sendProgramEmail(admin, msg2.subject, msg2.text); await updateMailState(application.id, { admin_notification_status: "queued", admin_notification_error: null }); } catch (e) { await updateMailState(application.id, { admin_notification_status: "failed", admin_notification_error: e instanceof Error ? e.message.slice(0, 500) : "Unknown email error" }); } }
+    try { await sendApplicantAck(parsed.data.email, msg); await updateMailState(application.id, { applicant_email_status: "queued", applicant_email_error: null }); } catch (e) { await updateMailState(application.id, { applicant_email_status: "failed", applicant_email_error: e instanceof Error ? e.message.slice(0, 500) : "Unknown email error" }); }
+    const msg2 = adminMessage(application.id, `${parsed.data.firstName} ${parsed.data.lastName}`, qualification.route, qualification.preCallSummary, parsed.data.email);
+    try { await sendInternalNotification(msg2, parsed.data.email); await updateMailState(application.id, { admin_notification_status: "queued", admin_notification_error: null }); } catch (e) { await updateMailState(application.id, { admin_notification_status: "failed", admin_notification_error: e instanceof Error ? e.message.slice(0, 500) : "Unknown email error" }); }
   }
 
   // Confirmed opt-in: a NEW marketing request gets exactly one confirmation email; marketing starts only after the

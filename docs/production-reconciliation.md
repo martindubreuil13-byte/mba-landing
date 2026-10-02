@@ -47,3 +47,17 @@ Correction (stacked on the baseline):
 - The admin application page shows the applicant's live consent status and the confirmation-email state.
 - Consent evidence for Transition now uses the foundation's keyed hash (`hashEvidence`) instead of an unsalted SHA-256.
 - **No backfill:** applicants who ticked the box before this change remain pending and are not emailed. Any one-off confirmation email to them needs separate explicit approval.
+
+## Transition email system (routing and design)
+
+Business mail no longer uses `ADMIN_EMAIL` (which only controls admin sign-in). Required production variables before merging PR #2:
+
+| Variable | Value | Used for |
+|---|---|---|
+| `PROGRAM_ADMIN_EMAIL` | `martin@mindrasolutions.com` | To: of the internal application notification (Reply-To = the applicant) |
+| `PROGRAM_REPLY_TO` | `martin@mindrasolutions.com` | Reply-To of applicant acknowledgement, confirmation request and manual response |
+| `PROGRAM_EMAIL_FROM` (optional) | default `Martin Dubreuil <martin@mindrasolutions.com>` | From |
+
+Missing `PROGRAM_ADMIN_EMAIL`: no internal notification is sent, the application records `admin_notification_status = failed`, and nothing falls back to `ADMIN_EMAIL`. Missing `PROGRAM_REPLY_TO`: customer emails go without a Reply-To header, so replies reach the From mailbox.
+
+All customer-facing Transition emails (REVIEW / INVITE / NOT_FIT acknowledgements, manual response, confirmation request) share one table-based shell (`app/lib/programs/email-shell.ts`); the internal notification uses the same shell with an internal eyebrow and no customer footer. The manual response preserves Martin's text exactly; the scheduling button appears only for a valid https URL passed as data. Previews: `docs/transition-email-previews/`.

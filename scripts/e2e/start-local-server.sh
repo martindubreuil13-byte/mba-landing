@@ -13,7 +13,9 @@ export APP_BASE_URL="http://localhost:${PORT:-3000}"
 export RESEND_API_KEY="re_local_mock_key" RESEND_BASE_URL="http://127.0.0.1:4010"
 # Empty = "not configured": the qualification step throws locally and falls back to REVIEW, with no OpenAI call.
 export OPENAI_API_KEY=""
-export ADMIN_EMAIL="${E2E_ADMIN_EMAIL:-admin-placeholder@example.test}"
+export ADMIN_EMAIL="${E2E_ADMIN_EMAIL:-admin-placeholder@example.test}"   # sign-in only: must never receive business mail
+export PROGRAM_ADMIN_EMAIL="${E2E_PROGRAM_ADMIN_EMAIL:-program-admin@example.test}" PROGRAM_REPLY_TO="${E2E_PROGRAM_REPLY_TO:-program-reply@example.test}"
+[ "${NO_PROGRAM_ADMIN:-}" = "1" ] && export PROGRAM_ADMIN_EMAIL=""
 unset APP_ENV VERCEL VERCEL_ENV PREVIEW_EMAIL_ENABLED PREVIEW_EMAIL_ALLOWLIST
 case "$MODE" in
   production-mock)  export APP_ENV=production ;;

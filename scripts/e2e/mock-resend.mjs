@@ -15,7 +15,7 @@ http.createServer(async (req, res) => {
   if (req.method === "POST" && url.pathname === "/emails") {
     const p = JSON.parse((await readBody(req)) || "{}");
     const id = randomUUID();
-    sent.set(id, { id, created_at: new Date().toISOString(), to: [].concat(p.to ?? []), from: p.from, subject: p.subject, html: p.html, text: p.text, headers: p.headers });
+    sent.set(id, { id, created_at: new Date().toISOString(), to: [].concat(p.to ?? []), from: p.from, subject: p.subject, reply_to: p.reply_to ?? p.replyTo ?? null, html: p.html, text: p.text, headers: p.headers });
     return json(res, 200, { id });
   }
   if (req.method === "GET" && url.pathname.startsWith("/emails/")) {

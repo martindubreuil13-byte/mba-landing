@@ -36,7 +36,7 @@ const lead = async (email) => (await sb.from("leads").select("*").eq("email", em
 const consents = async (id) => (await sb.from("consent_records").select("*").eq("lead_id", id).order("created_at")).data;
 const apps = async (id) => (await sb.from("program_applications").select("*").eq("lead_id", id).order("submitted_at")).data;
 const mailTo = async (email) => (await fetch(`${MOCK}/__sent`).then((r) => r.json())).filter((m) => m.to.includes(email));
-const confirmation = async (email) => (await mailTo(email)).filter((m) => m.subject === "Please confirm your email address");
+const confirmation = async (email) => (await mailTo(email)).filter((m) => m.subject === "One last step to stay connected");
 const body = async (id) => fetch(`${MOCK}/emails/${id}`).then((r) => r.json());
 const secret = process.env.SERVICE_ROLE_KEY; // the app signs links with the service key when no dedicated secret is set
 const sign = (p) => createHmac("sha256", secret).update(p).digest("base64url");
@@ -65,9 +65,18 @@ if (MODE === "production-mock") {
   const mails = await mailTo(email);
   check("ticked: the applicant received the application message AND exactly one confirmation email", mails.length === 2 && (await confirmation(email)).length === 1, JSON.stringify(mails.map((m) => m.subject)));
   const conf = await body((await confirmation(email))[0].id);
-  check("ticked: confirmation email is not feature-specific and says nothing is sent unless confirmed", /Yes, confirm my email/.test(conf.html) && /only send those emails once you confirm/.test(conf.html) && !/guide|pdf|download/i.test(conf.html) && /Unsubscribe/.test(conf.html) && conf.headers["List-Unsubscribe-Post"] === "List-Unsubscribe=One-Click");
+  check("ticked: confirmation email is not feature-specific and says nothing is sent unless confirmed", /Yes, keep me in the community/.test(conf.html) && /Marketing emails begin only after you confirm/.test(conf.html) && !/guide|pdf|download/i.test(conf.html) && /Unsubscribe or cancel request/.test(conf.html) && conf.headers["List-Unsubscribe-Post"] === "List-Unsubscribe=One-Click");
   check("ticked: links point at this deployment (not production)", conf.html.includes(`${BASE}/confirm?token=`) && conf.html.includes(`${BASE}/unsubscribe?token=`) && !conf.html.includes("modernbusinessarchitect.com"));
-  check("ticked: the application email itself carries no confirm button", !(await body(mails.find((m) => m.subject !== "Please confirm your email address").id)).text.includes("/confirm?token="));
+  check("ticked: the application email itself carries no confirm button", !(await body(mails.find((m) => m.subject !== "One last step to stay connected").id)).text.includes("/confirm?token="));
+  {
+    const sentAll = await Promise.all((await fetch(`${MOCK}/__sent`).then((r) => r.json())).map((m) => body(m.id)));
+    const forApplicant = sentAll.filter((m) => m.to.includes(email));
+    check("routing: every customer email goes to the applicant with Reply-To PROGRAM_REPLY_TO and the verified sender", forApplicant.length === 2 && forApplicant.every((m) => m.reply_to?.[0] === "program-reply@example.test" || m.reply_to === "program-reply@example.test") && forApplicant.every((m) => /Martin Dubreuil <martin@mindrasolutions.com>/.test(m.from)), JSON.stringify(forApplicant.map((m) => [m.from, m.reply_to])));
+    const mine = sentAll.filter((m) => /Corporate Transition application/.test(m.subject) && m.text.includes(email));
+    check("routing: the internal notification goes ONLY to PROGRAM_ADMIN_EMAIL, Reply-To the applicant", mine.length === 1 && mine[0].to.length === 1 && mine[0].to[0] === "program-admin@example.test" && [].concat(mine[0].reply_to)[0] === email, JSON.stringify(mine.map((m) => [m.to, m.reply_to])));
+    check("routing: nothing went to ADMIN_EMAIL (the sign-in address); every recipient is the applicant or PROGRAM_ADMIN_EMAIL", !sentAll.some((m) => m.to.includes("admin-placeholder@example.test")) && sentAll.every((m) => m.to.length === 1), JSON.stringify(sentAll.map((m) => m.to)));
+    check("routing: the internal email has no unsubscribe or customer footer", mine.length === 1 && !/unsubscribe|Sent by Martin/i.test(mine[0].html));
+  }
 
   // ------------------------------------------------------------ confirmation
   const token = linkIn(conf.html, /href="([^"]*\/confirm\?token=[^"]+)"/);

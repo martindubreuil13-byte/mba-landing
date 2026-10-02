@@ -69,7 +69,7 @@ for (const [label, viewport] of [["desktop", { width: 1280, height: 900 }], ["mo
 
 const messages = await mock();
 if (MODE === "production-mock") {
-  const confirmations = messages.filter((m) => m.subject === "Please confirm your email address");
+  const confirmations = messages.filter((m) => m.subject === "One last step to stay connected");
   check("the mock received exactly one confirmation email per TICKED submission (2), none for unticked", confirmations.length === 2 && confirmations.every((m) => m.to[0].includes("-ticked-")), JSON.stringify(confirmations.map((m) => m.to)));
 } else {
   check("nothing at all reached the mail provider", messages.length === 0, JSON.stringify(messages.map((m) => m.subject)));
