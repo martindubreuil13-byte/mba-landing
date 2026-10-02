@@ -8,13 +8,22 @@ import Navigation from "@/app/components/Navigation";
 export default function ThinkingPage() {
   const articles = [
     {
+      href: "/thinking/your-next-customer-might-not-visit-your-website",
+      category: "Business Architecture",
+      number: "010",
+      title: "Your Next Customer Might Not Visit Your Website",
+      standfirst: "Your AI customer doesn't care about your beautiful homepage. It wants information it can find, understand and trust. What needs to be re-architected before everybody else can see why?",
+      date: "October 2, 2026",
+      featured: true,
+    },
+    {
       href: "/thinking/how-to-define-your-ideal-customer",
       category: "Business Architecture",
       number: "009",
       title: "How to Define Your Ideal Customer",
       standfirst: "And no, giving them a name and an age isn't enough. Understand the human situation, the commercial reality and the journey first, then give your customer a name and a face. Includes a one-page Customer Architecture Map.",
       date: "September 24, 2026",
-      featured: true,
+      featured: false,
     },
     {
       href: "/thinking/the-business-architects-frame",
