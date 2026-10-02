@@ -12,7 +12,7 @@ export default function ThinkingPage() {
       category: "Business Architecture",
       number: "010",
       title: "Your Next Customer Might Not Visit Your Website",
-      standfirst: "Your AI customer doesn't care about your beautiful homepage. It wants information it can find, understand and trust. What needs to be re-architected before everybody else can see why?",
+      standfirst: "AI agents may increasingly research and compare things on our behalf. What retail's move from stores to omnichannel suggests about the business behind the website, and why this is not a website problem.",
       date: "October 2, 2026",
       featured: true,
     },

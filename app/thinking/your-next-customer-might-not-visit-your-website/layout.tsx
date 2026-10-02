@@ -3,7 +3,7 @@ import { SITE_URL, PRINCIPAL_NAME, SITE_NAME, serializeJsonLd } from "@/app/lib/
 import type { Metadata } from "next";
 
 const title = "Your Next Customer Might Not Visit Your Website | Martin Dubreuil";
-const description = "AI agents are becoming a new customer channel. They don't care about your homepage. They want information they can find, understand and trust. What businesses need to re-architect now.";
+const description = "AI agents may soon research and compare products for customers. What retail's shift to omnichannel teaches about making a business understandable to machines as well as people.";
 const path = "/thinking/your-next-customer-might-not-visit-your-website";
 const canonicalUrl = `${SITE_URL}${path}`;
 const ogImageUrl = `${SITE_URL}/og/your-next-customer-might-not-visit-your-website.jpg`;
