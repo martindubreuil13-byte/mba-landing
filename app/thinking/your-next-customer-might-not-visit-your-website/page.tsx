@@ -294,7 +294,7 @@ export default function ArticlePage() {
               </p>
 
               <p style={{ marginBottom: "1.75rem" }}>
-                That's Business Architecture to me.
+                That's <Link href="/answers/what-is-business-architecture" className="text-[#6b1f1f] border-b border-[#6b1f1f] hover:text-[#6b1f1f]/80 hover:border-[#6b1f1f]/80 transition-colors">Business Architecture</Link> to me.
               </p>
 
               <p style={{ marginBottom: "1.75rem" }}>
@@ -392,9 +392,7 @@ export default function ArticlePage() {
               className="space-y-8"
             >
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-light leading-tight text-[#1a1816]">
-                You have an idea.
-                <br />
-                Let's find out what it can become.
+                Your business already has an architecture. The question is whether it was designed for what's coming next.
               </h2>
 
               <motion.div

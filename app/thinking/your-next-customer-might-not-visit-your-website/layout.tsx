@@ -6,7 +6,7 @@ const title = "Your Next Customer Might Not Visit Your Website | Martin Dubreuil
 const description = "AI agents are becoming a new customer channel. They don't care about your homepage. They want information they can find, understand and trust. What businesses need to re-architect now.";
 const path = "/thinking/your-next-customer-might-not-visit-your-website";
 const canonicalUrl = `${SITE_URL}${path}`;
-const ogImageUrl = `${SITE_URL}/og/your-next-customer-might-not-visit-your-website.png`;
+const ogImageUrl = `${SITE_URL}/og/your-next-customer-might-not-visit-your-website.jpg`;
 const ogImageAlt = "A quiet, beautifully lit luxury retail store seen through its glass entrance, with no customers inside.";
 
 export const metadata: Metadata = {
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
         width: 1200,
         height: 630,
         alt: ogImageAlt,
-        type: "image/png",
+        type: "image/jpeg",
       },
     ],
   },
