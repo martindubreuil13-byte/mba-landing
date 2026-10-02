@@ -1,7 +1,11 @@
 export const PROGRAM_KEY = "corporate-transition";
 export const CALENDLY_URL = "https://calendly.com/martindubreuil/coaching_session";
-export const CONSENT_VERSION = "corporate-transition-shortlist-v1";
-export const CONSENT_WORDING = "Keep me on Martin’s shortlist for useful ideas, resources and occasional updates.";
+// v2 (confirmed opt-in): the box only REQUESTS marketing. One confirmation email is sent and marketing starts only
+// after the applicant confirms. v1 ("corporate-transition-shortlist-v1") did not say so and never sent that email.
+// The label and the footnote below are exactly what the visitor sees; both are stored as the consent wording.
+export const CONSENT_VERSION = "corporate-transition-shortlist-v2";
+export const CONSENT_WORDING = "Keep me on Martin’s shortlist for useful ideas, resources and occasional updates. I understand I will get one email asking me to confirm, and I am only subscribed once I do.";
+export const CONSENT_FOOTNOTE = "Submitting permits transactional messages about this application. It does not subscribe you to marketing unless you check the box and then confirm from the email we send you.";
 
 export const employmentOptions = [
   "Executive / C-suite", "Director / senior leader", "Manager", "Experienced specialist / professional",

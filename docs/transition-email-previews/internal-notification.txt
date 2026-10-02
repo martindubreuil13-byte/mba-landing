@@ -1,0 +1,14 @@
+Subject: Corporate Transition application needs review — Alex Doe
+
+Alex Doe · REVIEW
+
+INTERNAL — APPLICATION REVIEW
+Application needs review
+
+Applicant: Alex Doe
+Email: alex@example.test
+Route: REVIEW
+Summary: Senior operations leader, 15–20 years, 6–12 month horizon. Has a first idea but no validation yet.
+Concern: unclear willingness to leave employment.
+
+Open application in Admin: https://preview.example.test/admin/programs/corporate-transition/177d627f-0000-0000-0000-000000000000

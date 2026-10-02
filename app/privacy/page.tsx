@@ -16,7 +16,7 @@ export default function PrivacyPage() {
               <h1 className="text-3xl md:text-4xl font-light leading-tight mb-4">
                 What this site collects, and why
               </h1>
-              <p className="text-[#1a1816]/60 text-sm">Last updated October 1, 2026.</p>
+              <p className="text-[#1a1816]/60 text-sm">Last updated October 2, 2026.</p>
             </div>
 
             <div className="space-y-6 text-base leading-relaxed text-[#1a1816]/85">
@@ -120,6 +120,37 @@ export default function PrivacyPage() {
                 research or educational material.
               </p>
 
+              <h2 className="text-xl font-light pt-4">The Transition application</h2>
+              <p>
+                The Corporate to Entrepreneur Transition application asks for your first and last name, email
+                address, country, employment situation, years of experience, stage and timing, and your written
+                answers about what you want and where you need help. Your answers are stored against your contact
+                details, together with the route suggested by the review described below and a summary of it, and
+                they are never published.
+              </p>
+              <p>
+                To help Martin decide how to respond, your answers are sent to a third-party AI provider (OpenAI)
+                solely to suggest one of three routes (invite to talk, review personally, or not the right fit) and
+                to write a short summary for Martin. That provider does not use this data to train its models. The
+                suggestion does not decide anything on its own: Martin reads every application and replies to you
+                personally.
+              </p>
+              <p>
+                Submitting the application sends you an acknowledgement by email, notifies Martin internally, and
+                allows Martin to reply to you about your application. These are transactional messages about your
+                application and do not subscribe you to marketing. The application form also has an optional,
+                unchecked checkbox to stay on Martin's shortlist. If you tick it, the site records that you asked
+                and sends you one email asking you to confirm. You are subscribed only once you open the link in
+                that email and press the confirmation button; not confirming does not affect how your application
+                is handled. Marketing emails include an unsubscribe link, and the same unsubscribe works for all
+                of Martin's emails.
+              </p>
+              <p>
+                Application details are kept until you ask for them to be corrected or deleted (see "Getting in
+                touch" below). As evidence of what you were shown and chose, the site also stores a one-way
+                scrambled form of your IP address and browser details, not the raw values.
+              </p>
+
               <h2 className="text-xl font-light pt-4">The Napkin Principle</h2>
               <p>
                 This free interactive exercise asks about the price, direct costs and monthly operating costs of a
@@ -151,15 +182,15 @@ export default function PrivacyPage() {
 
               <h2 className="text-xl font-light pt-4">How it's stored</h2>
               <p>
-                Resource requests, assessment responses, Napkin Principle results, searches, questions and contact details are stored in a
+                Resource requests, Transition applications, assessment responses, Napkin Principle results, searches, questions and contact details are stored in a
                 Postgres database (hosted via Supabase) that only this site's server can access —
                 the database is never exposed publicly, and downloadable files are served through
                 short-lived, controlled links rather than a public file listing. Your information
                 is not sold, and is not shared with third parties except the service providers
                 needed to run this site: Supabase (database hosting and file storage), Resend
                 (email delivery, including delivery status such as delivered or bounced) and — for
-                the Business Idea Reality Check specifically — AI-assisted classification and
-                writing, as described above).
+                the Business Idea Reality Check and the Transition application specifically —
+                OpenAI, for AI-assisted classification and writing, as described above.
               </p>
 
               <h2 className="text-xl font-light pt-4">Getting in touch</h2>
