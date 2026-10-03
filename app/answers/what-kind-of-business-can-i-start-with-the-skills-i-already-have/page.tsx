@@ -5,7 +5,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Navigation from "@/app/components/Navigation";
-import { DIRECT_ANSWER, INTRO, SECTIONS, FAQ_HEADING, FAQS, CLOSING } from "./content";
+import { DIRECT_ANSWER, INTRO, SECTIONS, CTA_HEADING } from "./content";
 
 const H2_STYLE = { fontSize: "1.5rem", fontWeight: "300", marginTop: "3rem", marginBottom: "1.75rem", lineHeight: "1.4", color: "#1a1816" } as const;
 const LINK_CLASS = "text-[#6b1f1f] border-b border-[#6b1f1f] hover:text-[#6b1f1f]/80 hover:border-[#6b1f1f]/80 transition-colors";
@@ -49,6 +49,9 @@ function Paragraphs({ text }: { text: string }) {
             </ol>
           );
         }
+        if (block.startsWith("### ")) {
+          return <h3 key={i} style={{ fontSize: "1.25rem", fontWeight: "600", marginTop: "2rem", marginBottom: "0.75rem", lineHeight: "1.4", color: "#1a1816" }}>{renderInline(block.slice(4), `h${i}`)}</h3>;
+        }
         if (block.startsWith("> ")) {
           return (
             <blockquote key={i} className="border-l-2 border-[#6b1f1f]/40 pl-5 md:pl-6" style={{ marginBottom: "1.75rem", fontStyle: "italic" }}>
@@ -56,7 +59,11 @@ function Paragraphs({ text }: { text: string }) {
             </blockquote>
           );
         }
-        return <p key={i} style={{ marginBottom: "1.75rem" }}>{renderInline(block, `p${i}`)}</p>;
+        return (
+          <p key={i} style={{ marginBottom: "1.75rem" }}>
+            {lines.map((l, j) => <React.Fragment key={j}>{j > 0 && <br />}{renderInline(l, `p${i}-${j}`)}</React.Fragment>)}
+          </p>
+        );
       })}
     </>
   );
@@ -64,7 +71,7 @@ function Paragraphs({ text }: { text: string }) {
 
 export default function AnswerPage() {
   const [copyFeedback, setCopyFeedback] = React.useState(false);
-  const answerUrl = "https://modernbusinessarchitect.com/answers/how-do-i-turn-my-years-of-experience-into-a-business";
+  const answerUrl = "https://modernbusinessarchitect.com/answers/what-kind-of-business-can-i-start-with-the-skills-i-already-have";
 
   const handleShare = (platform: string) => {
     const encodedUrl = encodeURIComponent(answerUrl);
@@ -95,7 +102,7 @@ export default function AnswerPage() {
               <div>
                 <p className="text-xs tracking-widest uppercase text-[#6b1f1f] font-semibold mb-6">Answer</p>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight tracking-tight mb-8">
-                  How Do I Turn My Years of Experience Into a Business?
+                  What Kind of Business Can I Start With the Skills I Already Have?
                 </h1>
                 <p id="direct-answer" className="text-xl md:text-2xl font-light leading-relaxed text-[#1a1816]/80 border-l-2 border-[#6b1f1f] pl-5 md:pl-6">
                   {DIRECT_ANSWER}
@@ -137,19 +144,6 @@ export default function AnswerPage() {
   </section>
 ))}
 
-<section>
-  <h2 style={H2_STYLE}>{FAQ_HEADING}</h2>
-  {FAQS.map((faq) => (
-    <div key={faq.question}>
-      <h3 style={{ fontSize: "1.25rem", fontWeight: "600", marginTop: "2rem", marginBottom: "0.75rem", lineHeight: "1.4", color: "#1a1816" }}>{faq.question}</h3>
-      <p style={{ marginBottom: "1.75rem" }}>{faq.answer}</p>
-    </div>
-  ))}
-</section>
-
-<div style={{ marginTop: "3rem", paddingTop: "2rem" }} className="border-t border-[#1a1816]/8">
-  <Paragraphs text={CLOSING} />
-</div>
 
             </div>
           </div>
@@ -164,15 +158,15 @@ export default function AnswerPage() {
               viewport={{ once: true, margin: "-50px" }}
               className="space-y-8"
             >
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-light leading-tight text-[#1a1816]">
-                Let's talk about your idea.
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-light leading-snug text-[#1a1816]">
+                {CTA_HEADING}
               </h2>
               <Link href="/lets-talk" className="inline-block">
                 <motion.span
                   className="text-sm font-semibold tracking-widest uppercase text-[#6b1f1f] border-b-2 border-[#6b1f1f] pb-1 transition-all hover:border-[#6b1f1f]/60"
                   whileHover={{ x: 2 }}
                 >
-                  LET'S TALK →
+                  LET'S TALK ABOUT YOUR IDEA →
                 </motion.span>
               </Link>
             </motion.div>
@@ -217,24 +211,19 @@ export default function AnswerPage() {
                 <div className="space-y-6">
                   {[
                     {
+                      href: "/answers/how-do-i-turn-my-years-of-experience-into-a-business",
+                      title: "How Do I Turn My Years of Experience Into a Business?",
+                      summary: "Turning professional experience into a specific, valuable offer a customer will pay for.",
+                    },
+                    {
                       href: "/answers/what-is-business-architecture",
                       title: "What Is Business Architecture?",
                       summary: "How a business connects customer, offer, pricing, economics and execution into one coherent system.",
                     },
                     {
-                      href: "/answers/how-do-i-know-if-my-business-idea-is-actually-viable",
-                      title: "How Do I Know If My Business Idea Is Actually Viable?",
-                      summary: "Customer, demand, willingness to pay, reachability and economics, tested with evidence.",
-                    },
-                    {
-                      href: "/answers/what-kind-of-business-can-i-start-with-the-skills-i-already-have",
-                      title: "What Kind of Business Can I Start With the Skills I Already Have?",
-                      summary: "Choosing a customer, a problem and the simplest way to deliver a result before choosing a business model.",
-                    },
-                    {
-                      href: "/thinking/your-corporate-experience-may-be-working-against-you",
-                      title: "Your Corporate Experience May Be Working Against You",
-                      summary: "Why leading an established business and creating one from nothing are different games.",
+                      href: "/answers/how-do-i-find-a-business-idea",
+                      title: "How Do I Find a Business Idea?",
+                      summary: "A practical way to find business ideas by observing real problems, desires, changes and opportunities.",
                     },
                   ].map((item, i) => (
                     <Link key={item.href} href={item.href} className="group block">

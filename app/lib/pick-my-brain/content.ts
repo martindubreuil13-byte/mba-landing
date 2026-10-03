@@ -37,6 +37,21 @@ export type DiscoveryRecord = {
 export const STATIC_DISCOVERY_RECORDS: DiscoveryRecord[] = [
   // ANSWERS
   {
+    href: "/answers/what-kind-of-business-can-i-start-with-the-skills-i-already-have",
+    type: "Answer",
+    title: "What Kind of Business Can I Start With the Skills I Already Have?",
+    description: "How to turn existing skills into a focused business by starting with a specific customer, problem and result rather than a business model.",
+    intents: [
+      "What kind of business can I start with the skills I already have?",
+      "What business can I start with my skills?",
+      "How do I turn my skills into a business?",
+      "What business should I start with my experience?",
+      "Should I become a consultant or create a course?",
+      "How do I choose a business model for my expertise?",
+    ],
+    topics: ["skills", "existing skills", "business models", "service business", "productized service", "consulting", "training", "offer design", "Business Architecture"],
+  },
+  {
     href: "/answers/how-do-i-turn-my-years-of-experience-into-a-business",
     type: "Answer",
     title: "How Do I Turn My Years of Experience Into a Business?",

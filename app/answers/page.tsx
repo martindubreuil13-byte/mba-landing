@@ -8,11 +8,18 @@ import Navigation from "@/app/components/Navigation";
 export default function AnswersPage() {
   const answers = [
     {
+      href: "/answers/what-kind-of-business-can-i-start-with-the-skills-i-already-have",
+      number: "013",
+      title: "What Kind of Business Can I Start With the Skills I Already Have?",
+      date: "October 3, 2026",
+      featured: true,
+    },
+    {
       href: "/answers/how-do-i-turn-my-years-of-experience-into-a-business",
       number: "012",
       title: "How Do I Turn My Years of Experience Into a Business?",
       date: "October 3, 2026",
-      featured: true,
+      featured: false,
     },
     {
       href: "/answers/how-should-i-use-ai-in-my-business",
