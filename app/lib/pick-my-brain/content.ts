@@ -37,6 +37,21 @@ export type DiscoveryRecord = {
 export const STATIC_DISCOVERY_RECORDS: DiscoveryRecord[] = [
   // ANSWERS
   {
+    href: "/answers/am-i-too-old-to-start-a-business",
+    type: "Answer",
+    title: "Am I Too Old to Start a Business?",
+    description: "Why age is not the business model, and how to architect a business around your experience and the life you want now.",
+    intents: [
+      "Am I too old to start a business?",
+      "Can I start a business at 50?",
+      "Can I start a business at 60?",
+      "Is it too late to start a business?",
+      "Can I start a business later in life?",
+      "How do I start a business after a long corporate career?",
+    ],
+    topics: ["age", "starting a business later in life", "experience", "second career", "independence", "risk", "Business Architecture"],
+  },
+  {
     href: "/answers/what-kind-of-business-can-i-start-with-the-skills-i-already-have",
     type: "Answer",
     title: "What Kind of Business Can I Start With the Skills I Already Have?",

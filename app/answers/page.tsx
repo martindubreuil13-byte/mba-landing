@@ -8,11 +8,18 @@ import Navigation from "@/app/components/Navigation";
 export default function AnswersPage() {
   const answers = [
     {
+      href: "/answers/am-i-too-old-to-start-a-business",
+      number: "014",
+      title: "Am I Too Old to Start a Business?",
+      date: "October 3, 2026",
+      featured: true,
+    },
+    {
       href: "/answers/what-kind-of-business-can-i-start-with-the-skills-i-already-have",
       number: "013",
       title: "What Kind of Business Can I Start With the Skills I Already Have?",
       date: "October 3, 2026",
-      featured: true,
+      featured: false,
     },
     {
       href: "/answers/how-do-i-turn-my-years-of-experience-into-a-business",

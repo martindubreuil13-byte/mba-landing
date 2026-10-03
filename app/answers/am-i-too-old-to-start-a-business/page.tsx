@@ -71,7 +71,7 @@ function Paragraphs({ text }: { text: string }) {
 
 export default function AnswerPage() {
   const [copyFeedback, setCopyFeedback] = React.useState(false);
-  const answerUrl = "https://modernbusinessarchitect.com/answers/what-kind-of-business-can-i-start-with-the-skills-i-already-have";
+  const answerUrl = "https://modernbusinessarchitect.com/answers/am-i-too-old-to-start-a-business";
 
   const handleShare = (platform: string) => {
     const encodedUrl = encodeURIComponent(answerUrl);
@@ -102,7 +102,7 @@ export default function AnswerPage() {
               <div>
                 <p className="text-xs tracking-widest uppercase text-[#6b1f1f] font-semibold mb-6">Answer</p>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight tracking-tight mb-8">
-                  What Kind of Business Can I Start With the Skills I Already Have?
+                  Am I Too Old to Start a Business?
                 </h1>
                 <p id="direct-answer" className="text-xl md:text-2xl font-light leading-relaxed text-[#1a1816]/80 border-l-2 border-[#6b1f1f] pl-5 md:pl-6">
                   {DIRECT_ANSWER}
@@ -211,6 +211,11 @@ export default function AnswerPage() {
                 <div className="space-y-6">
                   {[
                     {
+                      href: "/answers/what-kind-of-business-can-i-start-with-the-skills-i-already-have",
+                      title: "What Kind of Business Can I Start With the Skills I Already Have?",
+                      summary: "Choosing a customer, a problem and the simplest way to deliver a result before choosing a business model.",
+                    },
+                    {
                       href: "/answers/how-do-i-turn-my-years-of-experience-into-a-business",
                       title: "How Do I Turn My Years of Experience Into a Business?",
                       summary: "Turning professional experience into a specific, valuable offer a customer will pay for.",
@@ -219,16 +224,6 @@ export default function AnswerPage() {
                       href: "/answers/what-is-business-architecture",
                       title: "What Is Business Architecture?",
                       summary: "How a business connects customer, offer, pricing, economics and execution into one coherent system.",
-                    },
-                    {
-                      href: "/answers/am-i-too-old-to-start-a-business",
-                      title: "Am I Too Old to Start a Business?",
-                      summary: "Why age is not the business model, and how to architect a business around your experience and the life you want now.",
-                    },
-                    {
-                      href: "/answers/how-do-i-find-a-business-idea",
-                      title: "How Do I Find a Business Idea?",
-                      summary: "A practical way to find business ideas by observing real problems, desires, changes and opportunities.",
                     },
                   ].map((item, i) => (
                     <Link key={item.href} href={item.href} className="group block">
