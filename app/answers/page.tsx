@@ -8,11 +8,18 @@ import Navigation from "@/app/components/Navigation";
 export default function AnswersPage() {
   const answers = [
     {
+      href: "/answers/how-do-i-turn-my-years-of-experience-into-a-business",
+      number: "012",
+      title: "How Do I Turn My Years of Experience Into a Business?",
+      date: "October 3, 2026",
+      featured: true,
+    },
+    {
       href: "/answers/how-should-i-use-ai-in-my-business",
       number: "011",
       title: "How Should I Use AI in My Business?",
       date: "September 30, 2026",
-      featured: true,
+      featured: false,
     },
     {
       href: "/answers/how-do-you-build-a-product-if-you-cannot-get-funding",

@@ -37,6 +37,22 @@ export type DiscoveryRecord = {
 export const STATIC_DISCOVERY_RECORDS: DiscoveryRecord[] = [
   // ANSWERS
   {
+    href: "/answers/how-do-i-turn-my-years-of-experience-into-a-business",
+    type: "Answer",
+    title: "How Do I Turn My Years of Experience Into a Business?",
+    description: "How to turn professional experience into a business by choosing a valuable problem, a defined customer and an offer people will pay for.",
+    intents: [
+      "How do I turn my years of experience into a business?",
+      "How do I turn my expertise into a business?",
+      "How do I start a business from my professional experience?",
+      "How do I leave corporate and start my own business?",
+      "How do I turn my skills into a business?",
+      "Do I have to become a consultant?",
+      "How do I know whether people will pay for my expertise?",
+    ],
+    topics: ["experience", "expertise", "professional experience", "corporate to entrepreneur", "consulting", "productized service", "offer design", "Business Architecture"],
+  },
+  {
     href: "/answers/how-should-i-use-ai-in-my-business",
     type: "Answer",
     title: "How Should I Use AI in My Business?",

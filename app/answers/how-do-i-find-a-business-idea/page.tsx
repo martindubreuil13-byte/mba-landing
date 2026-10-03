@@ -242,6 +242,8 @@ export default function AnswerPage() {
 
 <p style={{ marginBottom: "2.5rem" }}>Someone who has spent twenty years in finance doesn't automatically need to start a financial consultancy. They may have commercial judgment, relationships, management ability, customer understanding, negotiation experience or industry access that could be applied somewhere else entirely.</p>
 
+<p style={{ marginBottom: "2.5rem" }}>If experience is your starting point, I've written about <Link href="/answers/how-do-i-turn-my-years-of-experience-into-a-business" className={LINK_CLASS}>how to turn years of experience into a business</Link>.</p>
+
 <p style={{ marginBottom: "1.75rem" }}>When you examine an opportunity, ask:</p>
 
 <p style={{ marginBottom: "1.75rem" }}>What do I already know?</p>
