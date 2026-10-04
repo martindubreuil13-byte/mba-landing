@@ -8,8 +8,12 @@ import { FakeDb } from "@/app/lib/test/fake-supabase";
 const db = new FakeDb();
 vi.mock("@/app/lib/supabase/service", () => ({ getServiceClient: () => db.client() }));
 
+const sent: Array<Record<string, any>> = [];
+vi.mock("@/app/lib/email-client", () => ({ createResend: () => ({ emails: { send: async (m: Record<string, any>) => { sent.push(m); return { data: { id: "email_1" }, error: null }; } } }) }));
+
 process.env.EVIDENCE_HASH_SECRET = "test-secret";
-delete process.env.RESEND_API_KEY;
+process.env.RESEND_API_KEY = "test-key";
+process.env.NAPKIN_UNSUBSCRIBE_SECRET = "unsub-secret";
 
 import { POST } from "@/app/api/resources/request/route";
 import { leadsToCsv, listUnifiedLeadsAdmin } from "@/app/lib/leads/admin-queries";
@@ -36,6 +40,7 @@ beforeEach(() => {
   for (const key of Object.keys(db.tables)) db.tables[key] = [];
   db.insertCount = {};
   db.failNextInsertInto = null;
+  sent.length = 0;
   for (const r of [SECOND_ACT, CHECKLIST]) {
     db.tables.resources.push({ ...r, short_description: "", published: true, archived: false, file_path: "x.pdf", file_name: "x.pdf" });
   }
@@ -286,5 +291,66 @@ describe("Test 8: another resource uses the same shared mechanism", () => {
     const only = await post({ firstName: "Nia", email: "nia@example.com", resourceSlug: "the-launch-checklist", marketingChoice: "resource_only" });
     expect(only.status).toBe(200);
     expect(lead("nia@example.com")!.ongoing_content_opt_in).toBe(false);
+  });
+});
+
+describe("Delivery email (shared branded template)", () => {
+  it("is sent to a resource-only recipient with the branded template, the exact download link, and no consent change", async () => {
+    const res = await post({ firstName: "Pat", email: "pat@example.com", resourceSlug: "the-second-act", marketingChoice: "resource_only" });
+    const json = await res.json();
+    expect(sent).toHaveLength(1);
+    const mail = sent[0];
+    expect(mail.to).toBe("pat@example.com");
+    expect(mail.subject).toBe("Your guide: The Second Act");
+    expect(mail.html).toContain("Hi Pat,");
+    expect(mail.html).toContain("Your guide is ready.");
+    expect(mail.html).toContain("DOWNLOAD THE GUIDE");
+    expect(mail.html).toContain(`href="${json.downloadUrl}"`);
+    expect(mail.text).toContain(json.downloadUrl);
+    expect(mail.html).not.toMatch(/unsubscribe/i);
+    expect(mail.headers).toBeUndefined();
+    expect(lead("pat@example.com")!.ongoing_content_opt_in).toBe(false);
+    expect(db.tables.consent_records).toHaveLength(0);
+  });
+
+  it("is sent to an opted-in recipient, with an unsubscribe link, and without adding anything", async () => {
+    const res = await post({ firstName: "Quinn", email: "quinn@example.com", resourceSlug: "the-launch-checklist", marketingChoice: "join" });
+    const json = await res.json();
+    expect(sent).toHaveLength(1);
+    expect(sent[0].subject).toBe("Your checklist: The Launch Checklist");
+    expect(sent[0].html).toContain("DOWNLOAD THE CHECKLIST");
+    expect(sent[0].html).toContain(`href="${json.downloadUrl}"`);
+    expect(sent[0].html).toMatch(/\/unsubscribe\?token=/);
+    expect(sent[0].headers["List-Unsubscribe"]).toContain("/api/unsubscribe?token=");
+    expect(optInRecords(lead("quinn@example.com")!.id)).toHaveLength(1);
+  });
+
+  it("an existing subscriber who takes resource-only still gets the email, with an unsubscribe link, and keeps their subscription", async () => {
+    await post({ firstName: "Rae", email: "rae@example.com", resourceSlug: "the-second-act", marketingChoice: "join" });
+    sent.length = 0;
+    await post({ firstName: "Rae", email: "rae@example.com", resourceSlug: "the-launch-checklist", marketingChoice: "resource_only" });
+    expect(sent).toHaveLength(1);
+    expect(sent[0].html).toMatch(/\/unsubscribe\?token=/);
+    expect(lead("rae@example.com")!.ongoing_content_opt_in).toBe(true);
+    expect(optInRecords(lead("rae@example.com")!.id)).toHaveLength(1);
+  });
+
+  it("an unsubscribed lead gets the resource email with no unsubscribe link and stays unsubscribed", async () => {
+    await post({ firstName: "Sol", email: "sol@example.com", resourceSlug: "the-second-act", marketingChoice: "join" });
+    await applyOptOut(lead("sol@example.com")!.id, { method: "unsubscribe_link", wordingVersion: "test" });
+    sent.length = 0;
+    await post({ firstName: "Sol", email: "sol@example.com", resourceSlug: "the-second-act", marketingChoice: "join" });
+    expect(sent).toHaveLength(1);
+    expect(sent[0].html).not.toMatch(/unsubscribe/i);
+    expect(lead("sol@example.com")!.ongoing_content_opt_in).toBe(false);
+  });
+
+  it("a failing email provider never blocks delivery on screen", async () => {
+    const original = sent.push.bind(sent);
+    sent.push = () => { throw new Error("provider down"); };
+    const res = await post({ firstName: "Tim", email: "tim@example.com", resourceSlug: "the-second-act", marketingChoice: "resource_only" });
+    sent.push = original;
+    expect(res.status).toBe(200);
+    expect((await res.json()).downloadUrl).toContain("/api/resources/download?token=");
   });
 });

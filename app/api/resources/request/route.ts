@@ -2,9 +2,12 @@ import { NextResponse } from "next/server";
 import { getPublishedResourceBySlug, captureLeadAndRequestResource } from "@/app/lib/resources/queries";
 import { appBaseUrl } from "@/app/lib/resources/base-url";
 import { createResend } from "@/app/lib/email-client";
+import { createUnsubscribeToken } from "@/app/lib/napkin/unsubscribe";
+import { DEFAULT_RESOURCE_FROM } from "@/app/lib/resources/delivery-email";
+import { buildStandardDeliveryEmail } from "@/app/lib/resources/standard-delivery-email";
 import { hashEvidence } from "@/app/lib/leads/evidence";
 import { getClientIp } from "@/app/lib/rateLimit";
-import { isMarketingChoice, optinEvidenceText, OPTIN_VERSION, resourceNoun, validateOptinFields, type MarketingChoice } from "@/app/lib/resources/optin";
+import { isMarketingChoice, optinEvidenceText, OPTIN_VERSION, validateOptinFields, type MarketingChoice } from "@/app/lib/resources/optin";
 
 function clean(value: unknown, maxLength: number) {
   if (typeof value !== "string") return "";
@@ -58,9 +61,10 @@ export async function POST(req: Request) {
   const utm = (body.utm ?? {}) as Record<string, unknown>;
 
   let request;
+  let lead;
   let optInResult;
   try {
-    ({ request, optInResult } = await captureLeadAndRequestResource({
+    ({ lead, request, optInResult } = await captureLeadAndRequestResource({
       first_name: firstName,
       email,
       country: country || null,
@@ -93,23 +97,34 @@ export async function POST(req: Request) {
 
   const downloadUrl = `${appBaseUrl()}/api/resources/download?token=${request.id}`;
 
-  // Best-effort confirmation email — never blocks or fails the response.
+  // Best-effort delivery email — never blocks or fails the response. Transactional: sent whatever marketing
+  // choice was made; it only reads the lead's consent state (to decide whether to show an unsubscribe link).
   if (process.env.RESEND_API_KEY) {
     try {
+      const base = appBaseUrl();
+      const subscribed = Boolean(lead.ongoing_content_opt_in) && !lead.suppressed_at;
+      const unsubscribeToken = subscribed ? encodeURIComponent(createUnsubscribeToken(lead.id)) : null;
+      const built = buildStandardDeliveryEmail({
+        resource,
+        firstName: firstName || lead.first_name,
+        downloadUrl,
+        privacyUrl: `${base}/privacy`,
+        unsubscribeUrl: unsubscribeToken ? `${base}/unsubscribe?token=${unsubscribeToken}` : null,
+      });
       const resend = createResend();
       await resend.emails.send({
-        from: "Martin <martin@mindrasolutions.com>",
+        from: DEFAULT_RESOURCE_FROM,
         to: email,
-        subject: `Your ${resourceNoun(resource.resource_type)}: ${resource.title}`,
-        html: `
-          <p>Hi ${firstName},</p>
-          <p>Here's your copy of <strong>${resource.title}</strong>:</p>
-          <p><a href="${downloadUrl}">Download the ${resourceNoun(resource.resource_type)}</a></p>
-          <p>— Martin</p>
-        `,
+        replyTo: "martin@mindrasolutions.com",
+        subject: built.subject,
+        html: built.html,
+        text: built.text,
+        ...(unsubscribeToken
+          ? { headers: { "List-Unsubscribe": `<${base}/api/unsubscribe?token=${unsubscribeToken}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } }
+          : {}),
       });
     } catch (error) {
-      console.error("Confirmation email failed to send:", error);
+      console.error("Resource delivery email failed to send:", error);
     }
   }
 
