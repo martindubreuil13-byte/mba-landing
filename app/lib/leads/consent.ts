@@ -190,29 +190,33 @@ export async function confirmOptIn(leadId: string, device: { ipHash: string | nu
   return { status: "confirmed", sourceResourceId: requested.source_resource_id, recordId: record.id };
 }
 
-export type ExplicitOptInResult = "opted_in" | "already_opted_in" | "blocked_suppressed";
+export type ExplicitOptInResult = "opted_in" | "already_opted_in" | "blocked_suppressed" | "blocked_unsubscribed";
 
 /**
  * Records an explicit, affirmative opt-in made by clicking a clearly worded button on a resource form
  * (single step: no confirmation email). It:
  *  - activates marketing consent and stamps ongoing_content_opt_in_at, clearing any pending confirmation request;
  *  - appends an `opt_in` evidence row (wording version + exact text, source resource, page, hashed device);
- *  - NEVER reactivates a suppressed lead (spam complaint) and never rewrites an existing active opt-in,
- *    so the original consent evidence is preserved;
+ *  - NEVER reactivates a suppressed lead (spam complaint) or a previously unsubscribed one, however they got
+ *    here: this generic form has no rejoin step, so their state is left exactly as it is (they still receive the
+ *    resource; a dedicated rejoin flow can be added later);
+ *  - never rewrites an existing active opt-in, so the original consent evidence is preserved;
  *  - undoes the flag change if the evidence row cannot be written, so there is never consent without a record.
- * A previously unsubscribed lead who clicks the explicit button is re-subscribed; the earlier opt-out record stays.
  */
 export async function recordExplicitOptIn(leadId: string, evidence: ConsentEvidence): Promise<ExplicitOptInResult> {
   const supabase = getServiceClient();
   const { data: before, error: loadError } = await supabase
     .from("leads")
-    .select("ongoing_content_opt_in, ongoing_content_opt_in_at, consent_requested_at, suppressed_at")
+    .select("ongoing_content_opt_in, ongoing_content_opt_in_at, ongoing_content_opt_out_at, consent_requested_at, suppressed_at")
     .eq("id", leadId)
     .maybeSingle();
   if (loadError) throw new Error(`Failed to load lead: ${loadError.message}`);
   if (!before) throw new Error("Failed to record opt-in: lead not found");
   if (before.suppressed_at) return "blocked_suppressed";
   if (before.ongoing_content_opt_in) return "already_opted_in";
+  // Consented before but not now = unsubscribed (the opt-out stamp, or a legacy lead that has an opt-in time
+  // but is no longer opted in). A brand-new or never-subscribed lead has neither.
+  if (before.ongoing_content_opt_out_at || before.ongoing_content_opt_in_at) return "blocked_unsubscribed";
 
   const now = new Date().toISOString();
   const { data: flipped, error: flipError } = await supabase
@@ -221,6 +225,8 @@ export async function recordExplicitOptIn(leadId: string, evidence: ConsentEvide
     .eq("id", leadId)
     .eq("ongoing_content_opt_in", false)
     .is("suppressed_at", null)
+    .is("ongoing_content_opt_out_at", null)
+    .is("ongoing_content_opt_in_at", null)
     .select("id")
     .maybeSingle();
   if (flipError) throw new Error(`Failed to record opt-in: ${flipError.message}`);

@@ -173,7 +173,7 @@ export async function captureLeadAndRequestResource(input: CaptureLeadInput) {
     .insert({
       lead_id: lead.id,
       resource_id: input.resource_id,
-      opted_in_this_request: input.marketing_choice === "join" && optInResult !== "blocked_suppressed",
+      opted_in_this_request: input.marketing_choice === "join" && (optInResult === "opted_in" || optInResult === "already_opted_in"),
       source: input.source ?? null,
       campaign: input.campaign ?? null,
       medium: input.medium ?? null,

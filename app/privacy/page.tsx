@@ -101,7 +101,7 @@ export default function PrivacyPage() {
                 If you've previously opted in and later download another resource with the
                 "just send me" choice, your existing opt-in is preserved rather than treated as a
                 withdrawal — choosing to just receive a resource isn't read as "unsubscribe."
-                Every marketing email includes an unsubscribe link, and you can also email{" "}
+                If you have unsubscribed before, this form will not subscribe you again; you still receive the resource. Every marketing email includes an unsubscribe link, and you can also email{" "}
                 <a href="mailto:martin@mindrasolutions.com" className="underline hover:text-[#1a1816]">
                   martin@mindrasolutions.com
                 </a>{" "}

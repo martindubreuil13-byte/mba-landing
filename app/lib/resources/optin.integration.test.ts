@@ -182,18 +182,36 @@ describe("Consent safety rules", () => {
     expect(db.tables.resource_requests[1].opted_in_this_request).toBe(false);
   });
 
-  it("a previously unsubscribed lead is only re-subscribed by the explicit button, with history kept", async () => {
+  it("a previously unsubscribed lead is NOT re-subscribed by either button, and still gets the resource", async () => {
     await post({ firstName: "Gus", email: "gus@example.com", resourceSlug: "the-second-act", marketingChoice: "join" });
     const id = lead("gus@example.com")!.id;
     await applyOptOut(id, { method: "unsubscribe_link", wordingVersion: "test" });
-    expect(lead("gus@example.com")!.ongoing_content_opt_in).toBe(false);
+    const afterOptOut = { ...lead("gus@example.com")! };
+    expect(afterOptOut.ongoing_content_opt_in).toBe(false);
+    const recordsBefore = db.tables.consent_records.map((r) => ({ ...r }));
 
-    await post({ firstName: "Gus", email: "gus@example.com", resourceSlug: "the-launch-checklist", marketingChoice: "resource_only" });
-    expect(lead("gus@example.com")!.ongoing_content_opt_in).toBe(false); // resource-only does not resubscribe
+    for (const choice of ["resource_only", "join"] as const) {
+      const res = await post({ firstName: "Gus", email: "gus@example.com", resourceSlug: "the-launch-checklist", marketingChoice: choice });
+      const json = await res.json();
+      expect(res.status).toBe(200);
+      expect(json.downloadUrl).toContain("/api/resources/download?token=");
+      expect(json.onShortlist).toBe(false);
+    }
+    const after = lead("gus@example.com")!;
+    expect(after.ongoing_content_opt_in).toBe(false);
+    expect(after.ongoing_content_opt_in_at).toBe(afterOptOut.ongoing_content_opt_in_at);
+    expect(after.ongoing_content_opt_out_at).toBe(afterOptOut.ongoing_content_opt_out_at);
+    expect(db.tables.consent_records).toEqual(recordsBefore); // no new consent record of any kind
+    expect(db.tables.resource_requests.slice(-2).every((r) => r.opted_in_this_request === false)).toBe(true);
+    expect(consentStatusOf(after as any)).toBe("opted_out");
+  });
 
-    await post({ firstName: "Gus", email: "gus@example.com", resourceSlug: "the-launch-checklist", marketingChoice: "join" });
-    expect(lead("gus@example.com")!.ongoing_content_opt_in).toBe(true);
-    expect(db.tables.consent_records.filter((c) => c.lead_id === id).map((c) => c.action)).toEqual(["opt_in", "opt_out", "opt_in"]);
+  it("a legacy lead who was opted in but is no longer (no opt-out stamp) is also protected", async () => {
+    db.tables.leads.push({ id: "99999999-9999-9999-9999-999999999999", first_name: "Old", email: "old@example.com", country: null, ongoing_content_opt_in: false, ongoing_content_opt_in_at: "2025-01-01T00:00:00Z", ongoing_content_opt_out_at: null, suppressed_at: null, consent_requested_at: null, created_at: "2025-01-01T00:00:00Z" });
+    const res = await post({ firstName: "Old", email: "old@example.com", resourceSlug: "the-second-act", marketingChoice: "join" });
+    expect(res.status).toBe(200);
+    expect(lead("old@example.com")!.ongoing_content_opt_in).toBe(false);
+    expect(db.tables.consent_records).toHaveLength(0);
   });
 
   it("never leaves consent without evidence: if the record cannot be written the flag is undone and the request fails", async () => {
