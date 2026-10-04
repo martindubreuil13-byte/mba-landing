@@ -46,6 +46,21 @@ type NapkinRow = {
   campaign: string | null;
 };
 
+type ConsentOptInRow = {
+  lead_id: string;
+  created_at: string;
+  wording_version: string;
+  source_type: string | null;
+  resource: { slug: string } | { slug: string }[] | null;
+};
+
+/** Where an opt-in came from, e.g. "resource: the-second-act", or blank when the evidence does not say. */
+export function consentSourceLabel(record: Pick<ConsentOptInRow, "source_type" | "resource">): string {
+  const res = Array.isArray(record.resource) ? record.resource[0] : record.resource;
+  if (res?.slug) return `${record.source_type ?? "resource"}: ${res.slug}`;
+  return record.source_type ?? "";
+}
+
 type PmbQuestionRow = {
   id: string;
   created_at: string;
@@ -58,7 +73,7 @@ type PmbQuestionRow = {
 
 async function fetchAll() {
   const supabase = getServiceClient();
-  const [{ data: leads, error: leadsError }, { data: requests }, { data: assessments }, { data: napkin }, { data: pmb }] =
+  const [{ data: leads, error: leadsError }, { data: requests }, { data: assessments }, { data: napkin }, { data: pmb }, { data: consent }] =
     await Promise.all([
       supabase.from("leads").select("*").order("created_at", { ascending: false }),
       supabase
@@ -73,6 +88,11 @@ async function fetchAll() {
         .select("id, lead_id, created_at, joined_at, business_name, interpretation_category, currency, required_transactions_per_month, source, medium, campaign")
         .not("lead_id", "is", null),
       supabase.from("pmb_questions").select("id, created_at, question, name, email, page_path, status"),
+      supabase
+        .from("consent_records")
+        .select("lead_id, created_at, wording_version, source_type, resource:resources(slug)")
+        .eq("action", "opt_in")
+        .order("created_at", { ascending: false }),
     ]);
 
   if (leadsError) throw new Error(`Failed to load leads: ${leadsError.message}`);
@@ -83,6 +103,7 @@ async function fetchAll() {
     assessments: (assessments ?? []) as AssessmentRow[],
     napkin: (napkin ?? []) as NapkinRow[],
     pmb: (pmb ?? []) as PmbQuestionRow[],
+    consent: (consent ?? []) as ConsentOptInRow[],
   };
 }
 
@@ -103,6 +124,10 @@ export type UnifiedLeadRow = {
   country: string | null;
   shortlisted: boolean;
   subscription_status: SubscriptionStatus;
+  /** When the current marketing consent was given, plus the wording version and source that produced it. */
+  consent_at: string | null;
+  consent_version: string;
+  consent_source: string;
   first_acquired_at: string;
   last_interaction_at: string;
   acquired_through: string;
@@ -135,7 +160,9 @@ export const SUBSCRIPTION_STATUS_LABELS: Record<SubscriptionStatus, string> = {
 };
 
 export async function listUnifiedLeadsAdmin(): Promise<UnifiedLeadRow[]> {
-  const { leads, requests, assessments, napkin, pmb } = await fetchAll();
+  const { leads, requests, assessments, napkin, pmb, consent } = await fetchAll();
+  const latestConsent = new Map<string, ConsentOptInRow>(); // rows arrive newest first
+  for (const c of consent) if (!latestConsent.has(c.lead_id)) latestConsent.set(c.lead_id, c);
   const pmbByEmail = new Map<string, PmbQuestionRow[]>();
   for (const q of pmb) {
     const key = q.email.trim().toLowerCase();
@@ -192,6 +219,9 @@ export async function listUnifiedLeadsAdmin(): Promise<UnifiedLeadRow[]> {
       country: lead.country,
       shortlisted: lead.ongoing_content_opt_in,
       subscription_status: subscriptionStatus(lead),
+      consent_at: lead.ongoing_content_opt_in ? lead.ongoing_content_opt_in_at : null,
+      consent_version: lead.ongoing_content_opt_in ? (latestConsent.get(lead.id)?.wording_version ?? "") : "",
+      consent_source: lead.ongoing_content_opt_in && latestConsent.get(lead.id) ? consentSourceLabel(latestConsent.get(lead.id)!) : "",
       first_acquired_at: lead.created_at,
       last_interaction_at: lastInteraction,
       acquired_through: acquiredThrough,
@@ -220,6 +250,9 @@ const EXPORT_COLUMNS = [
   "acquired_through",
   "shortlisted",
   "subscription_status",
+  "consent_at",
+  "consent_source",
+  "consent_version",
   "first_acquired_at",
   "last_interaction_at",
   "resources_consumed",
@@ -238,6 +271,9 @@ export function leadsToCsv(rows: UnifiedLeadRow[]): string {
       acquired_through: r.acquired_through,
       shortlisted: r.shortlisted ? "true" : "false",
       subscription_status: r.subscription_status,
+      consent_at: r.consent_at ?? "",
+      consent_source: r.consent_source,
+      consent_version: r.consent_version,
       first_acquired_at: r.first_acquired_at,
       last_interaction_at: r.last_interaction_at,
       resources_consumed: r.resource_titles.join("; "),
@@ -343,7 +379,7 @@ export async function getLeadDetailAdmin(id: string): Promise<LeadDetail | null>
   if (error) throw new Error(`Failed to load lead: ${error.message}`);
   if (!lead) return null;
 
-  const [{ data: requests }, { data: assessments }, { data: napkin }, { data: pmb }] = await Promise.all([
+  const [{ data: requests }, { data: assessments }, { data: napkin }, { data: pmb }, { data: optInRecords }] = await Promise.all([
     supabase
       .from("resource_requests")
       .select("lead_id, requested_at, resource:resources(title, slug)")
@@ -357,7 +393,15 @@ export async function getLeadDetailAdmin(id: string): Promise<LeadDetail | null>
       .select("id, created_at, joined_at, business_name, interpretation_category, currency, required_transactions_per_month")
       .eq("lead_id", id),
     supabase.from("pmb_questions").select("id, created_at, question, page_path").ilike("email", lead.email),
+    supabase
+      .from("consent_records")
+      .select("lead_id, created_at, wording_version, source_type, resource:resources(slug)")
+      .eq("lead_id", id)
+      .eq("action", "opt_in")
+      .order("created_at", { ascending: false })
+      .limit(1),
   ]);
+  const latestOptIn = ((optInRecords ?? []) as ConsentOptInRow[])[0];
 
   const timeline: ActivityEvent[] = [];
 
@@ -374,7 +418,9 @@ export async function getLeadDetailAdmin(id: string): Promise<LeadDetail | null>
       at: lead.ongoing_content_opt_in_at,
       kind: "opt_in",
       title: "Joined the shortlist",
-      description: "Opted in to ongoing content.",
+      description: latestOptIn
+        ? `Opted in to ongoing content${consentSourceLabel(latestOptIn) ? ` (${consentSourceLabel(latestOptIn)})` : ""}. Wording: ${latestOptIn.wording_version}.`
+        : "Opted in to ongoing content.",
       href: null,
     });
   }

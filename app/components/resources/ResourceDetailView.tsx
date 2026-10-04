@@ -124,7 +124,7 @@ export default function ResourceDetailView({
                 </p>
                 <h2 className="text-2xl md:text-3xl font-light text-[#1a1816]">{title}</h2>
               </div>
-              <ResourceRequestForm resourceSlug={slug} resourceTitle={title} />
+              <ResourceRequestForm resourceSlug={slug} resourceTitle={title} resourceType={resourceType} />
             </motion.div>
           </div>
         </section>

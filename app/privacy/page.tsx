@@ -16,7 +16,7 @@ export default function PrivacyPage() {
               <h1 className="text-3xl md:text-4xl font-light leading-tight mb-4">
                 What this site collects, and why
               </h1>
-              <p className="text-[#1a1816]/60 text-sm">Last updated October 2, 2026.</p>
+              <p className="text-[#1a1816]/60 text-sm">Last updated October 4, 2026.</p>
             </div>
 
             <div className="space-y-6 text-base leading-relaxed text-[#1a1816]/85">
@@ -89,17 +89,19 @@ export default function PrivacyPage() {
 
               <h2 className="text-xl font-light pt-4">The shortlist (ongoing content)</h2>
               <p>
-                Below the resource request form is a separate, unchecked checkbox to stay on
-                Martin's shortlist for further content — articles, guides, tools and the
-                occasional relevant offer. This is optional and separate from downloading the
-                resource. If you check it, the site records that consent along with a timestamp.
-                If you don't, no ongoing-content consent is recorded or implied.
+                The resource request form asks for your first name and email address and gives you
+                two clearly labelled choices: one gets you the resource and keeps you on Martin's
+                shortlist for further content (articles, guides, tools and the occasional relevant
+                offer); the other just sends you the resource. Nothing is pre-selected, and you receive
+                the resource either way. If you choose the first, the site records that consent along
+                with a timestamp, the resource you were requesting and the version of the wording you
+                saw. If you choose the second, no ongoing-content consent is recorded or implied.
               </p>
               <p>
-                If you've previously opted in and later download another resource without
-                re-checking the box, your existing opt-in is preserved rather than treated as a
-                withdrawal — unchecking a box on a download form isn't read as "unsubscribe."
-                If you want to be removed from the shortlist, email{" "}
+                If you've previously opted in and later download another resource with the
+                "just send me" choice, your existing opt-in is preserved rather than treated as a
+                withdrawal — choosing to just receive a resource isn't read as "unsubscribe."
+                Every marketing email includes an unsubscribe link, and you can also email{" "}
                 <a href="mailto:martin@mindrasolutions.com" className="underline hover:text-[#1a1816]">
                   martin@mindrasolutions.com
                 </a>{" "}

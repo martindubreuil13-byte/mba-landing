@@ -1,6 +1,8 @@
 import "server-only";
 import { getServiceClient } from "@/app/lib/supabase/service";
 import { upsertLeadPreservingOptIn } from "@/app/lib/leads/upsert";
+import { recordExplicitOptIn, type ConsentEvidence, type ExplicitOptInResult } from "@/app/lib/leads/consent";
+import type { MarketingChoice } from "@/app/lib/resources/optin";
 import type { Lead, LeadWithStats, Resource, ResourceRequest, ResourceType } from "./types";
 
 // ============================================================
@@ -129,7 +131,10 @@ export type CaptureLeadInput = {
   first_name: string;
   email: string;
   country?: string | null;
-  ongoing_content_opt_in: boolean;
+  /** The visitor's explicit choice on the form. "join" records marketing consent; "resource_only" never does. */
+  marketing_choice: MarketingChoice;
+  /** Evidence stored with the consent record when the choice is "join". */
+  consent_evidence: Omit<ConsentEvidence, "sourceResourceId"> & { sourceResourceId: string };
   resource_id: string;
   source?: string | null;
   campaign?: string | null;
@@ -144,19 +149,31 @@ export type CaptureLeadInput = {
 export async function captureLeadAndRequestResource(input: CaptureLeadInput) {
   const supabase = getServiceClient();
 
-  const lead: Lead = await upsertLeadPreservingOptIn({
+  // Identity only: the lead is created or matched by email (never duplicated). Marketing consent is applied
+  // separately, and only when the visitor explicitly chose it, so "resource only" can never create consent
+  // and can never withdraw an existing one.
+  let lead: Lead = await upsertLeadPreservingOptIn({
     first_name: input.first_name,
     email: input.email,
     country: input.country,
-    ongoing_content_opt_in: input.ongoing_content_opt_in,
+    ongoing_content_opt_in: false,
   });
+
+  let optInResult: ExplicitOptInResult | null = null;
+  if (input.marketing_choice === "join") {
+    optInResult = await recordExplicitOptIn(lead.id, input.consent_evidence);
+    if (optInResult === "opted_in") {
+      const { data: refreshed } = await supabase.from("leads").select("*").eq("id", lead.id).single();
+      if (refreshed) lead = refreshed as Lead;
+    }
+  }
 
   const { data: request, error: requestError } = await supabase
     .from("resource_requests")
     .insert({
       lead_id: lead.id,
       resource_id: input.resource_id,
-      opted_in_this_request: input.ongoing_content_opt_in,
+      opted_in_this_request: input.marketing_choice === "join" && optInResult !== "blocked_suppressed",
       source: input.source ?? null,
       campaign: input.campaign ?? null,
       medium: input.medium ?? null,
@@ -171,7 +188,7 @@ export async function captureLeadAndRequestResource(input: CaptureLeadInput) {
 
   if (requestError) throw new Error(`Failed to record resource request: ${requestError.message}`);
 
-  return { lead, request: request as ResourceRequest };
+  return { lead, request: request as ResourceRequest, optInResult };
 }
 
 export async function getResourceRequestWithResource(requestId: string) {

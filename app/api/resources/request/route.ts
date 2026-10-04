@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { getPublishedResourceBySlug, captureLeadAndRequestResource } from "@/app/lib/resources/queries";
 import { appBaseUrl } from "@/app/lib/resources/base-url";
 import { createResend } from "@/app/lib/email-client";
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { hashEvidence } from "@/app/lib/leads/evidence";
+import { getClientIp } from "@/app/lib/rateLimit";
+import { isMarketingChoice, optinEvidenceText, OPTIN_VERSION, resourceNoun, validateOptinFields, type MarketingChoice } from "@/app/lib/resources/optin";
 
 function clean(value: unknown, maxLength: number) {
   if (typeof value !== "string") return "";
@@ -24,21 +25,30 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, downloadUrl: null });
   }
 
-  const firstName = clean(body.firstName, 100);
-  const email = clean(body.email, 200);
   const country = clean(body.country, 100);
   const resourceSlug = clean(body.resourceSlug, 200);
-  const ongoingContentOptIn = body.ongoingContentOptIn === true;
+
+  // The visitor's explicit choice. A page that was open before this release can still post the old checkbox
+  // boolean; it maps to the same two outcomes (true = the box was ticked), so nobody is locked out mid-deploy.
+  const choice: MarketingChoice | null = isMarketingChoice(body.marketingChoice)
+    ? body.marketingChoice
+    : typeof body.ongoingContentOptIn === "boolean"
+      ? body.ongoingContentOptIn
+        ? "join"
+        : "resource_only"
+      : null;
+  const legacyCheckbox = !isMarketingChoice(body.marketingChoice);
 
   const fieldErrors: Record<string, string> = {};
-  if (!firstName) fieldErrors.firstName = "First name is required.";
-  if (!email) fieldErrors.email = "Email is required.";
-  else if (!EMAIL_REGEX.test(email)) fieldErrors.email = "Enter a valid email address.";
+  const checked = validateOptinFields({ firstName: body.firstName, email: body.email });
+  if (!checked.ok) Object.assign(fieldErrors, checked.errors);
+  if (!choice) fieldErrors.marketingChoice = "Please choose how you would like to receive it.";
   if (!resourceSlug) fieldErrors.resourceSlug = "Missing resource.";
 
-  if (Object.keys(fieldErrors).length > 0) {
-    return NextResponse.json({ error: "Invalid submission", fieldErrors }, { status: 400 });
+  if (Object.keys(fieldErrors).length > 0 || !checked.ok || !choice) {
+    return NextResponse.json({ error: "Please check the highlighted fields.", fieldErrors }, { status: 400 });
   }
+  const { firstName, email } = checked;
 
   const resource = await getPublishedResourceBySlug(resourceSlug);
   if (!resource) {
@@ -48,12 +58,24 @@ export async function POST(req: Request) {
   const utm = (body.utm ?? {}) as Record<string, unknown>;
 
   let request;
+  let optInResult;
   try {
-    ({ request } = await captureLeadAndRequestResource({
+    ({ request, optInResult } = await captureLeadAndRequestResource({
       first_name: firstName,
       email,
       country: country || null,
-      ongoing_content_opt_in: ongoingContentOptIn,
+      marketing_choice: choice,
+      consent_evidence: {
+        wordingVersion: legacyCheckbox ? "resource_checkbox_legacy" : OPTIN_VERSION,
+        wordingText: legacyCheckbox ? "[checkbox] Keep me on Martin's shortlist for useful stuff. (page loaded before resource_optin_v2)" : optinEvidenceText(resource.resource_type),
+        method: legacyCheckbox ? "checkbox" : "button_disclosure",
+        sourceType: "resource",
+        sourceResourceId: resource.id,
+        sourceUrl: `${appBaseUrl()}/resources/${resource.slug}`,
+        ctaLocation: "resource_form",
+        ipHash: hashEvidence(getClientIp(req)),
+        userAgentHash: hashEvidence(req.headers.get("user-agent")),
+      },
       resource_id: resource.id,
       source: clean(body.source, 200) || null,
       campaign: clean(body.campaign, 200) || null,
@@ -78,11 +100,11 @@ export async function POST(req: Request) {
       await resend.emails.send({
         from: "Martin <martin@mindrasolutions.com>",
         to: email,
-        subject: `Your guide: ${resource.title}`,
+        subject: `Your ${resourceNoun(resource.resource_type)}: ${resource.title}`,
         html: `
           <p>Hi ${firstName},</p>
           <p>Here's your copy of <strong>${resource.title}</strong>:</p>
-          <p><a href="${downloadUrl}">Download the guide</a></p>
+          <p><a href="${downloadUrl}">Download the ${resourceNoun(resource.resource_type)}</a></p>
           <p>— Martin</p>
         `,
       });
@@ -91,5 +113,5 @@ export async function POST(req: Request) {
     }
   }
 
-  return NextResponse.json({ success: true, downloadUrl, firstName });
+  return NextResponse.json({ success: true, downloadUrl, firstName, onShortlist: optInResult === "opted_in" || optInResult === "already_opted_in" });
 }

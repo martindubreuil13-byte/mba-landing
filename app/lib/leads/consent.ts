@@ -190,6 +190,57 @@ export async function confirmOptIn(leadId: string, device: { ipHash: string | nu
   return { status: "confirmed", sourceResourceId: requested.source_resource_id, recordId: record.id };
 }
 
+export type ExplicitOptInResult = "opted_in" | "already_opted_in" | "blocked_suppressed";
+
+/**
+ * Records an explicit, affirmative opt-in made by clicking a clearly worded button on a resource form
+ * (single step: no confirmation email). It:
+ *  - activates marketing consent and stamps ongoing_content_opt_in_at, clearing any pending confirmation request;
+ *  - appends an `opt_in` evidence row (wording version + exact text, source resource, page, hashed device);
+ *  - NEVER reactivates a suppressed lead (spam complaint) and never rewrites an existing active opt-in,
+ *    so the original consent evidence is preserved;
+ *  - undoes the flag change if the evidence row cannot be written, so there is never consent without a record.
+ * A previously unsubscribed lead who clicks the explicit button is re-subscribed; the earlier opt-out record stays.
+ */
+export async function recordExplicitOptIn(leadId: string, evidence: ConsentEvidence): Promise<ExplicitOptInResult> {
+  const supabase = getServiceClient();
+  const { data: before, error: loadError } = await supabase
+    .from("leads")
+    .select("ongoing_content_opt_in, ongoing_content_opt_in_at, consent_requested_at, suppressed_at")
+    .eq("id", leadId)
+    .maybeSingle();
+  if (loadError) throw new Error(`Failed to load lead: ${loadError.message}`);
+  if (!before) throw new Error("Failed to record opt-in: lead not found");
+  if (before.suppressed_at) return "blocked_suppressed";
+  if (before.ongoing_content_opt_in) return "already_opted_in";
+
+  const now = new Date().toISOString();
+  const { data: flipped, error: flipError } = await supabase
+    .from("leads")
+    .update({ ongoing_content_opt_in: true, ongoing_content_opt_in_at: now, consent_requested_at: null })
+    .eq("id", leadId)
+    .eq("ongoing_content_opt_in", false)
+    .is("suppressed_at", null)
+    .select("id")
+    .maybeSingle();
+  if (flipError) throw new Error(`Failed to record opt-in: ${flipError.message}`);
+  if (!flipped) return "already_opted_in"; // a concurrent request won; its evidence row exists
+
+  const { error: recordError } = await supabase.from("consent_records").insert(evidenceRow(leadId, "opt_in", evidence, now));
+  if (recordError) {
+    await supabase
+      .from("leads")
+      .update({
+        ongoing_content_opt_in: false,
+        ongoing_content_opt_in_at: before.ongoing_content_opt_in_at,
+        consent_requested_at: before.consent_requested_at,
+      })
+      .eq("id", leadId);
+    throw new Error(`Failed to write consent record: ${recordError.message}`);
+  }
+  return "opted_in";
+}
+
 export type OptOutResult = "updated" | "already_opted_out" | "not_found";
 
 /**
