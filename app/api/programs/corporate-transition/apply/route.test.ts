@@ -79,6 +79,8 @@ describe("automatic rejection is disabled (temporary mode, the default)", () => 
     expect(mail.html).toContain("I aim to get back to you by email within 48 hours.");
     expect(mail.html).not.toContain("don’t think this particular pathway is the right next step");
     expect(sent.some((m) => /Thank you for sharing your situation/.test(m.subject))).toBe(false);
+    // the conversation invitation says "I've reviewed your application": it is never sent automatically
+    expect(sent.some((m) => /Let’s have a conversation/.test(m.subject) || /martindubreuil13\/30min/.test(m.html ?? ""))).toBe(false);
   });
 
   it("3b. unemployed the AI would INVITE is never auto-invited: Martin decides the next step", async () => {

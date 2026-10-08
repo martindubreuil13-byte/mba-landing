@@ -84,3 +84,33 @@ export function effectiveRoute(aiRoute: TransitionRoute, a: Pick<TransitionAnswe
   if (a.employment === UNEMPLOYED_OPTION) return "REVIEW";
   return aiRoute === "NOT_FIT" ? "REVIEW" : aiRoute;
 }
+
+/**
+ * Response template for an applicant who does not fit the original Corporate Transition criteria, offered as a
+ * starting point in the Admin "Response" form. It says "I've reviewed your application", so it is NEVER sent
+ * automatically: it goes out only when Martin chooses it and presses Send after reviewing the application.
+ */
+export const CONVERSATION_INVITE_SUBJECT = "Let’s have a conversation";
+export const CONVERSATION_INVITE_CALENDLY_URL = "https://calendly.com/martindubreuil13/30min";
+
+export function conversationInviteDraft(firstName: string): string {
+  return `Hi ${firstName},
+
+Thank you for taking the time to share your background and situation.
+
+This program was originally designed for professionals transitioning from corporate employment into entrepreneurship, so your circumstances may not fit the original criteria.
+
+However, I’ve reviewed your application, and I believe a conversation could still be worthwhile.
+
+I’d be happy to offer you 30 minutes of my time to explore your situation, discuss your options, and see whether I can offer some useful guidance.
+
+No fees, no obligations, and no sales pitch. Just an honest conversation.
+
+You can book a time here:
+
+${CONVERSATION_INVITE_CALENDLY_URL}
+
+Looking forward to speaking with you.
+
+Martin`;
+}
