@@ -40,7 +40,7 @@ describe("applicant acknowledgements: subjects, preview text, headings and copy"
     expect(m.subject).toBe("I’ve received your application");
     expect(m.preview).toBe("I’ll review what you’ve shared and come back to you personally.");
     expect(m.html).toContain(">I’ve received your application</h1>");
-    for (const line of ["Hi Alex,", "Thank you for taking the time to share where you are and what you’re considering.", "before suggesting what—if anything—the right next step should be.", "You’ll hear from me by email within 48 hours.", "There is nothing else you need to do for now."]) { expect(m.html).toContain(line); expect(m.text).toContain(line); }
+    for (const line of ["Hi Alex,", "Thank you for taking the time to share where you are and what you’re considering.", "before suggesting what—if anything—the right next step should be.", "I aim to get back to you by email within 48 hours.", "There is nothing else you need to do for now."]) { expect(m.html).toContain(line); expect(m.text).toContain(line); }
     expect(m.html).not.toContain("bgcolor=");
     expect(m.links.filter((l) => l.includes("calendly"))).toEqual([]);
   });

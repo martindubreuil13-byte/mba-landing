@@ -38,7 +38,7 @@ export function applicantMessage(route: ProgramRoute, firstName: string, opts: {
     return copy("I’ve received your application", "I’ll review what you’ve shared and come back to you personally.", "I’ve received your application", firstName, [
       "Thank you for taking the time to share where you are and what you’re considering.",
       "I’m going to review your application personally before suggesting what—if anything—the right next step should be.",
-      "You’ll hear from me by email within 48 hours.",
+      "I aim to get back to you by email within 48 hours.",
       "There is nothing else you need to do for now.",
     ]);
   }

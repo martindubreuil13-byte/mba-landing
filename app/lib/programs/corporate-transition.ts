@@ -56,3 +56,31 @@ export function validateApplication(value: unknown): { data?: TransitionAnswers;
   if (data.linkedin && !/^https?:\/\/(?:[a-z]{2,3}\.)?linkedin\.com\//i.test(data.linkedin)) errors.linkedin = "Enter a LinkedIn profile URL, or leave this blank.";
   return Object.keys(errors).length ? { errors } : { data };
 }
+
+/**
+ * TEMPORARY (October 2026): the free-guidance LinkedIn initiative for professionals who are out of work means the
+ * automatic business-fit rejection must not turn anyone away. While this is OFF (the default), every valid
+ * application is saved and routed to manual review; the AI still runs and its assessment is stored for Martin's
+ * private review, but it never changes what the applicant sees or receives.
+ *
+ * To restore the original automatic qualification: set the environment variable
+ * TRANSITION_AUTO_QUALIFICATION=enabled in Vercel (Production) and redeploy. No code change is needed.
+ */
+export function autoQualificationEnabled(): boolean {
+  return process.env.TRANSITION_AUTO_QUALIFICATION?.trim().toLowerCase() === "enabled";
+}
+
+export type TransitionRoute = "INVITE" | "REVIEW" | "NOT_FIT";
+
+export const UNEMPLOYED_OPTION = "Unemployed / between roles";
+
+/**
+ * The route the APPLICANT is actually given. With automatic qualification enabled this is the AI's route, unchanged.
+ * With it off: nobody is rejected (NOT_FIT becomes manual review), and applicants who are between roles are never
+ * auto-invited either, so Martin personally decides the next step for the LinkedIn initiative.
+ */
+export function effectiveRoute(aiRoute: TransitionRoute, a: Pick<TransitionAnswers, "employment">): TransitionRoute {
+  if (autoQualificationEnabled()) return aiRoute;
+  if (a.employment === UNEMPLOYED_OPTION) return "REVIEW";
+  return aiRoute === "NOT_FIT" ? "REVIEW" : aiRoute;
+}

@@ -2,7 +2,7 @@ import "server-only";
 import { getServiceClient } from "@/app/lib/supabase/service";
 import { upsertLeadPreservingOptIn } from "@/app/lib/leads/upsert";
 import { decideConsent, requestOptIn } from "@/app/lib/leads/consent";
-import { CONSENT_FOOTNOTE, CONSENT_VERSION, CONSENT_WORDING, PROGRAM_KEY, type Attribution, type TransitionAnswers } from "./corporate-transition";
+import { CONSENT_FOOTNOTE, CONSENT_VERSION, CONSENT_WORDING, PROGRAM_KEY, type Attribution, type TransitionAnswers, type TransitionRoute } from "./corporate-transition";
 import type { Qualification } from "./classify";
 
 /**
@@ -15,7 +15,7 @@ import type { Qualification } from "./classify";
  */
 export type ProgramConsentOutcome = "none" | "confirmation_requested" | "already_pending" | "existing" | "not_applied";
 
-export async function createApplication(a: TransitionAnswers, attribution: Attribution, q: Qualification, idempotencyKey: string, evidence: { ipHash: string | null; userAgentHash: string | null }) {
+export async function createApplication(a: TransitionAnswers, attribution: Attribution, q: Qualification, idempotencyKey: string, evidence: { ipHash: string | null; userAgentHash: string | null }, route: TransitionRoute = q.route) {
   const db = getServiceClient();
   const { data: old } = await db.from("program_applications").select("*").eq("idempotency_key", idempotencyKey).maybeSingle();
   if (old) return { application: old, reused: true, lead: null, consent: "none" as ProgramConsentOutcome };
@@ -23,9 +23,9 @@ export async function createApplication(a: TransitionAnswers, attribution: Attri
   const now = new Date().toISOString();
   const { data, error } = await db.from("program_applications").insert({
     lead_id: lead.id, program_key: PROGRAM_KEY, answers: a, ai_route: q.route, ai_confidence: q.confidence,
-    ai_reasoning: q.reasoning, ai_concerns: q.concerns, ai_pre_call_summary: q.preCallSummary,
-    status: q.route === "INVITE" ? "INVITED" : q.route === "REVIEW" ? "UNDER_REVIEW" : "NOT_FIT",
-    response_draft: q.route === "REVIEW" ? q.reviewDraft : null, attribution, marketing_consent_requested: a.marketingConsent,
+    ai_reasoning: q.reasoning, ai_concerns: route === q.route ? q.concerns : [...q.concerns, `Routed to manual review: the AI suggested ${q.route}, but automatic qualification is currently disabled.`], ai_pre_call_summary: q.preCallSummary,
+    status: route === "INVITE" ? "INVITED" : route === "REVIEW" ? "UNDER_REVIEW" : "NOT_FIT",
+    response_draft: route === "REVIEW" ? q.reviewDraft : null, attribution, marketing_consent_requested: a.marketingConsent,
     marketing_consent_requested_at: a.marketingConsent ? now : null, idempotency_key: idempotencyKey,
   }).select().single();
   if (error) throw new Error(`Failed to create application: ${error.message}`);

@@ -18,6 +18,7 @@ export class FakeDb {
     assessments: [],
     napkin_submissions: [],
     pmb_questions: [],
+    program_applications: [],
   };
 
   insertCount: Record<string, number> = {};
