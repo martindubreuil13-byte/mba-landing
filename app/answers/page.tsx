@@ -8,11 +8,18 @@ import Navigation from "@/app/components/Navigation";
 export default function AnswersPage() {
   const answers = [
     {
+      href: "/answers/full-time-or-flexible-job-starting-business",
+      number: "015",
+      title: "Should I Take a Full-Time Job or a Flexible Job While Starting My Own Business?",
+      date: "October 11, 2026",
+      featured: true,
+    },
+    {
       href: "/answers/am-i-too-old-to-start-a-business",
       number: "014",
       title: "Am I Too Old to Start a Business?",
       date: "October 3, 2026",
-      featured: true,
+      featured: false,
     },
     {
       href: "/answers/what-kind-of-business-can-i-start-with-the-skills-i-already-have",

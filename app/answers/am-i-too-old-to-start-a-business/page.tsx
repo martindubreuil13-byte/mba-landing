@@ -221,6 +221,11 @@ export default function AnswerPage() {
                       summary: "Turning professional experience into a specific, valuable offer a customer will pay for.",
                     },
                     {
+                      href: "/answers/full-time-or-flexible-job-starting-business",
+                      title: "Should I Take a Full-Time Job or a Flexible Job While Starting My Own Business?",
+                      summary: "How to weigh a stable income against time for your business, and when to make the full transition.",
+                    },
+                    {
                       href: "/answers/what-is-business-architecture",
                       title: "What Is Business Architecture?",
                       summary: "How a business connects customer, offer, pricing, economics and execution into one coherent system.",

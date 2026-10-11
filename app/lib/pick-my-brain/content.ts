@@ -37,6 +37,22 @@ export type DiscoveryRecord = {
 export const STATIC_DISCOVERY_RECORDS: DiscoveryRecord[] = [
   // ANSWERS
   {
+    href: "/answers/full-time-or-flexible-job-starting-business",
+    type: "Answer",
+    title: "Should I Take a Full-Time Job or a Flexible Job While Starting My Own Business?",
+    description: "Whether to keep a stable full-time job or take a flexible, lower-paying one while building a business, and how to decide.",
+    intents: [
+      "Should I work full-time or part-time while starting a business?",
+      "Should I take a lower-paying job to make time for my business?",
+      "Should I sacrifice income to start a business?",
+      "Can I start a business while working full-time?",
+      "Is it better to quit my job before starting a business?",
+      "How can I transition from corporate employment to entrepreneurship?",
+      "When should I leave my job to focus on my startup?",
+    ],
+    topics: ["full-time job", "flexible job", "starting a business while employed", "financial stability", "corporate to entrepreneur", "FRAME", "Business Architecture"],
+  },
+  {
     href: "/answers/am-i-too-old-to-start-a-business",
     type: "Answer",
     title: "Am I Too Old to Start a Business?",
