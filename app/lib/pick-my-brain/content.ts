@@ -37,6 +37,22 @@ export type DiscoveryRecord = {
 export const STATIC_DISCOVERY_RECORDS: DiscoveryRecord[] = [
   // ANSWERS
   {
+    href: "/answers/how-to-start-a-restaurant-consulting-business",
+    type: "Answer",
+    title: "I Want to Start a Restaurant Consulting Business. Where Do I Begin?",
+    description: "How to start a restaurant consulting business: choose your customers, validate demand, design your offers and find paying clients.",
+    intents: [
+      "How do I start a restaurant consulting business?",
+      "How do I become a restaurant consultant?",
+      "How do I start a consulting practice?",
+      "How do I find restaurant consulting clients?",
+      "How do I price restaurant consulting services?",
+      "How do I build a profitable consulting business?",
+      "How do I validate a consulting business idea?",
+    ],
+    topics: ["restaurant consulting", "consulting business", "consulting offers", "go-to-market", "customer journey", "FRAME", "Business Architecture"],
+  },
+  {
     href: "/answers/full-time-or-flexible-job-starting-business",
     type: "Answer",
     title: "Should I Take a Full-Time Job or a Flexible Job While Starting My Own Business?",

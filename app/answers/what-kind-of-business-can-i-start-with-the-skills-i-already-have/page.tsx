@@ -226,6 +226,11 @@ export default function AnswerPage() {
                       summary: "Why age is not the business model, and how to architect a business around your experience and the life you want now.",
                     },
                     {
+                      href: "/answers/how-to-start-a-restaurant-consulting-business",
+                      title: "I Want to Start a Restaurant Consulting Business. Where Do I Begin?",
+                      summary: "Choosing your customers, validating demand and designing offers for a consulting practice.",
+                    },
+                    {
                       href: "/answers/how-do-i-find-a-business-idea",
                       title: "How Do I Find a Business Idea?",
                       summary: "A practical way to find business ideas by observing real problems, desires, changes and opportunities.",

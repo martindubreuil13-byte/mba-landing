@@ -8,11 +8,18 @@ import Navigation from "@/app/components/Navigation";
 export default function AnswersPage() {
   const answers = [
     {
+      href: "/answers/how-to-start-a-restaurant-consulting-business",
+      number: "016",
+      title: "I Want to Start a Restaurant Consulting Business. Where Do I Begin?",
+      date: "October 11, 2026",
+      featured: true,
+    },
+    {
       href: "/answers/full-time-or-flexible-job-starting-business",
       number: "015",
       title: "Should I Take a Full-Time Job or a Flexible Job While Starting My Own Business?",
       date: "October 11, 2026",
-      featured: true,
+      featured: false,
     },
     {
       href: "/answers/am-i-too-old-to-start-a-business",

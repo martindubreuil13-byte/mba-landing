@@ -232,6 +232,11 @@ export default function AnswerPage() {
                       summary: "Choosing a customer, a problem and the simplest way to deliver a result before choosing a business model.",
                     },
                     {
+                      href: "/answers/how-to-start-a-restaurant-consulting-business",
+                      title: "I Want to Start a Restaurant Consulting Business. Where Do I Begin?",
+                      summary: "Choosing your customers, validating demand and designing offers for a consulting practice.",
+                    },
+                    {
                       href: "/thinking/your-corporate-experience-may-be-working-against-you",
                       title: "Your Corporate Experience May Be Working Against You",
                       summary: "Why leading an established business and creating one from nothing are different games.",
