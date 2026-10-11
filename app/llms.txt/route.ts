@@ -13,6 +13,7 @@ Principal: Martin Dubreuil
 - [About Martin Dubreuil](${SITE_URL}/martin)
 - [Anonymized business cases](${SITE_URL}/cases)
 - [Thinking and perspectives](${SITE_URL}/thinking)
+- [Answers to common business questions](${SITE_URL}/answers)
 - [Start a conversation](${SITE_URL}/lets-talk)
 
 ## Discovery
