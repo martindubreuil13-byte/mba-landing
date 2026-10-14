@@ -8,13 +8,22 @@ import Navigation from "@/app/components/Navigation";
 export default function ThinkingPage() {
   const articles = [
     {
+      href: "/thinking/architecting-intelligence",
+      category: "Business Architecture",
+      number: "011",
+      title: "Architecting Intelligence",
+      standfirst: "The future of business isn't about replacing people with AI. It's about understanding what intelligence a business needs, where it creates value, and how to put it to work.",
+      date: "October 14, 2026",
+      featured: true,
+    },
+    {
       href: "/thinking/your-next-customer-might-not-visit-your-website",
       category: "Business Architecture",
       number: "010",
       title: "Your Next Customer Might Not Visit Your Website",
       standfirst: "AI agents may increasingly research and compare things on our behalf. What retail's move from stores to omnichannel suggests about the business behind the website, and why this is not a website problem.",
       date: "October 2, 2026",
-      featured: true,
+      featured: false,
     },
     {
       href: "/thinking/how-to-define-your-ideal-customer",

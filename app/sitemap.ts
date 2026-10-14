@@ -28,6 +28,7 @@ const publicRoutes = [
   "/thinking/the-business-architects-frame",
   "/thinking/how-to-define-your-ideal-customer",
   "/thinking/your-next-customer-might-not-visit-your-website",
+  "/thinking/architecting-intelligence",
   "/answers",
   "/answers/what-is-business-architecture",
   "/answers/what-does-a-business-architect-do",
