@@ -395,6 +395,10 @@ export default function AnswerPage() {
                 Business Architecture slows down the expensive mistakes without slowing down useful action.
               </p>
 
+              <p style={{ marginBottom: "2.5rem" }}>
+                The same thinking applies to AI itself: I've written about <Link href="/thinking/architecting-intelligence" className="text-[#6b1f1f] border-b border-[#6b1f1f] hover:text-[#6b1f1f]/80 hover:border-[#6b1f1f]/80 transition-colors">Architecting Intelligence</Link>, which asks what kind of intelligence each part of a business needs before deciding where AI belongs.
+              </p>
+
               <p style={{ marginBottom: "3.5rem" }}>
                 The objective is not endless planning.
               </p>
