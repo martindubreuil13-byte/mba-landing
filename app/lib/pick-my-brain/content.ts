@@ -37,6 +37,24 @@ export type DiscoveryRecord = {
 export const STATIC_DISCOVERY_RECORDS: DiscoveryRecord[] = [
   // ANSWERS
   {
+    href: "/answers/can-i-start-a-business-without-risking-my-financial-future",
+    type: "Answer",
+    title: "Can I Start a Business Without Risking My Financial Future?",
+    description: "How to explore entrepreneurship, test a business idea and build progressively without gambling your savings, retirement or employment income.",
+    intents: [
+      "Can I start a business without risking my financial future?",
+      "Can I start a business without quitting my job?",
+      "How can I start a business without risking my savings?",
+      "How much money should I risk starting a business?",
+      "Should I use my retirement savings to start a business?",
+      "How do I test a business idea before investing money?",
+      "How can I reduce the financial risk of entrepreneurship?",
+      "Is it safer to start a business while employed?",
+      "When should I quit my job to become an entrepreneur?",
+    ],
+    topics: ["financial risk", "starting a business while employed", "retirement savings", "testing a business idea", "Pre-Architecture", "AI", "Business Architecture"],
+  },
+  {
     href: "/answers/how-to-start-a-restaurant-consulting-business",
     type: "Answer",
     title: "I Want to Start a Restaurant Consulting Business. Where Do I Begin?",

@@ -46,6 +46,7 @@ const publicRoutes = [
   "/answers/am-i-too-old-to-start-a-business",
   "/answers/full-time-or-flexible-job-starting-business",
   "/answers/how-to-start-a-restaurant-consulting-business",
+  "/answers/can-i-start-a-business-without-risking-my-financial-future",
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

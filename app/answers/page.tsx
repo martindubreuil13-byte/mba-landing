@@ -8,11 +8,18 @@ import Navigation from "@/app/components/Navigation";
 export default function AnswersPage() {
   const answers = [
     {
+      href: "/answers/can-i-start-a-business-without-risking-my-financial-future",
+      number: "017",
+      title: "Can I Start a Business Without Risking My Financial Future?",
+      date: "October 15, 2026",
+      featured: true,
+    },
+    {
       href: "/answers/how-to-start-a-restaurant-consulting-business",
       number: "016",
       title: "I Want to Start a Restaurant Consulting Business. Where Do I Begin?",
       date: "October 11, 2026",
-      featured: true,
+      featured: false,
     },
     {
       href: "/answers/full-time-or-flexible-job-starting-business",
