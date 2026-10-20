@@ -54,7 +54,7 @@ describe("conversation invitation template (manual only)", () => {
     expect(mail.html).toContain("Hi Elena,");
     expect(mail.html).toContain(`href="${CONVERSATION_INVITE_CALENDLY_URL}"`);
     expect(mail.html.split(CONVERSATION_INVITE_CALENDLY_URL).length - 1).toBe(2); // link text + href of the one link
-    expect(mail.html).not.toContain(CALENDLY_URL); // the old scheduling button is not added on top
+    expect(mail.html).not.toContain('bgcolor="#6b1f1f"'); // no second scheduling button is added on top of the message's own link
     expect(mail.text).toContain(CONVERSATION_INVITE_CALENDLY_URL);
     expect(db.tables.program_applications[0]).toMatchObject({ status: "INVITED", manual_decision: "INVITE", response_email_status: "queued" });
     expect(db.tables.program_applications[0].response_sent).toContain("I’ve reviewed your application");

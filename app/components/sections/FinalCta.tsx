@@ -41,7 +41,7 @@ export function FinalCta() {
 
         {/* SECONDARY CTA */}
         <Link
-          href="/contact"
+          href="/lets-talk"
           className="text-sm text-white/50 hover:text-white transition underline-offset-4 hover:underline"
         >
           Ask me anything before you decide →

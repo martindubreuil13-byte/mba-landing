@@ -1,5 +1,7 @@
 export const PROGRAM_KEY = "corporate-transition";
-export const CALENDLY_URL = "https://calendly.com/martindubreuil/coaching_session";
+import { INTRO_BOOKING_URL } from "@/app/lib/booking";
+/** Alias of the central introductory-booking link (app/lib/booking.ts). Do not put a Calendly URL here. */
+export const CALENDLY_URL = INTRO_BOOKING_URL;
 // v2 (confirmed opt-in): the box only REQUESTS marketing. One confirmation email is sent and marketing starts only
 // after the applicant confirms. v1 ("corporate-transition-shortlist-v1") did not say so and never sent that email.
 // The label and the footnote below are exactly what the visitor sees; both are stored as the consent wording.
@@ -91,7 +93,7 @@ export function effectiveRoute(aiRoute: TransitionRoute, a: Pick<TransitionAnswe
  * automatically: it goes out only when Martin chooses it and presses Send after reviewing the application.
  */
 export const CONVERSATION_INVITE_SUBJECT = "Let’s have a conversation";
-export const CONVERSATION_INVITE_CALENDLY_URL = "https://calendly.com/martindubreuil13/30min";
+export const CONVERSATION_INVITE_CALENDLY_URL = INTRO_BOOKING_URL;
 
 export function conversationInviteDraft(firstName: string): string {
   return `Hi ${firstName},

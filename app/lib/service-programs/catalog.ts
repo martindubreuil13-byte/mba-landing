@@ -344,10 +344,8 @@ export const PROGRAMS: readonly ServiceProgram[] = [
 export const DEFAULT_PROGRAM_NUMBER = "01";
 
 /**
- * TODO(integration): set to the verified booking URL once one is approved for free assessments and
- * consultations. A Calendly link exists in app/contact/page.tsx but that route is legacy, is not in the
- * sitemap, and its event type ("coaching_session") has not been confirmed for these purposes.
- * While null, every CTA is an honest inquiry through /lets-talk.
+ * Program CTAs deliberately route to the inquiry form (/lets-talk), not straight to a calendar, so this stays null.
+ * The introductory-booking link used in emails and buttons is centralized in app/lib/booking.ts.
  */
 export const BOOKING_URL: string | null = null;
 

@@ -11,6 +11,12 @@ const nextConfig: NextConfig = {
         destination: "/lets-talk",
         permanent: true,
       },
+      // Legacy contact page (WhatsApp / email / a Calendly link to a different account): /lets-talk is the one contact route.
+      {
+        source: "/contact",
+        destination: "/lets-talk",
+        permanent: true,
+      },
       // /work is now the single destination for all eight programs; /work-with-me carried outdated definitions and prices.
       {
         source: "/work-with-me",
