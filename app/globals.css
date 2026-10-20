@@ -249,3 +249,39 @@ img {
 @page {
   margin: 12mm;
 }
+
+
+/* PROGRAM SLIDER — snap ring (replays when the handle settles) and first-visit invitation pulse. No-preference only. */
+
+@keyframes slider-snap-ring {
+  from {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+@keyframes slider-invite-ring {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.45);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .slider-snap-ring {
+    animation: slider-snap-ring 420ms ease-out both;
+  }
+  .slider-invite-ring {
+    animation: slider-invite-ring 2.4s ease-in-out 1.2s infinite;
+  }
+}
+

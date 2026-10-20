@@ -2,7 +2,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { useState, useRef, useEffect, useSyncExternalStore } from "react";
+import { collectAttribution } from "@/app/lib/attribution";
+import { readFirstTouch } from "@/app/lib/first-touch";
+import { PROGRAMS, bespokeFollowUp, ctaExplainer, formatPrice, type ServiceProgram } from "@/app/lib/service-programs/catalog";
 import Navigation from "@/app/components/Navigation";
 
 const SITUATIONS = [
@@ -33,7 +37,13 @@ const SITUATIONS = [
   },
 ];
 
+const noopSubscribe = () => () => {};
+const readProgramParam = () => new URLSearchParams(window.location.search).get("program") ?? "";
+
 export default function LetsTalkPage() {
+  // /lets-talk?program=<slug> arrives from the /work selector. Read from the URL without useSearchParams (no Suspense needed).
+  const programSlug = useSyncExternalStore(noopSubscribe, readProgramParam, () => "");
+  const program: ServiceProgram | undefined = PROGRAMS.find((p) => p.slug === programSlug);
   const [selectedSituation, setSelectedSituation] = useState<number | null>(null);
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,14 +56,16 @@ export default function LetsTalkPage() {
     setSelectedSituation(id);
   };
 
+  const hasContext = Boolean(selectedSituation || program);
+
   // Scroll to conversation/form when situation is selected
   useEffect(() => {
-    if (selectedSituation && conversationRef.current) {
+    if (hasContext && conversationRef.current) {
       setTimeout(() => {
         conversationRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 100);
     }
-  }, [selectedSituation]);
+  }, [hasContext]);
 
   // Scroll to success message when submission completes
   useEffect(() => {
@@ -99,7 +111,7 @@ export default function LetsTalkPage() {
       return;
     }
 
-    if (!selectedSituation) {
+    if (!selectedSituation && !program) {
       setErrorMessage("Please select where you are right now.");
       return;
     }
@@ -108,7 +120,9 @@ export default function LetsTalkPage() {
     setIsSubmitting(true);
 
     try {
-      const selectedSituationText = SITUATIONS.find((s) => s.id === selectedSituation)?.title || "Unknown";
+      const selectedSituationText = program
+        ? `Program ${program.number}: ${program.name}`
+        : SITUATIONS.find((s) => s.id === selectedSituation)?.title || "Unknown";
 
       const response = await fetch("/api/qualify", {
         method: "POST",
@@ -118,16 +132,21 @@ export default function LetsTalkPage() {
           email: formData.email,
           situation: selectedSituationText,
           message: formData.message,
+          program: program ? { slug: program.slug } : undefined,
+          // First-touch (the session's landing page and its UTM/referrer) wins; the current URL only has ?program=.
+          attribution: { ...(readFirstTouch() ?? collectAttribution()), entryPage: window.location.pathname },
         }),
       });
 
       if (response.ok) {
         setSubmitStatus("success");
+        // Keep the selection so the success state below (gated on it) actually renders.
         setFormData({ name: "", email: "", message: "" });
-        setSelectedSituation(null);
       } else {
+        // The API answers success only when the email provider accepted the message, so anything else is shown as a failure.
+        const detail = await response.json().then((d: { message?: string }) => d?.message).catch(() => undefined);
         setSubmitStatus("error");
-        setErrorMessage("Something went wrong. Please try again or email martin@mindrasolutions.com");
+        setErrorMessage(`${detail ?? "Something went wrong."} Please try again or email martin@mindrasolutions.com`);
       }
     } catch (error) {
       setSubmitStatus("error");
@@ -147,6 +166,8 @@ export default function LetsTalkPage() {
 
       <main data-progressive-reveal className="w-full bg-white text-[#1a1816]">
 
+        {!program && (
+          <>
         {/* ============================================================
             OPENING
         */}
@@ -186,7 +207,11 @@ export default function LetsTalkPage() {
 
           </div>
         </section>
+          </>
+        )}
 
+        {!program && (
+          <>
         {/* ============================================================
             RECOGNITION — SITUATION SELECTORS
         */}
@@ -246,12 +271,14 @@ export default function LetsTalkPage() {
 
           </div>
         </section>
+          </>
+        )}
 
         {/* ============================================================
             CONVERSATION SECTION (appears when situation selected)
         */}
 
-        {selectedSituation && (
+        {selectedSituation && !program && (
           <motion.section
             ref={conversationRef}
             initial={{ opacity: 0, y: 20 }}
@@ -322,14 +349,39 @@ export default function LetsTalkPage() {
             FORM
         */}
 
-        {selectedSituation && submitStatus !== "success" && (
+        {hasContext && submitStatus !== "success" && (
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="w-full px-6 md:px-12 lg:px-16 py-24 md:py-36 border-t border-[#1a1816]/8"
+            className={`w-full px-6 md:px-12 lg:px-16 border-t border-[#1a1816]/8 ${program ? "py-12 md:py-20" : "py-24 md:py-36"}`}
           >
             <div className="max-w-3xl">
+
+              {program && (
+                <>
+                  <p className="text-xs tracking-widest uppercase text-[#6b1f1f] font-semibold mb-4">Conversation</p>
+                  <h1 className="text-4xl md:text-5xl font-light leading-tight tracking-tight mb-10">Let&rsquo;s talk.</h1>
+                </>
+              )}
+              {program && (
+                <div className="mb-12 border-l-2 border-[#6b1f1f] pl-5">
+                  <p className="text-xs tracking-widest uppercase text-[#6b1f1f] font-semibold mb-2">Your inquiry is about</p>
+                  <p className="text-xl md:text-2xl font-light leading-snug">
+                    {program.name}
+                  </p>
+                  <p className="mt-1 text-base text-[#1a1816]/70">
+                    {formatPrice(program)} · {program.duration}
+                  </p>
+                  <p className="mt-3 text-base text-[#1a1816]/70">
+                    <span className="font-medium text-[#1a1816]">{ctaExplainer()}</span>
+                    {bespokeFollowUp(program) ? ` ${bespokeFollowUp(program)}` : " Send a few lines and I\u2019ll reply to confirm this is the right starting point and what happens next."}
+                  </p>
+                  <Link href={`/work#program-${program.number}`} className="mt-3 inline-flex min-h-11 items-center text-sm text-[#1a1816]/70 underline underline-offset-4 hover:text-[#6b1f1f]">
+                    Not the right one? Back to the eight programs
+                  </Link>
+                </div>
+              )}
 
               <form onSubmit={handleSubmit} className="space-y-8">
 
@@ -385,7 +437,7 @@ export default function LetsTalkPage() {
                 </div>
 
                 {/* ERROR MESSAGE */}
-                {submitStatus === "error" && errorMessage && (
+                {errorMessage && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -430,7 +482,7 @@ export default function LetsTalkPage() {
             SUCCESS STATE
         */}
 
-        {selectedSituation && submitStatus === "success" && (
+        {hasContext && submitStatus === "success" && (
           <motion.section
             ref={successRef}
             initial={{ opacity: 0, y: 20 }}
@@ -473,7 +525,7 @@ export default function LetsTalkPage() {
             CLOSING
         */}
 
-        {selectedSituation && submitStatus === "success" && (
+        {hasContext && submitStatus === "success" && (
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -502,7 +554,7 @@ export default function LetsTalkPage() {
         )}
 
         {/* CLOSING STATEMENT — Show if no selection yet or after success */}
-        {(!selectedSituation || submitStatus === "success") && (
+        {(!hasContext || submitStatus === "success") && (
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

@@ -1,12 +1,13 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/app/lib/seo";
 import { isProductionDeployment } from "@/app/lib/deployment";
+import { PROGRAMS, programPath } from "@/app/lib/service-programs/catalog";
 import { listPublishedResources } from "@/app/lib/resources/queries";
 
 const publicRoutes = [
   "/",
   "/work",
-  "/work-with-me",
+  ...PROGRAMS.map(programPath),
   "/martin",
   "/cases",
   "/cases/kill-it",

@@ -302,7 +302,7 @@ export default function AnswerPage() {
 
 <p style={{ marginBottom: "2.5rem" }}>The method I use to move through those stages is <Link href="/thinking/the-business-architects-frame" className={LINK_CLASS}>The Business Architect's FRAME</Link>: Find, Reality-Test, Architect, Make, Evolve. This article helps you find something worth investigating. FRAME is the broader process for turning that opportunity into an actual business.</p>
 
-<p style={{ marginBottom: "3.5rem" }}>When I do the early investigation with an entrepreneur, before they commit serious time, money or identity to building anything, I call it <Link href="/work-with-me" className={LINK_CLASS}>Pre-Architecture</Link>.</p>
+<p style={{ marginBottom: "3.5rem" }}>When I do the early investigation with an entrepreneur, before they commit serious time, money or identity to building anything, I call it <Link href="/work/pre-architecture" className={LINK_CLASS}>Pre-Architecture</Link>.</p>
 
 <p style={{ marginBottom: "0.5rem" }}>Stop looking for business ideas.</p>
 
@@ -395,14 +395,6 @@ export default function AnswerPage() {
                     whileHover={{ x: 2 }}
                   >
                     Explore business architecture work →
-                  </motion.span>
-                </Link>
-                <Link href="/work-with-me" className="block">
-                  <motion.span
-                    className="text-sm font-semibold tracking-widest uppercase text-[#1a1816]/60 border-b-2 border-[#1a1816]/30 pb-1 transition-all hover:text-[#1a1816] hover:border-[#1a1816]/60"
-                    whileHover={{ x: 2 }}
-                  >
-                    Explore ways to work together →
                   </motion.span>
                 </Link>
                 <Link href="/martin" className="block">

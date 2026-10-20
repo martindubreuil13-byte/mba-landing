@@ -19,7 +19,7 @@ export default function Footer() {
       <div className="px-6 md:px-12 lg:px-16 py-6 md:py-5">
         <div className="max-w-6xl mx-auto">
           {/* Desktop layout */}
-          <div className="hidden md:flex flex-wrap items-center gap-3 text-xs text-[#1a1816]/60">
+          <div className="hidden md:flex flex-wrap items-center gap-3 text-xs text-[#1a1816]/75">
             <Link href="/answers" className="hover:text-[#1a1816] transition-colors">
               Answers
             </Link>
@@ -28,7 +28,7 @@ export default function Footer() {
               Free Resources
             </Link>
             <span>·</span>
-            <Link href="/work-with-me" className="hover:text-[#1a1816] transition-colors">
+            <Link href="/work" className="hover:text-[#1a1816] transition-colors">
               Ways to Work Together
             </Link>
             <span>·</span>
@@ -57,19 +57,19 @@ export default function Footer() {
             <Link href="/lets-talk" className="hover:text-[#1a1816] transition-colors">
               Let&apos;s Talk
             </Link>
-            <span className="ml-auto text-[#1a1816]/40">© 2026</span>
+            <span className="ml-auto text-[#1a1816]/65">© 2026</span>
           </div>
 
           {/* Mobile layout */}
           <div className="md:hidden space-y-6">
-            <nav className="space-y-4 text-xs text-[#1a1816]/60">
+            <nav className="space-y-4 text-xs text-[#1a1816]/75">
               <Link href="/answers" className="block hover:text-[#1a1816] transition-colors">
                 Answers
               </Link>
               <Link href="/resources" className="block hover:text-[#1a1816] transition-colors">
                 Free Resources
               </Link>
-              <Link href="/work-with-me" className="block hover:text-[#1a1816] transition-colors">
+              <Link href="/work" className="block hover:text-[#1a1816] transition-colors">
                 Ways to Work Together
               </Link>
               <a
@@ -97,7 +97,7 @@ export default function Footer() {
             </nav>
 
             <div className="pt-6 border-t border-[#1a1816]/8">
-              <span className="text-xs text-[#1a1816]/40">© 2026</span>
+              <span className="text-xs text-[#1a1816]/65">© 2026</span>
             </div>
           </div>
         </div>

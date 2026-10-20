@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { trackEvent } from "@/app/lib/analytics";
+import { rememberFirstTouch } from "@/app/lib/first-touch";
 
 const UUID_SEGMENT = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -30,6 +31,7 @@ export default function AnalyticsPageview() {
   const lastSent = useRef<string | null>(null);
 
   useEffect(() => {
+    rememberFirstTouch(); // no-op after the first page view of the session
     const sanitizedPath = sanitizePath(pathname);
     if (lastSent.current === sanitizedPath) return;
     lastSent.current = sanitizedPath;

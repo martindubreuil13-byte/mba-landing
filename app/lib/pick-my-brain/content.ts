@@ -465,10 +465,10 @@ export const STATIC_DISCOVERY_RECORDS: DiscoveryRecord[] = [
 
   // WORK WITH ME / ABOUT
   {
-    href: "/work-with-me",
+    href: "/work",
     type: "Work With Me",
     title: "Ways to Work Together",
-    description: "From Pre-Architecture and idea validation to business architecture, execution support and advisory.",
+    description: "Eight independent programs, from exploring entrepreneurship and Pre-Architecture to business architecture, activation, diagnosis and re-architecture.",
     intents: ["Can you help me build my business?", "How can I work with you?", "What is Pre-Architecture?"],
     topics: ["services", "Pre-Architecture", "advisory", "engagement", "hire", "help"],
   },

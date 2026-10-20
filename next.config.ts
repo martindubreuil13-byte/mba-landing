@@ -11,6 +11,12 @@ const nextConfig: NextConfig = {
         destination: "/lets-talk",
         permanent: true,
       },
+      // /work is now the single destination for all eight programs; /work-with-me carried outdated definitions and prices.
+      {
+        source: "/work-with-me",
+        destination: "/work",
+        permanent: true,
+      },
     ];
   },
   // Every non-production deployment (Vercel preview, local) tells crawlers to stay out, on every route,

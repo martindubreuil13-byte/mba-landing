@@ -1,4 +1,9 @@
 import { SITE_URL } from "@/app/lib/seo";
+import { PROGRAMS, formatPrice, programPath } from "@/app/lib/service-programs/catalog";
+
+const programLines = PROGRAMS.map(
+  (p) => `- [${p.name}](${SITE_URL}${programPath(p)}): ${p.help} ${p.pricing.kind === "fixed" ? `Fixed fee ${formatPrice(p)}` : "Priced by written proposal"}; ${p.duration.toLowerCase()}.`,
+).join("\n");
 
 const content = `# The Modern Business Architect
 
@@ -9,12 +14,15 @@ Principal: Martin Dubreuil
 
 ## Primary pages
 - [Home](${SITE_URL}/)
-- [How the work is approached](${SITE_URL}/work)
+- [Work with Martin: eight independent programs](${SITE_URL}/work)
 - [About Martin Dubreuil](${SITE_URL}/martin)
 - [Anonymized business cases](${SITE_URL}/cases)
 - [Thinking and perspectives](${SITE_URL}/thinking)
 - [Answers to common business questions](${SITE_URL}/answers)
 - [Start a conversation](${SITE_URL}/lets-talk)
+
+## Services: eight independent programs (start anywhere; none is a prerequisite for another)
+${programLines}
 
 ## Discovery
 - [Sitemap](${SITE_URL}/sitemap.xml)

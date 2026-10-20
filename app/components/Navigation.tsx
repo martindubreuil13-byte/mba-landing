@@ -27,7 +27,7 @@ export default function Navigation() {
 
   const baseClass = "text-xs tracking-wide transition";
   const activeClass = "font-semibold text-[#6b1f1f]";
-  const inactiveClass = "text-[#1a1816]/50 hover:text-[#1a1816]/80";
+  const inactiveClass = "text-[#1a1816]/70 hover:text-[#1a1816]";
 
   const navLinks = [
     { href: "/", label: "HOME" },
@@ -42,7 +42,7 @@ export default function Navigation() {
     <>
       {/* DESKTOP NAVIGATION */}
       <nav aria-label="Primary navigation" className="hidden md:flex fixed top-0 left-0 right-0 z-50 border-b border-[#1a1816]/8 px-6 md:px-12 lg:px-16 h-16 items-center justify-between bg-white/95 backdrop-blur-sm">
-        <Link href="/" className="text-xs tracking-widest font-medium hover:opacity-60 transition">MBA</Link>
+        <Link href="/" className="text-xs tracking-widest font-medium text-[#1a1816] hover:opacity-60 transition">MBA</Link>
         <div className="flex gap-8 text-xs tracking-wide">
           {navLinks.map((link) => (
             <Link
@@ -59,7 +59,7 @@ export default function Navigation() {
 
       {/* MOBILE NAVIGATION */}
       <nav aria-label="Mobile navigation" className="flex md:hidden fixed top-0 left-0 right-0 z-50 border-b border-[#1a1816]/8 px-6 h-16 items-center justify-between bg-white/95 backdrop-blur-sm">
-        <Link href="/" className="text-xs tracking-widest font-medium hover:opacity-60 transition">MBA</Link>
+        <Link href="/" className="text-xs tracking-widest font-medium text-[#1a1816] hover:opacity-60 transition">MBA</Link>
         <div className="text-xs tracking-wide text-[#1a1816]/70">
           {getCurrentSectionName()}
         </div>
@@ -87,7 +87,7 @@ export default function Navigation() {
           >
             {/* Menu Header */}
             <div className="h-16 border-b border-[#1a1816]/8 px-6 flex items-center justify-between">
-              <div className="text-xs tracking-widest font-medium">MENU</div>
+              <div className="text-xs tracking-widest font-medium text-[#1a1816]">MENU</div>
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(false)}
