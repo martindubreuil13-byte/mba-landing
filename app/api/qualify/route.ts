@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { createResend } from "@/app/lib/email-client";
 import { classifySend, thrownSend, type SendOutcome } from "@/app/lib/service-programs/delivery";
-import { escapeHtml as esc, normalizeAttribution, programLabel, resolveProgram } from "@/app/lib/service-programs/inquiry";
+import { inquiryNotification, prospectConfirmation } from "@/app/lib/service-programs/inquiry-emails";
+import { normalizeAttribution, resolveProgram } from "@/app/lib/service-programs/inquiry";
 
 const resend = createResend();
 
@@ -54,29 +55,24 @@ export async function POST(req: Request) {
   // The program is resolved from the catalog; client-supplied names or prices are ignored.
   const program = resolveProgram(body.program);
   const attribution = normalizeAttribution(body.attribution);
-  const attributionRows = Object.entries(attribution)
-    .map(([k, v]) => `<p style="margin:0;color:#6b7280;"><strong>${esc(k)}:</strong> ${esc(v)}</p>`)
-    .join("");
 
-  console.log("EMAIL TRIGGERED:", { name, email, situation, message, program: program?.slug });
+  console.log("INQUIRY RECEIVED:", { program: program?.slug ?? null, hasAttribution: Object.keys(attribution).length > 0 });
 
-  const adminOutcome = await safeSend(() => resend.emails.send({
-    from: "Martin <martin@mindrasolutions.com>",
-    to: notifyTo,
-    subject: program ? `New Qualification Submission: ${programLabel(program)}` : "New Qualification Submission",
-    html: `
-      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
-        <h2 style="margin-bottom: 16px;">New Qualification Submission</h2>
-        <p><strong>Name:</strong> ${esc(name)}</p>
-        <p><strong>Email:</strong> ${esc(email)}</p>
-        ${program ? `<p><strong>Program:</strong> ${esc(programLabel(program))}</p>` : ""}
-        <p><strong>Situation:</strong> ${esc(situation)}</p>
-        <p><strong>Message:</strong></p>
-        <p style="white-space: pre-wrap;">${esc(message)}</p>
-        ${attributionRows ? `<hr style="margin:20px 0;border:0;border-top:1px solid #e5e7eb;" /><p style="margin:0 0 4px;"><strong>Attribution</strong></p>${attributionRows}` : ""}
-      </div>
-    `,
-  }));
+  // The owner notification carries everything submitted; the visitor's confirmation repeats none of it.
+  const owner = inquiryNotification({ name, email, message, situation, program, attribution });
+  const confirmation = prospectConfirmation({ name, program });
+
+  const adminOutcome = await safeSend(() =>
+    resend.emails.send({
+      from: "Martin <martin@mindrasolutions.com>",
+      to: notifyTo,
+      subject: owner.subject,
+      html: owner.html,
+      text: owner.text,
+      // Replying to the notification goes straight to the prospect.
+      ...(owner.replyTo ? { replyTo: owner.replyTo } : {}),
+    }),
+  );
 
   // The notification to the owner is the delivery that matters. Report success only if the provider accepted it.
   if (!adminOutcome.ok) {
@@ -88,27 +84,15 @@ export async function POST(req: Request) {
   }
   console.log(`INQUIRY NOTIFICATION ACCEPTED by email provider: id=${adminOutcome.id}`);
 
-  const autoReplyOutcome = await safeSend(() => resend.emails.send({
-    from: "Martin <martin@mindrasolutions.com>",
-    to: email,
-    subject: "Got your request",
-    html: `
-      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
-        <p>Hi ${esc(name)},</p>
-        <p>Thanks for sharing your situation.</p>
-        <p><strong>What you submitted:</strong></p>
-        <p><strong>Email:</strong> ${esc(email)}</p>
-        ${program ? `<p><strong>Program:</strong> ${esc(programLabel(program))}</p>` : ""}
-        <p><strong>Situation:</strong> ${esc(situation)}</p>
-        <p><strong>Message:</strong></p>
-        <p style="white-space: pre-wrap;">${esc(message)}</p>
-        ${program ? "<p>No payment is taken at this stage. If it looks like a fit, I will confirm the scope and next steps with you.</p>" : ""}
-        <p>I’ll review it and get back to you within 48 hours.</p>
-        <p>If it makes sense, we’ll take the next step together.</p>
-        <p>Martin</p>
-      </div>
-    `,
-  }));
+  const autoReplyOutcome = await safeSend(() =>
+    resend.emails.send({
+      from: "Martin <martin@mindrasolutions.com>",
+      to: email,
+      subject: confirmation.subject,
+      html: confirmation.html,
+      text: confirmation.text,
+    }),
+  );
   // The visitor's confirmation is a courtesy: if it fails the owner still has the inquiry, so this does not fail the request.
   if (autoReplyOutcome.ok) console.log(`INQUIRY AUTO-REPLY ACCEPTED by email provider: id=${autoReplyOutcome.id}`);
   else console.warn(`INQUIRY AUTO-REPLY NOT SENT: ${autoReplyOutcome.code}: ${autoReplyOutcome.detail}`);

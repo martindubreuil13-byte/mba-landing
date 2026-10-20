@@ -16,7 +16,14 @@ export type Block =
   | { type: "p"; text: string }
   /** Verbatim text from a person: line breaks kept, nothing rewritten. Bare https URLs become links in HTML only. */
   | { type: "verbatim"; text: string }
-  | { type: "cta"; label: string; url: string }
+  /** A paragraph with one bold run: `before` + <strong>strong</strong> + `after`. */
+  | { type: "strong"; before: string; strong: string; after?: string }
+  /** Small, quiet line (e.g. "or simply reply to this email"). */
+  | { type: "note"; text: string }
+  /** Small uppercase label above a block. */
+  | { type: "label"; text: string }
+  /** `fallbackLink: false` drops the "Button not working? Copy this link" line (the plain-text part still carries the URL). */
+  | { type: "cta"; label: string; url: string; fallbackLink?: boolean; compact?: boolean }
   | { type: "link"; before: string; label: string; url: string; after?: string }
   | { type: "rows"; rows: [string, string][] };
 
@@ -29,7 +36,11 @@ export type ShellInput = {
   eyebrow?: string;
   blocks: Block[];
   /** Customer emails end with the signature block unless the message carries its own sign-off. */
-  signature?: boolean;
+  signature?: boolean | { role: string };
+  /** Default true: the plain-text part opens with the preheader sentence. Set false when it would only duplicate the body. */
+  textPreview?: boolean;
+  /** Omit the footer entirely (transactional replies that carry their own signature and website link). */
+  noFooter?: boolean;
   footer?: { privacyUrl?: string; unsubscribeLabel?: string; unsubscribeUrl?: string; reason?: string };
 };
 
@@ -49,10 +60,13 @@ const linkify = (escaped: string) => escaped.replace(/https:\/\/[^\s<]+/g, (u) =
 function blockHtml(b: Block): string {
   switch (b.type) {
     case "p": return P(esc(b.text));
+    case "strong": return P(`${esc(b.before)}<strong style="color:#1a1816;">${esc(b.strong)}</strong>${esc(b.after ?? "")}`);
+    case "note": return P(esc(b.text), "font-size:14px;color:#6b625b;");
+    case "label": return `<p style="margin:22px 0 6px;font-family:${SANS};font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:${BURGUNDY};font-weight:bold;">${esc(b.text)}</p>`;
     case "verbatim": return b.text.replace(/\r\n/g, "\n").split(/\n{2,}/).map((para) => P(linkify(esc(para)).replace(/\n/g, "<br>"))).join("\n");
     case "cta":
-      return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 10px;"><tr><td bgcolor="${BURGUNDY}" style="background:${BURGUNDY};"><a href="${b.url}" style="display:inline-block;padding:16px 32px;font-family:${SANS};font-size:15px;font-weight:bold;color:#ffffff;text-decoration:none;letter-spacing:0.5px;">${esc(b.label)}</a></td></tr></table>
-<p style="margin:0 0 24px;font-family:${SANS};font-size:12px;line-height:1.6;color:#7a726b;">Button not working? Copy this link into your browser:<br><a href="${b.url}" style="color:${BURGUNDY};word-break:break-all;">${b.url}</a></p>`;
+      return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 ${b.fallbackLink === false ? "16px" : "10px"};"><tr><td bgcolor="${BURGUNDY}" style="background:${BURGUNDY};"><a href="${b.url}" style="display:inline-block;padding:${b.compact ? "16px 22px" : "16px 32px"};font-family:${SANS};font-size:${b.compact ? "14px" : "15px"};font-weight:bold;color:#ffffff;text-decoration:none;letter-spacing:${b.compact ? "0.3px" : "0.5px"};">${esc(b.label)}</a></td></tr></table>
+${b.fallbackLink === false ? "" : `<p style="margin:0 0 24px;font-family:${SANS};font-size:12px;line-height:1.6;color:#7a726b;">Button not working? Copy this link into your browser:<br><a href="${b.url}" style="color:${BURGUNDY};word-break:break-all;">${b.url}</a></p>`}`;
     case "link": return P(`${esc(b.before)}<a href="${b.url}" style="color:${BURGUNDY};">${esc(b.label)}</a>${esc(b.after ?? "")}`);
     case "rows":
       return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px;">${b.rows.map(([k, v]) => `<tr><td valign="top" style="padding:6px 12px 6px 0;font-family:${SANS};font-size:13px;color:#7a726b;width:90px;">${esc(k)}</td><td valign="top" style="padding:6px 0;font-family:${SANS};font-size:15px;line-height:1.5;color:#1a1816;">${linkify(esc(v)).replace(/\n/g, "<br>")}</td></tr>`).join("")}</table>`;
@@ -61,8 +75,10 @@ function blockHtml(b: Block): string {
 
 function blockText(b: Block): string[] {
   switch (b.type) {
-    case "p": case "verbatim": return [b.text, ""];
-    case "cta": return [`${b.label}: ${b.url}`, ""];
+    case "p": case "verbatim": case "note": return [b.text, ""];
+    case "strong": return [`${b.before}${b.strong}${b.after ?? ""}`, ""];
+    case "label": return [b.text.toUpperCase(), ""];
+    case "cta": return b.fallbackLink === false ? [b.label, b.url, ""] : [`${b.label}: ${b.url}`, ""];
     case "link": return [`${b.before}${b.label}: ${b.url}${b.after ?? ""}`, ""];
     case "rows": return [...b.rows.map(([k, v]) => `${k}: ${v}`), ""];
   }
@@ -76,7 +92,7 @@ export function renderEmail(input: ShellInput): { html: string; text: string; li
   const addr = mailingAddressLines();
   const f = input.footer ?? {};
 
-  const footerHtml = !customer ? "" : `<tr><td style="padding:20px 32px 28px;border-top:1px solid #e8e1da;"><p style="margin:0;font-family:${SANS};font-size:12px;line-height:1.8;color:#7a726b;">${[
+  const footerHtml = !customer || input.noFooter ? "" : `<tr><td style="padding:20px 32px 28px;border-top:1px solid #e8e1da;"><p style="margin:0;font-family:${SANS};font-size:12px;line-height:1.8;color:#7a726b;">${[
     f.privacyUrl ? `<a href="${f.privacyUrl}" style="color:${BURGUNDY};">Privacy</a>` : "",
     f.unsubscribeUrl ? `<a href="${f.unsubscribeUrl}" style="color:${BURGUNDY};">${esc(f.unsubscribeLabel ?? "Unsubscribe")}</a>` : "",
   ].filter(Boolean).join(" · ")}${f.privacyUrl || f.unsubscribeUrl ? "<br>" : ""}Sent by Martin Dubreuil · The Modern Business Architect · <a href="${base}" style="color:#7a726b;">${esc(host)}</a><br>${addr.length ? `${addr.map(esc).join("<br>")}<br>` : ""}${f.reason ? esc(f.reason) : ""}</p></td></tr>`;
@@ -95,17 +111,21 @@ export function renderEmail(input: ShellInput): { html: string; text: string; li
 <tr><td style="padding:20px 32px 12px;">
 ${input.blocks.map(blockHtml).join("\n")}
 </td></tr>
-${input.signature ? `<tr><td style="padding:4px 32px 28px;"><p style="margin:0;font-family:${SERIF};font-size:16px;line-height:1.5;color:#1a1816;"><strong>Martin Dubreuil</strong><br>The Modern Business Architect</p></td></tr>` : ""}
+${input.signature ? `<tr><td style="padding:4px 32px 32px;"><p style="margin:0;font-family:${SERIF};font-size:16px;line-height:1.5;color:#1a1816;"><strong>Martin Dubreuil</strong><br>${esc(typeof input.signature === "object" ? input.signature.role : "The Modern Business Architect")}${typeof input.signature === "object" ? `<br><a href="${base}" style="font-family:${SANS};font-size:14px;color:${BURGUNDY};">${esc(host)}</a>` : ""}</p></td></tr>` : ""}
 ${footerHtml}
 </table></td></tr></table>
 </body></html>`;
 
   const text = [
-    input.preview, "",
+    ...(input.textPreview === false ? [] : [input.preview, ""]),
     eyebrow.toUpperCase(), input.heading, "",
     ...input.blocks.flatMap(blockText),
-    ...(input.signature ? ["Martin Dubreuil", "The Modern Business Architect", ""] : []),
-    ...(customer ? [
+    ...(input.signature
+      ? typeof input.signature === "object"
+        ? ["Martin Dubreuil", input.signature.role, base, ""]
+        : ["Martin Dubreuil", "The Modern Business Architect", ""]
+      : []),
+    ...(customer && !input.noFooter ? [
       "--",
       ...(f.privacyUrl ? [`Privacy: ${f.privacyUrl}`] : []),
       ...(f.unsubscribeUrl ? [`${f.unsubscribeLabel ?? "Unsubscribe"}: ${f.unsubscribeUrl}`] : []),

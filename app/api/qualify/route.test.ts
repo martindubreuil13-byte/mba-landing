@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("server-only", () => ({}));
 const send = vi.fn();
 vi.mock("@/app/lib/email-client", () => ({ createResend: () => ({ emails: { send } }) }));
 
@@ -30,11 +31,23 @@ describe("/api/qualify", () => {
     expect(await res.json()).toEqual({ success: true, autoReply: true });
     const admin = send.mock.calls[0][0];
     expect(admin.to).toBe("martin@mindrasolutions.com");
-    expect(admin.subject).toContain("Program 03: Pre-Architecture (US$1,999)");
-    expect(admin.html).toContain("Program 03: Pre-Architecture (US$1,999)");
-    expect(admin.html).toContain("linkedin");
-    expect(admin.html).not.toContain("IGNORED");
-    expect(admin.html).toContain("&lt;b&gt;Test&lt;/b&gt;");
+    expect(admin.subject).toBe("New MBA inquiry · Pre-Architecture · US$1,999");
+    expect(admin.replyTo).toBe("ada@example.com"); // replying to the notification reaches the prospect
+    expect(admin.html).toContain("Pre-Architecture");
+    expect(admin.html).toContain("linkedin"); // attribution
+    expect(admin.html).not.toContain("IGNORED"); // program facts come from the catalog, not the client
+    expect(admin.html).toContain("&lt;b&gt;Test&lt;/b&gt;"); // submitted name is escaped
+    expect(admin.text).toContain("Hello"); // plain-text alternative carries the message
+    const confirmation = send.mock.calls[1][0];
+    expect(confirmation.to).toBe("ada@example.com");
+    expect(confirmation.subject).toBe("Your next move — Modern Business Architect");
+    expect(confirmation.html).toContain("Pre-Architecture");
+    expect(confirmation.text).toContain("Book our first conversation");
+    // the confirmation is not a receipt: none of the submitted fields are echoed back
+    for (const echoed of ["ada@example.com", "Hello", "Program 03", "linkedin"]) {
+      expect(confirmation.html).not.toContain(echoed);
+      expect(confirmation.text).not.toContain(echoed);
+    }
   });
 
   it("is NOT a success when the email policy blocks the send (returned error, not thrown)", async () => {
@@ -87,6 +100,6 @@ describe("/api/qualify", () => {
     send.mockResolvedValue({ data: { id: "m" }, error: null });
     await post({ ...valid, program: { slug: "<script>" } });
     expect(send.mock.calls[0][0].html).not.toContain("<script>");
-    expect(send.mock.calls[0][0].subject).toBe("New Qualification Submission");
+    expect(send.mock.calls[0][0].subject).toBe("New MBA inquiry · Program 03: Pre-Architecture");
   });
 });
