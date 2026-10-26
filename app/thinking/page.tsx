@@ -8,13 +8,22 @@ import Navigation from "@/app/components/Navigation";
 export default function ThinkingPage() {
   const articles = [
     {
+      href: "/thinking/anticipatory-business-architecture",
+      category: "Business Architecture",
+      number: "012",
+      title: "Will Your Business Still Be Relevant Tomorrow?",
+      standfirst: "Why the next evolution of Business Architecture must include anticipation, adaptability, and continuous intelligence, and what Anticipatory Business Architecture looks like in practice.",
+      date: "October 26, 2026",
+      featured: true,
+    },
+    {
       href: "/thinking/architecting-intelligence",
       category: "Business Architecture",
       number: "011",
       title: "Architecting Intelligence",
       standfirst: "The future of business isn't about replacing people with AI. It's about understanding what intelligence a business needs, where it creates value, and how to put it to work.",
       date: "October 14, 2026",
-      featured: true,
+      featured: false,
     },
     {
       href: "/thinking/your-next-customer-might-not-visit-your-website",
