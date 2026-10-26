@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { recordConversion } from "@/app/lib/intelligence/conversions";
 import { getPublishedResourceBySlug, captureLeadAndRequestResource } from "@/app/lib/resources/queries";
 import { appBaseUrl } from "@/app/lib/resources/base-url";
 import { createResend } from "@/app/lib/email-client";
@@ -128,5 +129,6 @@ export async function POST(req: Request) {
     }
   }
 
+  await recordConversion(req, { kind: "guide_request", refTable: "resource_requests", refId: request.id });
   return NextResponse.json({ success: true, downloadUrl, firstName, onShortlist: optInResult === "opted_in" || optInResult === "already_opted_in" });
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { recordConversion } from "@/app/lib/intelligence/conversions";
 import { CONSENT_COPY_VERSION } from "@/app/lib/napkin/consent";
 import { sendNapkinBreakdownEmail } from "@/app/lib/napkin/email";
 import { getLeadEmailById, getNapkinSubmissionById, joinNapkinCommunity, markNapkinEmailSent } from "@/app/lib/napkin/queries";
@@ -93,5 +94,6 @@ export async function POST(req: Request) {
     if (!ok) console.error("Napkin Principle breakdown email failed to send:", error);
   }
 
+  await recordConversion(req, { kind: "napkin_join", refTable: "napkin_submissions", refId: submission.id });
   return NextResponse.json({ success: true, emailSent });
 }

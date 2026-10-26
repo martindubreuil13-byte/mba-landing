@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
+import { recordConversion } from "@/app/lib/intelligence/conversions";
 import { checkRateLimit, getClientIp } from "@/app/lib/rateLimit";
 import { classifyTransition, REVIEW_FALLBACK } from "@/app/lib/programs/classify";
 import { cleanText, effectiveRoute, validateApplication, type Attribution } from "@/app/lib/programs/corporate-transition";
@@ -36,5 +37,6 @@ export async function POST(req: Request) {
     if (!sent.ok) console.error("Transition consent confirmation email failed:", sent.error);
     try { await updateMailState(application.id, { consent_email_status: consentEmail, consent_email_error: sent.ok ? null : sent.error }); } catch (e) { console.error("Could not record the confirmation email state:", e instanceof Error ? e.message : "unknown"); }
   }
+  await recordConversion(req, { kind: "program_application", refTable: "program_applications", refId: application.id });
   return NextResponse.json({ success: true, applicationId: application.id, route, consentEmail });
 }

@@ -7,6 +7,7 @@ import { getSessionId, sendResourceEvent } from "@/app/lib/resources/client-even
 import type { CtaLocation } from "@/app/lib/resources/events";
 import { validateEmail } from "@/app/lib/resources/validation";
 import { useGuideExperience } from "./ResourceGuideProvider";
+import { intelligenceHeaders } from "@/app/lib/intelligence/client";
 
 type Status = "idle" | "submitting" | "error";
 
@@ -62,7 +63,7 @@ export default function ResourceLeadForm({ location }: { location: CtaLocation }
     try {
       const res = await fetch("/api/resources/member-access", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...intelligenceHeaders() },
         body: JSON.stringify({
           email: check.email,
           slug,

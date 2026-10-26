@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { recordConversion } from "@/app/lib/intelligence/conversions";
 import { hashEvidence } from "@/app/lib/leads/evidence";
 import { checkRateLimit, getClientIp } from "@/app/lib/rateLimit";
 import { getConsentCopy } from "@/app/lib/resources/consent-copy";
@@ -123,5 +124,7 @@ export async function POST(req: Request) {
     console.error("Member access email failed for request", result.requestId);
     return NextResponse.json({ error: "We could not send the email just now. Please try again in a moment." }, { status: 502 });
   }
+  // Blocked (unsubscribed / suppressed) submissions have no request id and are never counted as leads.
+  if (result.requestId) await recordConversion(req, { kind: "guide_request", refTable: "resource_requests", refId: result.requestId });
   return NextResponse.json({ success: true, state: "check_inbox" });
 }

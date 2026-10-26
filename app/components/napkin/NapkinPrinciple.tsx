@@ -14,6 +14,7 @@ import SurvivalNumberStepScreen, { type RhythmValues } from "./SurvivalNumberSte
 import RealityCheckStepScreen, { type RealityCheckValues } from "./RealityCheckStepScreen";
 import SnapshotView from "./SnapshotView";
 import CommunityInvite, { type CommunityJoinValues } from "./CommunityInvite";
+import { intelligenceHeaders } from "@/app/lib/intelligence/client";
 
 const STORAGE_KEY = "napkin-principle:v1";
 const TOTAL_STEPS = 6;
@@ -227,7 +228,7 @@ export default function NapkinPrinciple() {
     try {
       const res = await fetch("/api/napkin/join", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...intelligenceHeaders() },
         body: JSON.stringify({ submissionId, firstName: values.firstName, email: values.email, website: "" }),
       });
       const data = await res.json();

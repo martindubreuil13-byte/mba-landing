@@ -3,6 +3,7 @@ import Script from "next/script";
 import { PRINCIPAL_NAME, SITE_NAME, SITE_URL, serializeJsonLd } from "@/app/lib/seo";
 import Footer from "@/app/components/Footer";
 import AnalyticsPageview from "@/app/components/AnalyticsPageview";
+import IntelligenceTracker from "@/app/components/IntelligenceTracker";
 import { NOINDEX_DIRECTIVE, isProductionDeployment } from "@/app/lib/deployment";
 import "./globals.css";
 
@@ -126,6 +127,7 @@ export default function RootLayout({
             UUID-shaped path segment redacted, so identifiers like an
             assessment result ID never reach analytics. */}
         <AnalyticsPageview />
+        <IntelligenceTracker />
         {children}
         <Footer />
         <noscript>

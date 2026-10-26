@@ -8,6 +8,7 @@ import { collectAttribution } from "@/app/lib/attribution";
 import { readFirstTouch } from "@/app/lib/first-touch";
 import { PROGRAMS, bespokeFollowUp, ctaExplainer, formatPrice, type ServiceProgram } from "@/app/lib/service-programs/catalog";
 import Navigation from "@/app/components/Navigation";
+import { intelligenceHeaders } from "@/app/lib/intelligence/client";
 
 const SITUATIONS = [
   {
@@ -126,7 +127,7 @@ export default function LetsTalkPage() {
 
       const response = await fetch("/api/qualify", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...intelligenceHeaders() },
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,

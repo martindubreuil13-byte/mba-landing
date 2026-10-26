@@ -12,6 +12,7 @@ import QuestionScreen from "./QuestionScreen";
 import ProcessingScreen from "./ProcessingScreen";
 import LeadGateForm, { type LeadGateSubmission } from "./LeadGateForm";
 import ResultView from "./ResultView";
+import { intelligenceHeaders } from "@/app/lib/intelligence/client";
 
 const STORAGE_KEY = "bidea-reality-check:v1";
 
@@ -195,7 +196,7 @@ export default function BusinessIdeaRealityCheck({ paidCtaUrl }: { paidCtaUrl: s
     try {
       const res = await fetch("/api/assessment/submit", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...intelligenceHeaders() },
         body: JSON.stringify({
           assessmentId,
           firstName: values.firstName,

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { recordConversion } from "@/app/lib/intelligence/conversions";
 import { completeAssessmentWithLead, getAssessmentById } from "@/app/lib/assessment/queries";
 import { assessmentRowToResultView } from "@/app/lib/assessment/present";
 import { appBaseUrl } from "@/app/lib/resources/base-url";
@@ -111,5 +112,6 @@ export async function POST(req: Request) {
     }
   }
 
+  await recordConversion(req, { kind: "assessment_lead", refTable: "assessments", refId: assessment.id });
   return NextResponse.json({ success: true, result, resultUrl });
 }

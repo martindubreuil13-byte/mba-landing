@@ -87,6 +87,57 @@ export default function PrivacyPage() {
                 browser details as evidence that the request was made, not the raw values.
               </p>
 
+              <h2 className="text-xl font-light pt-4">Website analytics</h2>
+              <p>
+                The site uses two separate analytics tools to understand which pages are found and used, where
+                visitors come from and whether the site leads to enquiries: the site&apos;s own first-party
+                analytics, and Google Analytics. They run side by side and are independent of each other. Neither
+                is used to identify you, and neither receives anything you type into a form.
+              </p>
+
+              <p>
+                <strong className="font-medium text-[#1a1816]">The site&apos;s own analytics.</strong> It does not
+                use cookies or browser local storage. For each visit it records the pages viewed and when, how
+                long each page was in view, the referring website and any campaign tags in the link, your device
+                type, browser family and country (taken from the network edge, never a precise location), and
+                interactions such as button clicks or completed form steps. A random identifier held in your
+                browser tab&apos;s session storage ties one visit together and is discarded when the tab closes or
+                after 30 minutes of inactivity. Your IP address is not stored by this analytics, and no identifier
+                is created that could recognise you when you return, so it counts visits, not people. Detailed page
+                views and interactions are kept for 13 months and visit summaries for 25 months, then deleted.
+                Visits from automated programs, including AI crawlers, and from the site&apos;s administrator are
+                not counted. If your browser sends a Global Privacy Control or Do Not Track signal, this analytics
+                does not run. When you submit an inquiry, request a resource or apply to a program, the site records
+                that a submission happened (a count with the page and source it came from, linked to your visit only
+                if this analytics was running), but that record contains none of what you wrote. Separately, to
+                credit an inquiry to the page or campaign you arrived from, the site remembers that for the
+                current browser tab only.
+              </p>
+
+              <p>
+                <strong className="font-medium text-[#1a1816]">Google Analytics.</strong> The site also uses
+                Google Analytics 4, a service provided by Google. It sets two cookies in your browser,{" "}
+                <code>_ga</code> and a second one beginning <code>_ga_</code>, which last up to about 13 months and
+                give your browser a random identifier so Google can recognise a returning browser and group page
+                views into visits. Google Analytics receives the address and title of each page you view, the page
+                that referred you, your browser and device type, screen size, language, an approximate location
+                that Google derives from your network address, and the same kinds of interaction as above, with a
+                few non-identifying details such as which program was selected or an assessment&apos;s overall
+                score. Google states that Google Analytics 4 does not log or store individual IP addresses. This
+                data is sent to Google and processed on Google&apos;s servers, and is kept for the period set in the
+                site&apos;s Google Analytics account. Google Analytics is not switched off by a Global Privacy
+                Control or Do Not Track signal. You can prevent it by blocking cookies or tracking in your browser,
+                by using an ad or tracker blocker, or by installing Google&apos;s opt-out add-on at{" "}
+                <a href="https://tools.google.com/dlpage/gaoptout" className="underline hover:text-[#1a1816]" rel="noopener noreferrer">
+                  tools.google.com/dlpage/gaoptout
+                </a>
+                . Google&apos;s own explanation is in its{" "}
+                <a href="https://policies.google.com/technologies/partner-sites" className="underline hover:text-[#1a1816]" rel="noopener noreferrer">
+                  description of how Google uses data from sites that use its services
+                </a>
+                .
+              </p>
+
               <h2 className="text-xl font-light pt-4">The shortlist (ongoing content)</h2>
               <p>
                 The resource request form asks for your first name and email address and gives you
@@ -196,7 +247,9 @@ export default function PrivacyPage() {
                 short-lived, controlled links rather than a public file listing. Your information
                 is not sold, and is not shared with third parties except the service providers
                 needed to run this site: Supabase (database hosting and file storage), Resend
-                (email delivery, including delivery status such as delivered or bounced) and — for
+                (email delivery, including delivery status such as delivered or bounced), Google (Google
+                Analytics, which receives only the website-usage data described under Website analytics, not
+                your contact details or anything you write) and — for
                 the Business Idea Reality Check and the Transition application specifically —
                 OpenAI, for AI-assisted classification and writing, as described above.
               </p>

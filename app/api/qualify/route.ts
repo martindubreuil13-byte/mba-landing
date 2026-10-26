@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { recordConversion } from "@/app/lib/intelligence/conversions";
 import { createResend } from "@/app/lib/email-client";
 import { classifySend, thrownSend, type SendOutcome } from "@/app/lib/service-programs/delivery";
 import { inquiryNotification, prospectConfirmation } from "@/app/lib/service-programs/inquiry-emails";
@@ -83,6 +84,8 @@ export async function POST(req: Request) {
     );
   }
   console.log(`INQUIRY NOTIFICATION ACCEPTED by email provider: id=${adminOutcome.id}`);
+  // Server-confirmed inquiry: the owner notification was accepted. Nothing the visitor wrote is sent to analytics.
+  await recordConversion(req, { kind: "inquiry", refTable: "email_provider", refId: adminOutcome.id, props: program ? { program: program.slug } : undefined });
 
   const autoReplyOutcome = await safeSend(() =>
     resend.emails.send({

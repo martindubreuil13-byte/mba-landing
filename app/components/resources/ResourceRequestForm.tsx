@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { collectAttribution } from "@/app/lib/attribution";
 import { optinCopy, resourceNoun, validateOptinFields, type MarketingChoice, type OptinFieldErrors } from "@/app/lib/resources/optin";
+import { intelligenceHeaders } from "@/app/lib/intelligence/client";
 
 type Props = {
   resourceSlug: string;
@@ -58,7 +59,7 @@ export default function ResourceRequestForm({ resourceSlug, resourceTitle, resou
     try {
       const res = await fetch("/api/resources/request", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...intelligenceHeaders() },
         body: JSON.stringify({
           firstName: checked.firstName,
           email: checked.email,

@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 const send = vi.fn();
+const recordConversion = vi.fn(async () => true);
+vi.mock("@/app/lib/intelligence/conversions", () => ({ recordConversion: (...a: unknown[]) => (recordConversion as (...x: unknown[]) => unknown)(...a) }));
 vi.mock("@/app/lib/email-client", () => ({ createResend: () => ({ emails: { send } }) }));
 
 const valid = {
@@ -20,6 +22,7 @@ const post = async (body: unknown) => {
 describe("/api/qualify", () => {
   beforeEach(() => {
     send.mockReset();
+    recordConversion.mockClear();
     vi.stubEnv("RESEND_API_KEY", "re_test");
     vi.stubEnv("INQUIRY_NOTIFY_EMAIL", "");
   });
@@ -48,6 +51,30 @@ describe("/api/qualify", () => {
       expect(confirmation.html).not.toContain(echoed);
       expect(confirmation.text).not.toContain(echoed);
     }
+  });
+
+  it("records one server-confirmed inquiry conversion only after the owner notification was accepted, with no personal data", async () => {
+    send.mockResolvedValue({ data: { id: "msg_1" }, error: null });
+    await post(valid);
+    expect(recordConversion).toHaveBeenCalledTimes(1);
+    const [, arg] = recordConversion.mock.calls[0] as unknown as [Request, Record<string, unknown>];
+    expect(arg).toMatchObject({ kind: "inquiry", refId: "msg_1", props: { program: "pre-architecture" } });
+    expect(JSON.stringify(arg)).not.toMatch(/ada@example\.com|Hello|Ada/);
+  });
+
+  it("records NO conversion when the notification was blocked, rejected, thrown, or empty", async () => {
+    for (const outcome of [
+      () => send.mockResolvedValue({ data: null, error: { name: "application_error", message: "disabled", statusCode: 403 } }),
+      () => send.mockResolvedValue({ data: null, error: { name: "validation_error", message: "x", statusCode: 403 } }),
+      () => send.mockRejectedValue(new Error("network down")),
+      () => send.mockResolvedValue({ data: null, error: null }),
+    ]) {
+      send.mockReset();
+      outcome();
+      await post(valid);
+    }
+    await post({ name: "", email: "bad", message: "" }); // invalid input
+    expect(recordConversion).not.toHaveBeenCalled();
   });
 
   it("is NOT a success when the email policy blocks the send (returned error, not thrown)", async () => {
