@@ -75,10 +75,26 @@ describe("operational links use the environment-aware base URL", () => {
 
 describe("analytics and indexing are production-only", () => {
   const layout = read(path.join(ROOT, "app/layout.tsx"));
-  it("Google Analytics is rendered only inside the production branch", () => {
-    expect(layout.match(/googletagmanager\.com/g)?.length).toBe(1);
-    expect(layout.indexOf("isProduction ?")).toBeGreaterThan(-1);
-    expect(layout.indexOf("isProduction ?")).toBeLessThan(layout.indexOf("googletagmanager.com"));
+  it("Google Analytics exists in exactly one module, and the server-rendered layout contains none of it", () => {
+    // GA used to be written into the layout's production branch. It is now loaded only by app/lib/consent/ga.ts, after a consent decision.
+    expect(layout).not.toMatch(/googletagmanager|gtag\(|G-[A-Z0-9]{8,}/);
+    const holders = withText.filter(({ file, text }) => !file.endsWith(".test.ts") && /googletagmanager\.com/.test(text)).map(({ file }) => file);
+    expect(holders).toEqual(["app/lib/consent/ga.ts"]);
+  });
+  it("GA can only be started by the consent manager, and that manager does nothing outside production", () => {
+    const starters = withText.filter(({ file, text }) => !file.endsWith(".test.ts") && file !== "app/lib/consent/ga.ts" && /\benableGa\(/.test(text)).map(({ file }) => file);
+    expect(starters).toEqual(["app/components/ConsentManager.tsx"]);
+    const manager = read(path.join(ROOT, "app/components/ConsentManager.tsx"));
+    expect(manager).toMatch(/GA_AVAILABLE = process\.env\.NEXT_PUBLIC_DEPLOYMENT_ENV === "production"/);
+    // the effect that makes the decision (and can start GA) returns first when GA is unavailable or on admin pages ...
+    expect(manager).toMatch(/useEffect\(\(\) => \{\s*if \(!GA_AVAILABLE \|\| admin \|\|[^\n]*\) return;\s*resolved\.current = true;/);
+    // ... and nothing is rendered outside production or on admin pages
+    expect(manager).toMatch(/if \(!GA_AVAILABLE \|\| admin\) return null;/);
+  });
+  it("the layout mounts the consent manager and the first-party tracker, and still excludes both previews' GA", () => {
+    expect(layout).toMatch(/<ConsentManager \/>/);
+    expect(layout).toMatch(/<IntelligenceTracker \/>/);
+    expect(layout).toMatch(/isProduction \? null/);
   });
   it("next.config sends X-Robots-Tag outside production and bakes in the build-time deployment", () => {
     const config = read(path.join(ROOT, "next.config.ts"));

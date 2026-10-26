@@ -21,6 +21,17 @@ concerns were excluded by the checklist, but the abuse bounds that matter for th
 | **Environment isolation** | Existing production-database guard applies to every new Supabase access; rows tagged with the writing environment; production reports read production rows only (`isolation.test.ts`, `test-reports.sh`) | OK |
 | **Untouched** | `proxy.ts`, `app/lib/supabase/*`, `next.config.ts` have no diff; GA4 loading is unchanged | OK |
 
+## Addendum: consent mechanism (2026-10-26)
+| Area | Outcome |
+|---|---|
+| `GET /api/consent/region` | Public, read-only, returns one boolean computed from two request headers; no storage, no logging, no input reflected |
+| GA4 script injection | `gtag.js` URL is built from a constant measurement id only; no user-controlled value reaches the DOM or the URL |
+| Stored consent (`localStorage`) | Parsed defensively (JSON, version, enum, timestamp bounds); junk or tampered values are treated as "no choice". A visitor can only change their own choice |
+| Cookie deletion | Deletes only `_ga`, `_ga_*`, `_gid`, `_gat*`; unrelated and auth cookies are untouched (tested) |
+| Admin exclusion | Client-side gate keyed on the admin path and the admin session cookie (the server-side gate for first-party analytics is unchanged); the cookie is read only to decide *not* to load Google code, never sent anywhere |
+| New third-party script | Unchanged in kind: Google's `gtag.js`, previously always loaded, now loaded only after permission |
+| Result | No new vulnerability identified |
+
 ## Hardening applied during this review
 - Cross-site `Origin` check on the collector (other websites cannot inject data through a visitor's browser).
 - Constant-time comparison for the cron bearer secret.

@@ -1,4 +1,5 @@
 import "server-only";
+import { hasAdminSessionCookie } from "@/app/lib/consent/signals";
 import { checkRateLimit } from "@/app/lib/rateLimit";
 import { deploymentEnv, type DeploymentEnv } from "@/app/lib/deployment";
 import { getServiceClient } from "@/app/lib/supabase/service";
@@ -43,11 +44,6 @@ export function isCrossSite(headers: Headers): boolean {
   } catch {
     return true;
   }
-}
-
-/** A signed-in admin carries a Supabase auth cookie; visitors never do. Admin browsing must not count as traffic. */
-export function hasAdminSessionCookie(cookieHeader: string | null): boolean {
-  return Boolean(cookieHeader && /(^|;\s*)sb-[^=]*-auth-token/.test(cookieHeader));
 }
 
 export type CollectOutcome =

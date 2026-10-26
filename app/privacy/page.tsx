@@ -1,4 +1,5 @@
 /* eslint-disable react/no-unescaped-entities */
+import ConsentPreferencesLink from "@/app/components/ConsentPreferencesLink";
 import Navigation from "@/app/components/Navigation";
 
 export default function PrivacyPage() {
@@ -87,7 +88,7 @@ export default function PrivacyPage() {
                 browser details as evidence that the request was made, not the raw values.
               </p>
 
-              <h2 className="text-xl font-light pt-4">Website analytics</h2>
+              <h2 id="analytics" className="text-xl font-light pt-4 scroll-mt-24">Website analytics</h2>
               <p>
                 The site uses two separate analytics tools to understand which pages are found and used, where
                 visitors come from and whether the site leads to enquiries: the site&apos;s own first-party
@@ -116,26 +117,57 @@ export default function PrivacyPage() {
 
               <p>
                 <strong className="font-medium text-[#1a1816]">Google Analytics.</strong> The site also uses
-                Google Analytics 4, a service provided by Google. It sets two cookies in your browser,{" "}
-                <code>_ga</code> and a second one beginning <code>_ga_</code>, which last up to about 13 months and
-                give your browser a random identifier so Google can recognise a returning browser and group page
-                views into visits. Google Analytics receives the address and title of each page you view, the page
-                that referred you, your browser and device type, screen size, language, an approximate location
-                that Google derives from your network address, and the same kinds of interaction as above, with a
-                few non-identifying details such as which program was selected or an assessment&apos;s overall
-                score. Google states that Google Analytics 4 does not log or store individual IP addresses. This
-                data is sent to Google and processed on Google&apos;s servers, and is kept for the period set in the
-                site&apos;s Google Analytics account. Google Analytics is not switched off by a Global Privacy
-                Control or Do Not Track signal. You can prevent it by blocking cookies or tracking in your browser,
-                by using an ad or tracker blocker, or by installing Google&apos;s opt-out add-on at{" "}
+                Google Analytics 4, a service provided by Google, to measure site use. It sets two cookies in
+                your browser, <code>_ga</code> and a second one beginning <code>_ga_</code>, which last up to
+                about 13 months and give your browser a random identifier so Google can recognise a returning
+                browser and group page views into visits. It receives the address and title of each page you
+                view, the page that referred you, your browser and device type, screen size, language, an
+                approximate location that Google derives from your network address, and the same kinds of
+                interaction as above, with a few non-identifying details such as which program was selected or
+                an assessment&apos;s overall score. Google states that Google Analytics 4 does not log or store
+                individual IP addresses. The data is sent to and processed by Google, and is kept for the period
+                set in the site&apos;s Google Analytics account. Advertising features are switched off: the site
+                does not use Google Analytics for advertising or share this data for advertising.
+              </p>
+              <p>
+                <strong className="font-medium text-[#1a1816]">Your choice about Google Analytics.</strong>{" "}
+                Google Analytics does not start, and sets no cookies, until it is allowed:
+              </p>
+              <ul className="list-disc space-y-2 pl-6">
+                <li>
+                  If your browser sends a Global Privacy Control or Do Not Track signal, Google Analytics never
+                  runs, and you are not asked.
+                </li>
+                <li>
+                  If you are visiting from the European Economic Area, the United Kingdom, Switzerland, Brazil or
+                  Quebec, or the site cannot tell where you are, it asks first and stays off unless you choose
+                  Allow.
+                </li>
+                <li>
+                  From anywhere else it runs unless you decline. Wherever you are, you can change your choice at
+                  any time.
+                </li>
+              </ul>
+              <p>
+                The site remembers your choice in your browser&apos;s local storage (an entry named{" "}
+                <code>mba_analytics_consent</code>, for up to 12 months) so it does not ask again; this is the only
+                thing stored for it. Declining, or withdrawing, switches Google Analytics off and removes the
+                Google Analytics cookies the site can reach. Pages in the site&apos;s administration area, and
+                visits by its administrator, are never sent to Google Analytics. You can also block Google
+                Analytics with your browser&apos;s tracking protection or an ad or tracker blocker, or with
+                Google&apos;s opt-out add-on at{" "}
                 <a href="https://tools.google.com/dlpage/gaoptout" className="underline hover:text-[#1a1816]" rel="noopener noreferrer">
                   tools.google.com/dlpage/gaoptout
                 </a>
-                . Google&apos;s own explanation is in its{" "}
+                . The site&apos;s own cookieless analytics described above is separate: it does not depend on this
+                choice. Google&apos;s explanation of how it uses data from sites like this one is in its{" "}
                 <a href="https://policies.google.com/technologies/partner-sites" className="underline hover:text-[#1a1816]" rel="noopener noreferrer">
                   description of how Google uses data from sites that use its services
                 </a>
                 .
+              </p>
+              <p>
+                <ConsentPreferencesLink className="text-[#6b1f1f]" />
               </p>
 
               <h2 className="text-xl font-light pt-4">The shortlist (ongoing content)</h2>

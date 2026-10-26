@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import PickMyBrain from "@/app/components/PickMyBrain";
+import ConsentPreferencesLink from "@/app/components/ConsentPreferencesLink";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -57,7 +58,10 @@ export default function Footer() {
             <Link href="/lets-talk" className="hover:text-[#1a1816] transition-colors">
               Let&apos;s Talk
             </Link>
-            <span className="ml-auto text-[#1a1816]/65">© 2026</span>
+            <span className="ml-auto flex items-center gap-4 text-[#1a1816]/65">
+              <ConsentPreferencesLink />
+              <span>© 2026</span>
+            </span>
           </div>
 
           {/* Mobile layout */}
@@ -98,6 +102,7 @@ export default function Footer() {
 
             <div className="pt-6 border-t border-[#1a1816]/8">
               <span className="text-xs text-[#1a1816]/65">© 2026</span>
+              <ConsentPreferencesLink className="ml-4 text-xs text-[#1a1816]/65" />
             </div>
           </div>
         </div>

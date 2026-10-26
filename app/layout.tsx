@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { PRINCIPAL_NAME, SITE_NAME, SITE_URL, serializeJsonLd } from "@/app/lib/seo";
 import Footer from "@/app/components/Footer";
 import AnalyticsPageview from "@/app/components/AnalyticsPageview";
+import ConsentManager from "@/app/components/ConsentManager";
 import IntelligenceTracker from "@/app/components/IntelligenceTracker";
 import { NOINDEX_DIRECTIVE, isProductionDeployment } from "@/app/lib/deployment";
 import "./globals.css";
@@ -96,22 +96,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full scroll-smooth">
       <head>
-        {isProduction ? (
-          <>
-            <Script
-              src="https://www.googletagmanager.com/gtag/js?id=G-VWKDNXD9JD"
-              strategy="afterInteractive"
-            />
-            <Script id="google-analytics" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', 'G-VWKDNXD9JD', { send_page_view: false });
-              `}
-            </Script>
-          </>
-        ) : (
+        {isProduction ? null : (
           // Previews: explicit robots meta in addition to the X-Robots-Tag header, and no Google Analytics
           // (preview traffic must not appear in production analytics).
           <meta name="robots" content={NOINDEX_DIRECTIVE} />
@@ -128,6 +113,7 @@ export default function RootLayout({
             assessment result ID never reach analytics. */}
         <AnalyticsPageview />
         <IntelligenceTracker />
+        <ConsentManager />
         {children}
         <Footer />
         <noscript>

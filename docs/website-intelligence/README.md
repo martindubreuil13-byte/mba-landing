@@ -63,16 +63,17 @@ Page views + events 13 months; sessions 25 months; this feature's own rate-limit
 the hour; verified in Vercel docs on 2026-10-26); `vercel.json` schedules `17 3 * * *`. Needs `CRON_SECRET` in Production, else the endpoint refuses all calls.
 
 ## Privacy notes
-`/privacy` has a "Website analytics" section that discloses **both** systems: this first-party analytics and Google Analytics 4. **GA4 is retained** as an
-independent reference during validation (decision 2026-10-26); its loading is unchanged. Its consent and privacy configuration, a duplicate-counting defect in the
-GA4 stream settings, the performance measurement and the recommended consent approach are in `ga4-coexistence.md`; how to compare the two is in `ga4-comparison.md`.
-Cookieless does not by itself remove every obligation (e.g. rules on accessing device storage, transparency, objection rights); counsel should confirm.
+`/privacy` has a "Website analytics" section that discloses **both** systems. **GA4 is retained** as an independent reference during validation (decision 2026-10-26) and is now
+**consent-aware**: it loads only after a decision (privacy signals respected; opt-in for the EEA/UK/Switzerland/Brazil/Quebec and unknown locations; opt-out elsewhere; always
+withdrawable), never tracks admin activity, and keeps its manual page views and URL redaction. **Website Intelligence is independent of that choice.** Details, the required GA4 admin
+settings (including the Enhanced-measurement setting that must be off), performance and the checklist are in `ga4-coexistence.md`; how to compare the two is in `ga4-comparison.md`.
+Cookieless does not by itself remove every obligation; counsel should confirm the notice and the region list.
 
 ## Cost
 No new paid service. Storage is small (a session ≈ 0.5 KB, a page view ≈ 0.2 KB). Each page view adds a beacon, two rate-limit upserts and one RPC.
 
 ## Testing
-- `npx vitest run` — 456 tests (about 80 new for Website Intelligence): classification, payload validation, session expiry, collector, isolation, conversions, content table, journey timeline, benchmarks, ranges, cron auth.
+- `npx vitest run` — 484 tests (about 110 new for Website Intelligence): classification, payload validation, session expiry, collector, isolation, conversions, content table, journey timeline, benchmarks, ranges, cron auth.
 - `docs/website-intelligence/test-migration.sh` — apply / rollback / re-apply on the local DB, schema has no visitor/IP/hash column, retention, production-scope isolation, conversion idempotency.
 - `docs/website-intelligence/test-security.sh` — the public (anon) key can read, write and call nothing in `wi_*`.
 - `docs/website-intelligence/test-reports.sh` — every report function against synthetic rows with known answers (including preview-row exclusion).
@@ -80,13 +81,11 @@ No new paid service. Storage is small (a session ≈ 0.5 KB, a page view ≈ 0.2
   submission recorded as one server-confirmed lead linked to its session, a GPC visitor's submission counted unattributed, booking-link click recorded as a non-conversion, nothing typed stored,
   admin browsing not counted, GPC/webdriver excluded, all new pages free of horizontal overflow at 390 px.
 
-## Deployment (NOT performed; needs explicit approval)
-1. Note a restore point. 2. Apply migrations 1→3 to production (additive; `test-migration.sh` proves nothing else changes). 3. Set `CRON_SECRET` in Vercel Production.
-4. Deploy via the normal Git flow. 5. Verify in a normal browser: a row appears, `/admin/intelligence` shows it, the admin's own visits don't count, a test inquiry records one lead.
-**Rollback:** redeploy the previous version (the tracker disappears; lead forms keep working: conversion recording is fail-soft), then run the ROLLBACK block at the bottom of each migration, 3 → 1.
+## Deployment
+NOT performed. Follow `deployment-checklist.md` (decisions → GA admin → database → `CRON_SECRET` → deploy → verify → rollback).
 
 ## Further documents
-`metrics.md` (definitions) · `security-review.md` (pre-deployment security review) · `ga4-coexistence.md` (GA4 audit) · `ga4-comparison.md` (how to compare).
+`deployment-checklist.md` (**production steps, verification and rollback**) · `rollback.sql` · `metrics.md` (definitions) · `security-review.md` · `ga4-coexistence.md` (GA4 audit, consent mechanism, GA admin settings) · `ga4-comparison.md` (how to compare).
 
 ## Known limitations
 Sessions, not people; GPC/DNT/ad-blocked visitors are invisible to attribution (their leads are still counted); AI referrals are a floor; last-page engagement can

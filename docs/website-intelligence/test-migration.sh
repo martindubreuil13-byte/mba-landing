@@ -2,7 +2,7 @@
 # Tests the Website Intelligence migrations against the LOCAL Supabase database (never a remote one):
 #   1. migrations apply to a database that already has the production schema
 #   2. nothing outside wi_* changes (row counts of every pre-existing table are identical before/after)
-#   3. rollback removes every wi_* object cleanly, and re-applying works
+#   3. docs/website-intelligence/rollback.sql removes every wi_* object cleanly, and re-applying works
 #   4. wi_maintenance deletes beyond retention and nothing else; no table holds any visitor/IP/hash column
 #   5. production-scope reports (p_prod) never see preview/development rows; server conversions are idempotent and browser events can never convert
 # Needs: `supabase start` (Docker). Usage: docs/website-intelligence/test-migration.sh
@@ -17,7 +17,7 @@ snapshot() { psql_ -c "select string_agg(relname||'='||n_live_tup, ',' order by 
 count() { psql_ -c "select count(*) from information_schema.tables where table_name like 'wi\_%' union all select count(*) from pg_proc where proname like 'wi\_%'" | tr '\n' ' '; }
 fail() { echo "FAIL: $*"; exit 1; }
 
-rollback() { psql_ -c "drop function if exists wi_ai_referrals(timestamptz,timestamptz,boolean), wi_conversions(timestamptz,timestamptz,boolean,text[],text[],text[],text[]), wi_content(timestamptz,timestamptz,boolean,text[],text[]), wi_traffic(timestamptz,timestamptz,boolean), wi_overview(timestamptz,timestamptz,boolean,text), wi_maintenance(timestamptz), wi_record_conversion(jsonb), wi_ingest(jsonb); drop table if exists wi_benchmark_results, wi_benchmark_questions, wi_events, wi_pageviews, wi_sessions, wi_daily, wi_ai_referral_domains;" >/dev/null; }
+rollback() { psql_ < docs/website-intelligence/rollback.sql >/dev/null; }
 rollback
 psql_ -c "analyze" >/dev/null 2>&1
 BEFORE=$(snapshot)
