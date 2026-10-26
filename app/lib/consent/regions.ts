@@ -1,10 +1,11 @@
 /**
- * Where Google Analytics needs the visitor's opt-in BEFORE it runs. Decided by where the VISITOR is, not where the business is
- * established (which this code does not assume). Opt-in is required for the EEA, the UK and Switzerland (ePrivacy / GDPR style
- * rules), Brazil, and Quebec (Law 25). When the location is unknown the answer is "required": the safe default.
+ * Where this site ASKS for the visitor's opt-in BEFORE Google Analytics runs. Decided by where the VISITOR is, not where the business
+ * is established (which this code does not assume). The list is the EEA, the UK, Switzerland, Brazil and Quebec, plus any visitor whose
+ * location is unknown (the safe default).
  *
- * This is a conservative starting list, not legal advice: have counsel confirm it, then edit these two constants. Everywhere
- * else, GA runs unless the visitor sends a privacy signal or declines through "Analytics preferences".
+ * ASSUMPTION, NOT A LEGAL DETERMINATION: this is a conservative engineering starting point. It is not guaranteed to be complete or
+ * sufficient for any jurisdiction. See docs/website-intelligence/legal-review.md; have counsel confirm it, then edit these constants.
+ * Everywhere else, GA runs unless the visitor sends a privacy signal or declines through "Analytics preferences".
  */
 export const CONSENT_REQUIRED_COUNTRIES: ReadonlySet<string> = new Set([
   // EU member states

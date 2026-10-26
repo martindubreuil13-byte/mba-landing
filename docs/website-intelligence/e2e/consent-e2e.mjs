@@ -81,17 +81,20 @@ console.log("\nS4  United States (opt-out region)");
   await v.page.locator('a[href="/answers"]:visible').first().click(); await settle(v.page, 1500);
   const pv = await v.manualPv(); check("one manual page_view per navigation, paths redacted/clean", pv.join(" ") === "/ /work /answers", pv.join(" "));
   console.log("\nS8  withdrawal through Analytics preferences");
-  const hitsBefore = v.t.gaHits;
   await v.page.getByRole("button", { name: "Analytics preferences" }).first().click(); await settle(v.page, 500);
   check("panel opens with current status", await v.banner().isVisible() && (await v.banner().innerText()).includes("Google Analytics is on"));
   check("focus moved to the panel", await v.page.evaluate(() => document.activeElement?.getAttribute("aria-labelledby") === "analytics-choice-title"));
   await v.page.keyboard.press("Escape"); await settle(v.page, 300);
   check("Escape closes it and returns focus to the footer control", !(await v.banner().isVisible()) && (await v.page.evaluate(() => document.activeElement?.textContent === "Analytics preferences")));
   await v.page.getByRole("button", { name: "Analytics preferences" }).first().click();
-  await v.banner().getByRole("button", { name: "Decline" }).click(); await settle(v.page, 1000);
+  await v.banner().getByRole("button", { name: "Decline" }).click(); await settle(v.page, 3000);
   check("withdrawal removes the GA cookies", (await v.gaCookies()).length === 0, (await v.gaCookies()).join(","));
+  // A hit GA had already queued just before the withdrawal may still be delivered (gtag.js batches for about a second), so the baseline is
+  // taken after that has flushed. What must never happen is a hit for activity AFTER the withdrawal.
+  const hitsBefore = v.t.gaHits;
   await v.page.locator('a[href="/thinking"]:visible').first().click(); await settle(v.page, 2500);
-  check("no Google hits after withdrawal", v.t.gaHits === hitsBefore);
+  await v.page.locator('a[href="/work"]:visible').first().click(); await settle(v.page, 2500);
+  check("no Google hit for any activity after withdrawal", v.t.gaHits === hitsBefore, `hits ${hitsBefore}->${v.t.gaHits}`);
   const flag = await v.page.evaluate(() => window["ga-disable-G-VWKDNXD9JD"]); check("Google's own disable flag is set", flag === true);
   await v.ctx.close(); }
 

@@ -85,7 +85,7 @@ No new paid service. Storage is small (a session ≈ 0.5 KB, a page view ≈ 0.2
 NOT performed. Follow `deployment-checklist.md` (decisions → GA admin → database → `CRON_SECRET` → deploy → verify → rollback).
 
 ## Further documents
-`deployment-checklist.md` (**production steps, verification and rollback**) · `rollback.sql` · `metrics.md` (definitions) · `security-review.md` · `ga4-coexistence.md` (GA4 audit, consent mechanism, GA admin settings) · `ga4-comparison.md` (how to compare).
+`deployment-checklist.md` (**production steps, verification and rollback**) · `legal-review.md` (**assumptions that need legal review**) · `rollback.sql` · `metrics.md` (definitions) · `security-review.md` · `ga4-coexistence.md` (GA4 audit, consent mechanism, GA admin settings) · `ga4-comparison.md` (how to compare).
 
 ## Known limitations
 Sessions, not people; GPC/DNT/ad-blocked visitors are invisible to attribution (their leads are still counted); AI referrals are a floor; last-page engagement can

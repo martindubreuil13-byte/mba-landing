@@ -8,7 +8,7 @@ Order matters: **decisions → GA admin → database → environment → deploy 
 
 ## A. Decisions and approvals (before anything else)
 - [ ] You approve deployment in writing.
-- [ ] Counsel (or you) has read the new "Website analytics" section of `/privacy` and the consent regions in `app/lib/consent/regions.ts`.
+- [ ] Counsel (or you) has worked through **`legal-review.md`** (the consent region list, geolocation, banner wording, absence of a server-side consent record, the first-party analytics assumption) and read the new "Website analytics" section of `/privacy`. The region list is an assumption, not a compliance determination.
 - [ ] You accept the visible changes: a consent banner for visitors in the EEA/UK/Switzerland/Brazil/Quebec or of unknown location; an "Analytics preferences" control in the footer and on `/privacy`.
 - [ ] Optional, recommended: record a **baseline** now (PageSpeed Insights for `/` and one answer page) to compare after deployment.
 
@@ -39,7 +39,7 @@ Migrating **before** deploying is safe: nothing reads the tables until the new c
 ## D. Environment (Vercel → Project → Settings → Environment Variables)
 - [ ] **`CRON_SECRET`** (Production only): a long random value, e.g. `openssl rand -hex 32`. Vercel Cron sends it automatically as `Authorization: Bearer …`. Without it the daily retention job returns 401 and **retention does not run** (data simply accumulates).
 - [ ] No other new variable is required. `ADMIN_EMAIL`, Supabase keys and email keys are existing.
-- [ ] Confirm **Preview** and **Development** environments do **not** point at the production Supabase project (the existing guard would refuse them, but keep the setting clean). Note: pushing the branch may already have triggered a Vercel preview build; if that preview has no isolated database it shows the guard's 503 page, by design.
+- [ ] **Preview isolation: finding and recommendation (verified 2026-10-26, read-only).** The Vercel *Preview* scope currently holds `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` as the same entries as Production, and the Preview URL host **is the production project (`sbntzyivfhvogxiiysuh`)**. Today the only thing stopping a preview from touching production data is the code guard in `app/lib/deployment.ts` (`assertDatabaseAllowed`, used by every Supabase client; enforced by a test). That guard was verified on the live preview of this branch: a real analytics beacon returned 202 (refused), the admin returned 503, and production showed no new rows (`api_rate_limits` unchanged at 341 rows, 0 `wi:` keys). Previews are also behind Vercel Authentication and send `noindex`. **Recommended (owner action, not done):** remove the three `SUPABASE_*` variables from the *Preview* scope, or point them at an isolated Supabase project, so a preview cannot hold the production service-role key at all. Until then previews of this branch cannot exercise Website Intelligence (they refuse by design). Do not rely on a single guard as the only isolation.
 - [ ] Plan check: the cron in `vercel.json` is **once a day** (`17 3 * * *`), valid on the Hobby plan (timing within the hour).
 
 ## E. Deploy

@@ -42,7 +42,7 @@ Previously GA4 was written into the server-rendered HTML and ran for everyone, u
 
 Where is the visitor? Decided by the hosting edge's country/region headers via `GET /api/consent/region`, which returns only `{ "required": true|false }`, stores and logs nothing.
 The rule depends on **where the visitor is, not where the business is established** (which the code does not assume). The country list is a conservative starting point in
-`app/lib/consent/regions.ts`; have counsel confirm it, then edit the two constants.
+`app/lib/consent/regions.ts`; it is an assumption, not a compliance determination (see `legal-review.md`); have counsel confirm it, then edit the two constants.
 
 ### Accessibility of the banner
 A labelled region (`role="region"`, `aria-labelledby`), announced politely when it appears, never stealing focus; fully keyboard operable (Tab order Allow → Decline); when opened

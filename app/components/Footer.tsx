@@ -8,9 +8,21 @@ import ConsentPreferencesLink from "@/app/components/ConsentPreferencesLink";
 export default function Footer() {
   const pathname = usePathname();
 
-  // Don't render footer on homepage
+  // The homepage is a single full-screen composition with no site footer. It still gets a slim legal strip so the privacy notice and
+  // "Analytics preferences" are reachable from every public page, before and after a visitor has made a choice.
   if (pathname === "/") {
-    return null;
+    return (
+      // The hero above is `sticky` and stays pinned over the viewport for the whole page, so the strip must paint above it (z-20) or it is unreachable.
+      <footer className="relative z-20 w-full bg-[#f5f1ed] px-6 py-6 text-xs text-[#1a1816]/65 md:px-12 lg:px-16">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-5 gap-y-2">
+          <span>© 2026</span>
+          <Link href="/privacy" className="underline underline-offset-2 hover:text-[#1a1816] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b1f1f]">
+            Privacy
+          </Link>
+          <ConsentPreferencesLink />
+        </div>
+      </footer>
+    );
   }
 
   return (
