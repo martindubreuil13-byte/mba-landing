@@ -2,12 +2,15 @@ export const PROGRAM_KEY = "corporate-transition";
 import { INTRO_BOOKING_URL } from "@/app/lib/booking";
 /** Alias of the central introductory-booking link (app/lib/booking.ts). Do not put a Calendly URL here. */
 export const CALENDLY_URL = INTRO_BOOKING_URL;
-// v2 (confirmed opt-in): the box only REQUESTS marketing. One confirmation email is sent and marketing starts only
-// after the applicant confirms. v1 ("corporate-transition-shortlist-v1") did not say so and never sent that email.
-// The label and the footnote below are exactly what the visitor sees; both are stored as the consent wording.
-export const CONSENT_VERSION = "corporate-transition-shortlist-v2";
-export const CONSENT_WORDING = "Keep me on Martin’s shortlist for useful ideas, resources and occasional updates. I understand I will get one email asking me to confirm, and I am only subscribed once I do.";
-export const CONSENT_FOOTNOTE = "Submitting permits transactional messages about this application. It does not subscribe you to marketing unless you check the box and then confirm from the email we send you.";
+// The optional community invitation shown AFTER the application is submitted (never inside the questionnaire).
+// COMMUNITY_WORDING and COMMUNITY_FOOTNOTE are exactly what the visitor sees beside the two buttons; both are stored,
+// with this version, as the consent evidence. Change either and the version MUST change (a new entry, never an edit).
+export const COMMUNITY_CONSENT_VERSION = "transition-community-v1";
+export const COMMUNITY_QUESTION = "Would you like occasional emails with practical advice, ideas, guides, and resources?";
+export const COMMUNITY_DECLINE_LABEL = "No, thanks";
+export const COMMUNITY_JOIN_LABEL = "Yes, count me in";
+export const COMMUNITY_WORDING = `I'm building a community of people who want to create something of their own. ${COMMUNITY_QUESTION} — ${COMMUNITY_JOIN_LABEL}`;
+export const COMMUNITY_FOOTNOTE = "Optional. Unsubscribe anytime. Your consultation is not affected by your choice.";
 
 export const employmentOptions = [
   "Executive / C-suite", "Director / senior leader", "Manager", "Experienced specialist / professional",
@@ -27,7 +30,7 @@ export const timingOptions = ["Within the next 6 months", "6–12 months", "1–
 export type TransitionAnswers = {
   employment: string; employmentOther?: string; experience: string; stage: string; timing: string;
   motivation: string; help: string; country: string; firstName: string; lastName: string;
-  email: string; linkedin?: string; marketingConsent: boolean;
+  email: string; linkedin?: string;
 };
 
 export type Attribution = { source?: string | null; medium?: string | null; campaign?: string | null; referrer?: string | null; utm_source?: string | null; utm_medium?: string | null; utm_campaign?: string | null; utm_content?: string | null };
@@ -44,7 +47,7 @@ export function validateApplication(value: unknown): { data?: TransitionAnswers;
     experience: cleanText(b.experience, 40), stage: cleanText(b.stage, 180), timing: cleanText(b.timing, 80),
     motivation: cleanText(b.motivation, 1500), help: cleanText(b.help, 1500), country: cleanText(b.country, 100),
     firstName: cleanText(b.firstName, 100), lastName: cleanText(b.lastName, 100), email: cleanText(b.email, 200).toLowerCase(),
-    linkedin: cleanText(b.linkedin, 300), marketingConsent: b.marketingConsent === true,
+    linkedin: cleanText(b.linkedin, 300),
   };
   const errors: Record<string, string> = {};
   if (!employmentOptions.includes(data.employment as never)) errors.employment = "Choose your current professional situation.";
@@ -63,32 +66,10 @@ export function validateApplication(value: unknown): { data?: TransitionAnswers;
 }
 
 /**
- * TEMPORARY (October 2026): the free-guidance LinkedIn initiative for professionals who are out of work means the
- * automatic business-fit rejection must not turn anyone away. While this is OFF (the default), every valid
- * application is saved and routed to manual review; the AI still runs and its assessment is stored for Martin's
- * private review, but it never changes what the applicant sees or receives.
- *
- * To restore the original automatic qualification: set the environment variable
- * TRANSITION_AUTO_QUALIFICATION=enabled in Vercel (Production) and redeploy. No code change is needed.
+ * There is no screening: every valid application is saved and offered the booking link immediately. The three-way
+ * INVITE / REVIEW / NOT_FIT decision, the AI assessment and the TRANSITION_AUTO_QUALIFICATION switch no longer exist for
+ * new submissions. Historical applications keep their stored assessment and statuses untouched.
  */
-export function autoQualificationEnabled(): boolean {
-  return process.env.TRANSITION_AUTO_QUALIFICATION?.trim().toLowerCase() === "enabled";
-}
-
-export type TransitionRoute = "INVITE" | "REVIEW" | "NOT_FIT";
-
-export const UNEMPLOYED_OPTION = "Unemployed / between roles";
-
-/**
- * The route the APPLICANT is actually given. With automatic qualification enabled this is the AI's route, unchanged.
- * With it off: nobody is rejected (NOT_FIT becomes manual review), and applicants who are between roles are never
- * auto-invited either, so Martin personally decides the next step for the LinkedIn initiative.
- */
-export function effectiveRoute(aiRoute: TransitionRoute, a: Pick<TransitionAnswers, "employment">): TransitionRoute {
-  if (autoQualificationEnabled()) return aiRoute;
-  if (a.employment === UNEMPLOYED_OPTION) return "REVIEW";
-  return aiRoute === "NOT_FIT" ? "REVIEW" : aiRoute;
-}
 
 /**
  * Response template for an applicant who does not fit the original Corporate Transition criteria, offered as a

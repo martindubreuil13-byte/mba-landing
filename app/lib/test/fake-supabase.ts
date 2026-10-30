@@ -19,6 +19,8 @@ export class FakeDb {
     napkin_submissions: [],
     pmb_questions: [],
     program_applications: [],
+    program_invitation_sends: [],
+    program_bookings: [],
   };
 
   insertCount: Record<string, number> = {};
@@ -67,6 +69,7 @@ class Query implements PromiseLike<Result> {
   insert(payload: Row | Row[]) { this.action = "insert"; this.payload = payload; return this; }
   update(payload: Row) { this.action = "update"; this.payload = payload; return this; }
   eq(col: string, value: unknown) { this.filters.push((r) => r[col] === value); return this; }
+  in(col: string, values: unknown[]) { this.filters.push((r) => values.includes(r[col])); return this; }
   neq(col: string, value: unknown) { this.filters.push((r) => r[col] !== value); return this; }
   is(col: string, value: null) { this.filters.push((r) => (r[col] ?? null) === value); return this; }
   not(col: string, op: string, value: null) {
@@ -110,6 +113,14 @@ class Query implements PromiseLike<Result> {
           if (rows.some((r) => r.email === row.email)) return { data: null, error: { message: "duplicate key value violates unique constraint leads_email_key", code: "23505" } };
           Object.assign(row, { country: null, ongoing_content_opt_in_at: null, ongoing_content_opt_out_at: null, suppressed_at: null, consent_requested_at: null, updated_at: now }, item, { id: row.id, created_at: now });
         }
+        if (rows.some((r) => r.id === row.id) || (this.table === "program_invitation_sends" && row.status === "pending" && rows.some((r) => r.application_id === row.application_id && r.status === "pending"))) return { data: null, error: { message: "duplicate key", code: "23505" } };
+        const UNIQUE: Record<string, string[]> = { program_applications: ["idempotency_key", "booking_ref", "receipt_token"], program_bookings: ["calendly_invitee_uri"] };
+        for (const col of UNIQUE[this.table] ?? []) {
+          if (row[col] != null && rows.some((r) => r[col] === row[col])) return { data: null, error: { message: `duplicate key value violates unique constraint ${this.table}_${col}_key`, code: "23505" } };
+        }
+        if (this.table === "program_applications") Object.assign(row, { submitted_at: now, booking_status: "unsupported", booked_at: null, meeting_at: null, community_choice: null, ai_route: null, ai_confidence: null, applicant_email_status: "not_sent", applicant_email_error: null, admin_notification_status: "not_sent", admin_notification_error: null, ...item, id: row.id });
+        if (this.table === "program_invitation_sends") Object.assign(row, { attempted_at: now, provider_message_id: null, error: null, delivery_status: null, delivery_updated_at: null, ...item, id: row.id });
+        if (this.table === "program_bookings") Object.assign(row, { booking_ref: null, calendly_event_uri: null, start_time: null, end_time: null, booked_at: null, canceled_at: null, rescheduled: false, ...item, id: row.id });
         if (this.table === "resource_requests") Object.assign(row, { requested_at: now, benefit_fulfilled_at: null, ...item, id: row.id });
         rows.push(row);
         created.push(row);

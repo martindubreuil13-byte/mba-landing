@@ -1,0 +1,54 @@
+diff --git a/app/privacy/page.tsx b/app/privacy/page.tsx
+index 6d4e180..0d1fab5 100644
+--- a/app/privacy/page.tsx
++++ b/app/privacy/page.tsx
+@@ -216,25 +216,34 @@ export default function PrivacyPage() {
+                 The Corporate to Entrepreneur Transition application asks for your first and last name, email
+                 address, country, employment situation, years of experience, stage and timing, and your written
+                 answers about what you want and where you need help. Your answers are stored against your contact
+-                details, together with the route suggested by the review described below and a summary of it, and
+-                they are never published.
++                details and are never published.
+               </p>
+               <p>
+-                To help Martin decide how to respond, your answers are sent to a third-party AI provider (OpenAI)
+-                solely to suggest one of three routes (invite to talk, review personally, or not the right fit) and
+-                to write a short summary for Martin. That provider does not use this data to train its models. The
+-                suggestion does not decide anything on its own: Martin reads every application and replies to you
+-                personally.
++                Nobody is screened. Every application is saved and you are offered a link to book a conversation
++                straight away; no person, rule or AI system has to approve your application first, and your answers
++                are not sent to an AI provider. Applications submitted before this change were assessed
++                automatically with a third-party AI provider (OpenAI), which suggested a route and wrote a short
++                summary for Martin; those assessments are kept as a record of that time and are no longer produced.
+               </p>
+               <p>
+-                Submitting the application sends you an acknowledgement by email, notifies Martin internally, and
+-                allows Martin to reply to you about your application. These are transactional messages about your
+-                application and do not subscribe you to marketing. The application form also has an optional,
+-                unchecked checkbox to stay on Martin's shortlist. If you tick it, the site records that you asked
+-                and sends you one email asking you to confirm. You are subscribed only once you open the link in
+-                that email and press the confirmation button; not confirming does not affect how your application
+-                is handled. Marketing emails include an unsubscribe link, and the same unsubscribe works for all
+-                of Martin's emails.
++                Submitting the application sends you one email with your booking link, and notifies Martin
++                internally. These are transactional messages about your application and do not subscribe you to
++                marketing. Bookings are made on Calendly, which handles the details you give it under its own
++                privacy policy. Your booking link contains a random reference, with no personal information in it,
++                so that a booking can be associated with your application if booking integration is enabled. Automatic
++                booking tracking is currently disconnected: this site does not receive booking, rescheduling or
++                cancellation updates from Calendly. A click on the link alone is never treated as a booking.
++              </p>
++              <p>
++                After you submit, the confirmation page offers a separate, optional invitation to join Martin's
++                community for occasional emails with practical advice, ideas, guides and resources. There are two
++                buttons, "No, thanks" and "Yes, count me in", and neither is chosen for you; completing the
++                application never subscribes you, and your conversation is not affected by your choice. Pressing
++                "Yes, count me in" records your consent with a timestamp, the page it was given on and the exact
++                wording you saw. If you are visiting from the European Economic Area, the United Kingdom,
++                Switzerland, Brazil or Quebec, or your location cannot be determined, we then send one email asking
++                you to confirm, and you are subscribed only once you press the confirmation button in it. Marketing
++                emails include an unsubscribe link, and the same unsubscribe works for all of Martin's emails.
+               </p>
+               <p>
+                 Application details are kept until you ask for them to be corrected or deleted (see "Getting in

@@ -8,7 +8,7 @@ vi.mock("@/app/lib/email-client", () => ({ createResend: () => ({ emails: { send
 import { buildConsentConfirmationEmail, sendConsentConfirmationEmail } from "./confirmation-email";
 import { verifyConfirmationToken } from "./confirmation-token";
 import { verifyUnsubscribeToken } from "@/app/lib/napkin/unsubscribe";
-import { CONSENT_FOOTNOTE, CONSENT_VERSION, CONSENT_WORDING } from "@/app/lib/programs/corporate-transition";
+import { COMMUNITY_CONSENT_VERSION, COMMUNITY_DECLINE_LABEL, COMMUNITY_FOOTNOTE, COMMUNITY_JOIN_LABEL, COMMUNITY_WORDING } from "@/app/lib/programs/corporate-transition";
 
 const PRODUCTION_DOMAIN = "modernbusinessarchitect.com";
 
@@ -33,9 +33,10 @@ describe("Transition confirmation email", () => {
     expect(html).toContain("Would you like to stay connected?");
     expect(html).toContain("Yes, keep me in the community");
     expect(html).toContain("Hi Alex,");
-    expect(html).toContain("I’ve already received your application");
+    expect(html).toContain("Your booking link is available on the application confirmation page");
     expect(html).toContain("entirely optional");
-    expect(html).toContain("does not affect my review of your application");
+    expect(html).toContain("does not affect your conversation with me");
+    expect(html).not.toMatch(/ticked|checkbox|review of your application/);
     expect(html).toContain("Marketing emails begin only after you confirm");
     expect(text).toContain(`Yes, keep me in the community: ${links.confirmUrl}`);
     expect(verifyConfirmationToken(new URL(links.confirmUrl).searchParams.get("token")!)).toEqual({ ok: true, leadId: "lead-1" });
@@ -127,11 +128,12 @@ describe("sending it", () => {
   });
 });
 
-describe("Transition consent wording v2", () => {
-  it("is a new version that tells the visitor an email confirmation is required", () => {
-    expect(CONSENT_VERSION).toBe("corporate-transition-shortlist-v2");
-    expect(CONSENT_WORDING).toMatch(/one email asking me to confirm/);
-    expect(CONSENT_WORDING).toMatch(/only subscribed once I do/);
-    expect(CONSENT_FOOTNOTE).toMatch(/unless you check the box and then confirm/);
+describe("Transition community wording v1", () => {
+  it("is a new version, never an edit of the old checkbox wording, and states the choice plainly", () => {
+    expect(COMMUNITY_CONSENT_VERSION).toBe("transition-community-v1");
+    expect(COMMUNITY_JOIN_LABEL).toBe("Yes, count me in");
+    expect(COMMUNITY_DECLINE_LABEL).toBe("No, thanks");
+    expect(COMMUNITY_WORDING).toMatch(/occasional emails with practical advice, ideas, guides, and resources/);
+    expect(COMMUNITY_FOOTNOTE).toBe("Optional. Unsubscribe anytime. Your consultation is not affected by your choice.");
   });
 });

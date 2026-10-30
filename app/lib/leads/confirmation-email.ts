@@ -32,9 +32,9 @@ export function buildConsentConfirmationEmail({ leadId, firstName }: ConsentConf
     heading: "Would you like to stay connected?",
     blocks: [
       { type: "p", text: name ? `Hi ${name},` : "Hi," },
-      { type: "p", text: "I’ve already received your application, and I’ll respond to it personally." },
+      { type: "p", text: "Thanks again for applying. Your booking link is available on the application confirmation page. This email is separate from your booking invitation." },
       { type: "p", text: "Separately, if you’d like to receive occasional ideas, resources and invitations from me, you can confirm your email below." },
-      { type: "p", text: "This is entirely optional. Not confirming does not affect my review of your application or my reply to it." },
+      { type: "p", text: "This is entirely optional. Not confirming does not affect your conversation with me in any way." },
       { type: "p", text: "Marketing emails begin only after you confirm, and you can unsubscribe at any time." },
       { type: "cta", label: "Yes, keep me in the community", url: confirmUrl },
     ],
@@ -43,7 +43,7 @@ export function buildConsentConfirmationEmail({ leadId, firstName }: ConsentConf
       privacyUrl,
       unsubscribeUrl: unsubscribePage,
       unsubscribeLabel: "Unsubscribe or cancel request",
-      reason: "You are receiving this one-off email because you ticked the box to stay on Martin’s shortlist when you submitted your application. Nothing further is sent unless you confirm. You can reply to this email and it will reach me directly.",
+      reason: "You are receiving this one-off email because you chose to join Martin’s community after submitting your application. Nothing further is sent unless you confirm. You can reply to this email and it will reach me directly.",
     },
   });
 
