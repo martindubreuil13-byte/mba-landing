@@ -123,7 +123,10 @@ describe("automatic rejection is disabled (temporary mode, the default)", () => 
 describe("5. invalid or incomplete submissions are still refused and store nothing", () => {
   it.each([
     ["missing employment", { employment: "" }],
-    ["short motivation", { motivation: "short" }],
+    ["empty motivation", { motivation: "" }],
+    ["whitespace-only motivation", { motivation: "   \n\t  " }],
+    ["empty help", { help: "" }],
+    ["whitespace-only help", { help: "    " }],
     ["missing first name", { firstName: "" }],
     ["bad email", { email: "nope" }],
     ["missing country", { country: "" }],
@@ -134,6 +137,23 @@ describe("5. invalid or incomplete submissions are still refused and store nothi
     expect(db.tables.program_applications).toHaveLength(0);
     expect(db.tables.leads).toHaveLength(0);
     expect(sent).toHaveLength(0);
+  });
+
+  it("uses the plain message for an unanswered long-text question", async () => {
+    const json = await (await apply({ ...base, motivation: "  ", help: "" })).json();
+    expect(json.fieldErrors).toEqual({ motivation: "Please answer this question.", help: "Please answer this question." });
+  });
+
+  it("accepts one-character long-text answers (no minimum length)", async () => {
+    const res = await apply({ ...base, motivation: "x", help: " 7 " });
+    expect(res.status).toBe(200);
+    expect(db.tables.program_applications).toHaveLength(1);
+  });
+
+  it("still enforces the 1500-character maximum on long-text answers", async () => {
+    const res = await apply({ ...base, motivation: "a".repeat(2000) });
+    expect(res.status).toBe(200);
+    expect(stored().answers.motivation).toHaveLength(1500);
   });
 
   it("the honeypot is still rejected", async () => {

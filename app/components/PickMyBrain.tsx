@@ -20,7 +20,7 @@ type AskState = "closed" | "open" | "sending" | "sent";
 const INITIAL_RESULTS = 3;
 
 // Private or utility pages where a site-wide discovery prompt doesn't belong.
-const EXCLUDED_PREFIXES = ["/admin", "/contact", "/resources/business-idea-reality-check/result"];
+const EXCLUDED_PREFIXES = ["/admin", "/contact", "/transition", "/resources/business-idea-reality-check/result"];
 
 const INPUT_CLASS =
   "w-full mt-2 border-b-2 border-[#1a1816]/20 bg-transparent text-lg leading-relaxed text-[#1a1816] placeholder-[#1a1816]/30 focus:outline-none focus:border-[#6b1f1f] py-2 transition";

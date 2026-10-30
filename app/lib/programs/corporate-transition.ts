@@ -32,6 +32,9 @@ export type TransitionAnswers = {
 
 export type Attribution = { source?: string | null; medium?: string | null; campaign?: string | null; referrer?: string | null; utm_source?: string | null; utm_medium?: string | null; utm_campaign?: string | null; utm_content?: string | null };
 
+/** Shown when a required long-text answer is empty or whitespace-only. There is deliberately no minimum length. */
+export const ANSWER_REQUIRED_MESSAGE = "Please answer this question.";
+
 export function cleanText(value: unknown, max: number) { return typeof value === "string" ? value.trim().slice(0, max) : ""; }
 
 export function validateApplication(value: unknown): { data?: TransitionAnswers; errors?: Record<string, string> } {
@@ -49,8 +52,8 @@ export function validateApplication(value: unknown): { data?: TransitionAnswers;
   if (!experienceOptions.includes(data.experience as never)) errors.experience = "Choose your experience.";
   if (!stageOptions.includes(data.stage as never)) errors.stage = "Choose where you are right now.";
   if (!timingOptions.includes(data.timing as never)) errors.timing = "Choose a timeframe.";
-  if (data.motivation.length < 20) errors.motivation = "Please share a little more (at least 20 characters).";
-  if (data.help.length < 20) errors.help = "Please share a little more (at least 20 characters).";
+  if (!data.motivation) errors.motivation = ANSWER_REQUIRED_MESSAGE;
+  if (!data.help) errors.help = ANSWER_REQUIRED_MESSAGE;
   if (!data.country) errors.country = "Enter your country.";
   if (!data.firstName) errors.firstName = "Enter your first name.";
   if (!data.lastName) errors.lastName = "Enter your last name.";
