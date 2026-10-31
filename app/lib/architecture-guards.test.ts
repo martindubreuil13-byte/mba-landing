@@ -103,6 +103,6 @@ describe("analytics and indexing are production-only", () => {
   });
   it("robots.txt and the sitemap short-circuit outside production", () => {
     expect(read(path.join(ROOT, "app/robots.ts"))).toMatch(/!isProductionDeployment\(\)/);
-    expect(read(path.join(ROOT, "app/sitemap.ts"))).toMatch(/!isProductionDeployment\(\)\) return \[\]/);
+    expect(read(path.join(ROOT, "app/sitemap-data.ts"))).toMatch(/!isProductionDeployment\(\)\) return \[\]/);
   });
 });

@@ -90,7 +90,7 @@ describe("program pages and discoverability", () => {
   });
   it("sitemap and llms.txt list every program URL", async () => {
     const root = path.resolve(__dirname, "../../..");
-    const sm = fs.readFileSync(path.join(root, "app/sitemap.ts"), "utf8");
+    const sm = fs.readFileSync(path.join(root, "app/sitemap-data.ts"), "utf8");
     const llms = fs.readFileSync(path.join(root, "app/llms.txt/route.ts"), "utf8");
     expect(sm).toMatch(/PROGRAMS\.map\(programPath\)/);
     expect(llms).toMatch(/programPath\(p\)/);

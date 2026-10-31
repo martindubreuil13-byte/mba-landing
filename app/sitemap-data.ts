@@ -3,6 +3,8 @@ import { SITE_URL } from "@/app/lib/seo";
 import { isProductionDeployment } from "@/app/lib/deployment";
 import { PROGRAMS, programPath } from "@/app/lib/service-programs/catalog";
 import { listPublishedResources } from "@/app/lib/resources/queries";
+import { listPublishedForSitemap } from "@/app/lib/publications/queries";
+
 
 const publicRoutes = [
   "/",
@@ -63,15 +65,35 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // sitemap picks up newly published ones automatically. Fails soft: if
   // Supabase isn't configured (e.g. at build time in a fresh environment),
   // the sitemap still generates with just the static routes.
+  let entries: MetadataRoute.Sitemap = staticEntries;
   try {
     const resources = await listPublishedResources();
     const resourceEntries = resources.map((r) => ({
       url: new URL(`/resources/${r.slug}`, SITE_URL).toString(),
       lastModified: r.updated_at,
     }));
-    return [...staticEntries, ...resourceEntries];
+    entries = [...entries, ...resourceEntries];
   } catch (error) {
     console.error("Sitemap: failed to load resources, falling back to static routes.", error);
-    return staticEntries;
   }
+
+  // Publications are database-driven too: only PUBLISHED titles appear, so a new title needs no code change and a
+  // draft or unpublished one is never listed. The catalogue page itself is listed only when it has something in it.
+  try {
+    const publications = await listPublishedForSitemap();
+    if (publications.length > 0) {
+      entries = [
+        ...entries,
+        { url: new URL("/publications", SITE_URL).toString() },
+        ...publications.map((p) => ({
+          url: new URL(`/publications/${p.slug}`, SITE_URL).toString(),
+          lastModified: p.updatedAt,
+        })),
+      ];
+    }
+  } catch (error) {
+    console.error("Sitemap: failed to load publications.", error);
+  }
+
+  return entries;
 }

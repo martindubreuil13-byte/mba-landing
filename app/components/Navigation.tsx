@@ -21,6 +21,7 @@ export default function Navigation() {
     if (pathname.startsWith("/martin")) return "MARTIN";
     if (pathname.startsWith("/cases")) return "CASES";
     if (pathname.startsWith("/thinking")) return "THINKING";
+    if (pathname.startsWith("/publications")) return "PUBLICATIONS";
     if (pathname.startsWith("/lets-talk")) return "LET'S TALK";
     return "HOME";
   };
@@ -35,6 +36,7 @@ export default function Navigation() {
     { href: "/martin", label: "MARTIN" },
     { href: "/cases", label: "CASES" },
     { href: "/thinking", label: "THINKING" },
+    { href: "/publications", label: "PUBLICATIONS" },
     { href: "/lets-talk", label: "LET'S TALK" },
   ];
 
@@ -43,7 +45,7 @@ export default function Navigation() {
       {/* DESKTOP NAVIGATION */}
       <nav aria-label="Primary navigation" className="hidden md:flex fixed top-0 left-0 right-0 z-50 border-b border-[#1a1816]/8 px-6 md:px-12 lg:px-16 h-16 items-center justify-between bg-white/95 backdrop-blur-sm">
         <Link href="/" className="text-xs tracking-widest font-medium text-[#1a1816] hover:opacity-60 transition">MBA</Link>
-        <div className="flex gap-8 text-xs tracking-wide">
+        <div className="flex gap-5 lg:gap-8 text-xs tracking-wide">
           {navLinks.map((link) => (
             <Link
               key={link.href}

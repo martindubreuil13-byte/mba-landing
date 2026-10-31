@@ -37,6 +37,10 @@ export default function Footer() {
               Answers
             </Link>
             <span>·</span>
+            <Link href="/publications" className="hover:text-[#1a1816] transition-colors">
+              Publications
+            </Link>
+            <span>·</span>
             <Link href="/resources" className="hover:text-[#1a1816] transition-colors">
               Free Resources
             </Link>
@@ -81,6 +85,9 @@ export default function Footer() {
             <nav className="space-y-4 text-xs text-[#1a1816]/75">
               <Link href="/answers" className="block hover:text-[#1a1816] transition-colors">
                 Answers
+              </Link>
+              <Link href="/publications" className="block hover:text-[#1a1816] transition-colors">
+                Publications
               </Link>
               <Link href="/resources" className="block hover:text-[#1a1816] transition-colors">
                 Free Resources

@@ -4,6 +4,9 @@ import { NOINDEX_DIRECTIVE, deploymentEnv, isProductionDeployment } from "./app/
 const nextConfig: NextConfig = {
   // Baked into the browser bundle at build time so client code (the admin login's Supabase client) can fail closed too.
   env: { NEXT_PUBLIC_DEPLOYMENT_ENV: deploymentEnv() },
+  async rewrites() {
+    return [{ source: "/sitemap.xml", destination: "/api/sitemap" }];
+  },
   async redirects() {
     return [
       {

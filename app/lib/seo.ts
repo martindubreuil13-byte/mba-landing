@@ -10,6 +10,11 @@ type PageMetadata = {
   description: string;
   path: string;
   index?: boolean;
+  /** Page-specific share image. Defaults to the site-wide image. */
+  image?: { url: string; width: number; height: number; alt: string; type?: string };
+  /** Open Graph type; "book" also takes the author names. Defaults to "website". */
+  openGraphType?: "website" | "book";
+  authors?: string[];
 };
 
 export function createPageMetadata({
@@ -17,8 +22,18 @@ export function createPageMetadata({
   description,
   path,
   index = true,
+  image,
+  openGraphType = "website",
+  authors,
 }: PageMetadata): Metadata {
   const canonical = path === "/" ? "/" : path.replace(/\/$/, "");
+  const shareImage = image ?? {
+    url: "/og/modern-business-architect.png",
+    width: 1200,
+    height: 630,
+    alt: "The Modern Business Architect — Ideas are easy. Businesses are architected.",
+    type: "image/png",
+  };
 
   return {
     title,
@@ -33,23 +48,17 @@ export function createPageMetadata({
       description,
       url: canonical,
       siteName: SITE_NAME,
-      type: "website",
+      ...(openGraphType === "book"
+        ? { type: "book" as const, ...(authors?.length ? { authors } : {}) }
+        : { type: "website" as const }),
       locale: "en_US",
-      images: [
-        {
-          url: "/og/modern-business-architect.png",
-          width: 1200,
-          height: 630,
-          alt: "The Modern Business Architect — Ideas are easy. Businesses are architected.",
-          type: "image/png",
-        },
-      ],
+      images: [shareImage],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: ["/og/modern-business-architect.png"],
+      images: image ? [{ url: shareImage.url, alt: shareImage.alt }] : [shareImage.url],
     },
   };
 }
