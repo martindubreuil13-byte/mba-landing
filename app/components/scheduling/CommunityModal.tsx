@@ -3,7 +3,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { COMMUNITY_DECLINE, COMMUNITY_FOOTNOTE, COMMUNITY_HEADING, COMMUNITY_INTRO, COMMUNITY_JOIN, COMMUNITY_NOTE, COMMUNITY_QUESTION } from "@/app/lib/scheduling/community";
 
-const CHOICE = "flex-1 border border-[#1a1816]/30 px-6 py-4 text-[11px] uppercase tracking-[.22em] text-[#1a1816] transition duration-200 hover:border-[#6b1f1f] hover:text-[#6b1f1f] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b1f1f]";
+// Both choices are equal in size and weight of consequence ("not now" costs nothing); only the emphasis differs. 48px minimum touch height, one line each.
+const BUTTON = "inline-flex min-h-[48px] items-center justify-center whitespace-nowrap px-5 py-3.5 text-[11px] uppercase tracking-[.2em] transition duration-200 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b1f1f]";
+const PRIMARY = `${BUTTON} border border-[#6b1f1f] bg-[#6b1f1f] text-[#f5f1ed] hover:border-[#561919] hover:bg-[#561919]`;
+const SECONDARY = `${BUTTON} border border-[#1a1816]/50 bg-transparent text-[#1a1816] hover:border-[#6b1f1f] hover:text-[#6b1f1f]`;
 
 type Action = "shown" | "declined" | "joined" | "dismissed";
 async function record(reference: string, action: Action) {
@@ -71,29 +74,36 @@ export default function CommunityModal({ reference }: { reference: string }) {
   }, [open, result, close]);
 
   if (!open) return null;
+  return <CommunityDialog result={result} busy={busy} problem={problem} dialogRef={dialog} onChoose={choose} onClose={() => close(true)} />;
+}
+
+/** The popup's markup only. All behaviour (timing, answers, focus, closing) stays in CommunityModal above; this just shows it. */
+export function CommunityDialog({ result, busy, problem, dialogRef, onChoose, onClose }: {
+  result: "joined" | "verify" | "declined" | null; busy: boolean; problem: string; dialogRef?: React.Ref<HTMLDivElement>;
+  onChoose: (action: "declined" | "joined") => void; onClose: () => void;
+}) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#1a1816]/45 p-0 sm:items-center sm:p-6" onMouseDown={(e) => { if (e.target === e.currentTarget && !result) close(true); }}>
-      <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby="community-title" className="relative max-h-[92vh] w-full max-w-lg overflow-y-auto bg-[#f5f1ed] p-8 shadow-[0_30px_80px_-30px_rgba(26,24,22,.6)] sm:p-12" style={{ animation: "mbaFadeUp .35s ease-out both" }}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#1a1816]/45 p-0 sm:items-center sm:p-6" onMouseDown={(e) => { if (e.target === e.currentTarget && !result) onClose(); }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="community-title" className="relative max-h-[92vh] w-full max-w-xl overflow-y-auto bg-[#f5f1ed] px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-7 shadow-[0_30px_80px_-30px_rgba(26,24,22,.6)] sm:px-10 sm:pb-9 sm:pt-10" style={{ animation: "mbaFadeUp .35s ease-out both" }}>
         <style>{`@keyframes mbaFadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}@media (prefers-reduced-motion:reduce){[role=dialog]{animation:none!important}}`}</style>
-        {!result && <button type="button" aria-label="Close" onClick={() => close(true)} className="absolute right-4 top-4 grid h-10 w-10 place-items-center text-[#1a1816]/45 hover:text-[#6b1f1f] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#6b1f1f]"><X aria-hidden className="h-5 w-5" /></button>}
-        <h2 id="community-title" className="pr-8 text-3xl font-light leading-tight tracking-tight md:text-4xl">{COMMUNITY_HEADING}</h2>
-        <p className="mt-6 text-lg font-light leading-relaxed text-[#1a1816]/70">{COMMUNITY_INTRO}</p>
-        <p className="mt-4 text-lg font-light leading-relaxed text-[#1a1816]/70">{COMMUNITY_QUESTION}</p>
-        <p className="mt-4 text-lg font-light leading-relaxed text-[#1a1816]/70">{COMMUNITY_NOTE}</p>
+        {!result && <button type="button" aria-label="Close" onClick={onClose} className="absolute right-3 top-3 grid h-10 w-10 place-items-center text-[#1a1816]/70 transition hover:text-[#6b1f1f] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#6b1f1f]"><X aria-hidden className="h-5 w-5" /></button>}
+        <h2 id="community-title" className="pr-10 text-3xl font-light leading-tight tracking-tight text-[#1a1816] md:text-4xl">{COMMUNITY_HEADING}</h2>
+        <p className="mt-4 text-base leading-relaxed text-[#1a1816]/90 sm:text-lg">{COMMUNITY_INTRO}</p>
+        <p className="mt-3 text-base leading-relaxed text-[#1a1816]/90 sm:text-lg">{COMMUNITY_QUESTION}</p>
+        <p className="mt-3 text-base leading-relaxed text-[#1a1816]/90 sm:text-lg">{COMMUNITY_NOTE}</p>
         {result ? (
-          <p role="status" className="mt-8 border-l-2 border-[#6b1f1f] pl-4 text-base leading-relaxed text-[#1a1816]/80">
+          <p role="status" className="mt-6 border-l-2 border-[#6b1f1f] pl-4 text-base leading-relaxed text-[#1a1816]/90">
             {result === "verify" ? "Thank you. Please check your inbox for a message asking you to confirm your email address. Nothing is sent to you until you do. Your booking is not affected."
               : result === "joined" ? "Thank you. You’re in the loop. Your booking is not affected." : "No problem. Your booking is not affected."}
           </p>
         ) : (
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <button type="button" disabled={busy} onClick={() => choose("joined")} className={CHOICE}>{COMMUNITY_JOIN}</button>
-            <button type="button" data-first disabled={busy} onClick={() => choose("declined")} className={CHOICE}>{COMMUNITY_DECLINE}</button>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <button type="button" disabled={busy} onClick={() => onChoose("joined")} className={`${PRIMARY} sm:flex-[3]`}>{COMMUNITY_JOIN}</button>
+            <button type="button" data-first disabled={busy} onClick={() => onChoose("declined")} className={`${SECONDARY} sm:flex-[2]`}>{COMMUNITY_DECLINE}</button>
           </div>
         )}
-        {!result && <button type="button" disabled={busy} onClick={() => close(true)} className="mt-5 text-sm text-[#1a1816]/55 underline underline-offset-4 transition hover:text-[#6b1f1f] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b1f1f] disabled:opacity-50">Not now</button>}
-        {problem && <p role="alert" className="mt-5 text-sm text-[#8b2525]">{problem}</p>}
-        <p className="mt-6 text-sm italic leading-relaxed text-[#1a1816]/55">{COMMUNITY_FOOTNOTE}</p>
+        {problem && <p role="alert" className="mt-4 text-sm text-[#8b2525]">{problem}</p>}
+        <p className="mt-4 text-sm leading-relaxed text-[#1a1816]/75">{COMMUNITY_FOOTNOTE}</p>
       </div>
     </div>
   );
