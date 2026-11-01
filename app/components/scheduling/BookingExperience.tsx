@@ -11,7 +11,7 @@ import { formatDateLong, formatTime, isValidTimeZone, zoneOffsetLabel } from "@/
 
 const newKey = () => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `k-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
-export default function BookingExperience({ type, invite, source }: { type: PublicMeetingType; invite?: string; source?: string }) {
+export default function BookingExperience({ type, invite, source, preview = false }: { type: PublicMeetingType; invite?: string; source?: string; /** Administrator preview while public intake is closed: everything works except the final booking. */ preview?: boolean }) {
   const router = useRouter();
   const [tz, setTz] = useState<string | null>(null);
   const [hour12, setHour12] = useState(true);
@@ -43,6 +43,7 @@ export default function BookingExperience({ type, invite, source }: { type: Publ
   }, [type.slug, invite]);
 
   const submit = async () => {
+    if (preview) { setNotice("This is a preview: bookings are switched off, so nothing was booked, saved or sent."); return; }
     const next: Record<string, string> = {};
     if (!form.name.trim()) next.name = "Please enter your name.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) next.email = "Please enter a valid email address.";
@@ -72,6 +73,11 @@ export default function BookingExperience({ type, invite, source }: { type: Publ
 
   return (
     <MotionConfig reducedMotion="user">
+      {preview && (
+        <p role="note" className="mx-auto mt-6 max-w-7xl border border-[#6b1f1f]/30 bg-[#6b1f1f]/[.05] px-6 py-3 text-sm leading-relaxed text-[#6b1f1f] md:mx-10 lg:mx-auto">
+          <strong className="font-medium">Administrator preview.</strong> Public booking is switched off, and only you can see this page. You can choose a time and fill in the form to see how it looks and check your availability, but nothing will be booked, saved or sent.
+        </p>
+      )}
       <div className="mx-auto grid max-w-7xl gap-14 px-6 pb-32 pt-12 md:px-10 md:pb-28 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:gap-20 lg:pt-20">
         <aside className="lg:sticky lg:top-12 lg:self-start">
           <p className={eyebrow}>A conversation</p>
@@ -136,7 +142,7 @@ export default function BookingExperience({ type, invite, source }: { type: Publ
                   </div>
                   <div className="mt-12 flex flex-wrap items-center justify-between gap-6">
                     <p className="max-w-xs text-xs leading-relaxed text-[#1a1816]/45">Your details are used only to arrange this conversation.</p>
-                    <button type="submit" disabled={busy} className={btnPrimary}>{busy ? "Confirming…" : "Confirm booking"}</button>
+                    <button type="submit" disabled={busy || preview} className={`${btnPrimary} disabled:cursor-not-allowed disabled:opacity-50`}>{preview ? "Preview only: bookings are off" : busy ? "Confirming…" : "Confirm booking"}</button>
                   </div>
                 </motion.form>
               )}

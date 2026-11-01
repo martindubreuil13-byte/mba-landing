@@ -8,10 +8,14 @@ import { assertSameSite, bodyOf, json, isSchedulingError, notFound, publicBody, 
 
 export { bodyOf, json, isSchedulingError, publicBody, str };
 
-/** Public route: new intake defaults off in production; optionally rate limited per client (429 with Retry-After). */
-export function publicRoute<C = unknown>(fn: Handler<C>, opts: { rate?: RateRule; globalRate?: RateRule; intake?: boolean } = {}) {
+/** Public route: new intake defaults off in production; optionally rate limited per client (429 with Retry-After). `adminPreview` (GET only) lets the signed-in administrator use a read-only route while intake is closed. */
+export function publicRoute<C = unknown>(fn: Handler<C>, opts: { rate?: RateRule; globalRate?: RateRule; intake?: boolean; adminPreview?: boolean } = {}) {
   return async (req: Request, ctx: C) => {
-    if (!(opts.intake === false ? schedulingOperationsEnabled() : schedulingIntakeEnabled())) return notFound();
+    if (!(opts.intake === false ? schedulingOperationsEnabled() : schedulingIntakeEnabled())) {
+      // While intake is closed, a READ-ONLY route may opt in to serving the signed-in administrator (the booking page's preview). Nothing that writes ever does.
+      const preview = opts.adminPreview === true && req.method === "GET" && schedulingOperationsEnabled() && !!(await getAdminUser().catch(() => null));
+      if (!preview) return notFound();
+    }
     if (req.method !== "GET" && req.method !== "HEAD") { try { assertSameSite(req); } catch (e) { return run(async () => { throw e; }, req, ctx); } }
     if ((opts.rate && !(await allowRequest(req, opts.rate))) || (opts.globalRate && !(await allowGlobal(opts.globalRate)))) {
       return new Response(JSON.stringify({ error: "Too many requests. Please wait a moment and try again.", code: "rate_limited" }), { status: 429, headers: { "content-type": "application/json", "cache-control": "no-store", "retry-after": String(Math.min((opts.rate ?? opts.globalRate)!.windowSeconds, 60)) } });

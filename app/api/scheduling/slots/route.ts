@@ -12,4 +12,4 @@ export const GET = publicRoute(async (req) => {
   if (type.length > 80 || (invite?.length ?? 0) > 80 || from.length > 40 || to.length > 40) return json({ error: "Invalid request.", code: "invalid_input" }, 400);
   const slots = await getScheduling().publicSlots(type, invite, from, to);
   return json({ slots });
-}, { rate: RATES.slots, globalRate: RATES.slotsAll });
+}, { rate: RATES.slots, globalRate: RATES.slotsAll, adminPreview: true });

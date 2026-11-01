@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import BookingExperience from "@/app/components/scheduling/BookingExperience";
 import { getScheduling } from "@/app/lib/scheduling/instance";
-import { requireSchedulingIntake } from "@/app/lib/scheduling/release-gates";
+import { getAdminUser } from "@/app/lib/supabase/admin-session";
+import { requireSchedulingOperations, schedulingIntakeEnabled } from "@/app/lib/scheduling/release-gates";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Book a conversation", robots: { index: false, follow: false } };
@@ -10,7 +11,11 @@ export const metadata: Metadata = { title: "Book a conversation", robots: { inde
 type Props = { params: Promise<{ meetingType: string }>; searchParams: Promise<{ invite?: string; source?: string }> };
 
 export default async function BookPage({ params, searchParams }: Props) {
-  requireSchedulingIntake();
+  // While public intake is closed, the page is a PREVIEW for the signed-in administrator only (everyone else gets "not found"). Submitting stays impossible:
+  // the booking, community and status routes refuse every request while intake is closed, and the preview's button is disabled.
+  requireSchedulingOperations();
+  const preview = !schedulingIntakeEnabled();
+  if (preview && !(await getAdminUser().catch(() => null))) notFound();
   const { meetingType } = await params;
   const { invite, source } = await searchParams;
   const found = await getScheduling().publicMeetingType(meetingType, invite);
@@ -25,5 +30,5 @@ export default async function BookPage({ params, searchParams }: Props) {
       </main>
     );
   }
-  return <main><BookingExperience type={found.type} invite={invite} source={typeof source === "string" ? source.slice(0, 60) : undefined} /></main>;
+  return <main><BookingExperience type={found.type} invite={invite} source={typeof source === "string" ? source.slice(0, 60) : undefined} preview={preview} /></main>;
 }
