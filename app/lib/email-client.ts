@@ -1,6 +1,6 @@
 import "server-only";
 import { Resend } from "resend";
-import { evaluateEmailPolicy } from "./email-policy";
+import { evaluateEmailPolicy, type EmailPurpose } from "./email-policy";
 
 type SendArgs = Parameters<Resend["emails"]["send"]>;
 type SendResult = Awaited<ReturnType<Resend["emails"]["send"]>>;
@@ -18,12 +18,12 @@ function recipientsOf(payload: SendArgs[0]): string[] {
  * A blocked message never reaches the provider and comes back as an error, so
  * existing callers treat it exactly like a provider failure.
  */
-export function createResend(apiKey: string | undefined = process.env.RESEND_API_KEY) {
+export function createResend(apiKey: string | undefined = process.env.RESEND_API_KEY, config: { purpose?: EmailPurpose } = {}) {
   let client: Resend | null = null;
   return {
     emails: {
       async send(payload: SendArgs[0], options?: SendArgs[1]): Promise<SendResult> {
-        const decision = evaluateEmailPolicy(recipientsOf(payload));
+        const decision = evaluateEmailPolicy(recipientsOf(payload), process.env, config.purpose);
         if (!decision.allowed) {
           console.error(`Email not sent: ${decision.reason}`);
           return { data: null, error: { name: "application_error", message: decision.reason, statusCode: 403 } } as unknown as SendResult;

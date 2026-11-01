@@ -1,0 +1,55 @@
+{
+  "zoom": {
+    "token_status": 200,
+    "scopes": "meeting:read:list_meetings:admin meeting:write:meeting:admin meeting:read:meeting:admin meeting:update:meeting:admin meeting:delete:meeting:admin",
+    "host_profile_status": 400,
+    "host_meeting_list_status": 200,
+    "meeting_list_readable": true
+  },
+  "resend": {
+    "domain_list_status": 200,
+    "domain": {
+      "name": "mindrasolutions.com",
+      "status": "verified",
+      "capabilities": {
+        "sending": "enabled",
+        "receiving": "disabled"
+      }
+    },
+    "dns_records": [
+      {
+        "record": "DKIM",
+        "type": "TXT",
+        "status": "verified"
+      },
+      {
+        "record": "SPF",
+        "type": "MX",
+        "status": "verified"
+      },
+      {
+        "record": "SPF",
+        "type": "TXT",
+        "status": "verified"
+      }
+    ],
+    "webhook_list_status": 200,
+    "webhooks": [
+      {
+        "id": "ab1fcda5-94a3-4fd2-9906-45cee35145c6",
+        "endpoint": "https://modernbusinessarchitect.com/api/webhooks/resend",
+        "status": "enabled",
+        "events": [
+          "email.sent",
+          "email.delivered",
+          "email.bounced",
+          "email.failed",
+          "email.suppressed",
+          "email.complained"
+        ]
+      }
+    ]
+  },
+  "development_env_sha256": "29a2d5fc0c0f23f0d60c5f5ff424e72bdfcf7cb2228a33aeb3ec13477b2afcf3",
+  "no_emails_or_meetings_created": true
+}

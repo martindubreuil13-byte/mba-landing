@@ -1,0 +1,25 @@
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ RUN  v2.1.9 /Users/martin/Documents/The Modern Business Architect (MBA)/mba-scheduling-release
+
+ ✓ |unit| app/lib/scheduling/isolation.test.ts (16 tests) 20ms
+ ✓ |unit| app/lib/scheduling/http.test.ts (5 tests) 7ms
+ ✓ |unit| app/lib/scheduling/release-gates.test.ts (11 tests) 8ms
+stderr | app/lib/scheduling/email-test-mode.test.ts > the booking email provider, through the real policy and client (Resend mocked) > without the flag, a non-production environment still sends nothing (the existing protection), and fails the send honestly
+Email not sent: Email delivery is disabled in this non-production environment (PREVIEW_EMAIL_ENABLED is not true).
+
+stderr | app/lib/scheduling/email-test-mode.test.ts > the booking email provider, through the real policy and client (Resend mocked) > on a Vercel preview the flag does nothing and the existing block applies
+Email not sent: Email delivery is disabled in this non-production environment (PREVIEW_EMAIL_ENABLED is not true).
+
+stderr | app/lib/scheduling/email-test-mode.test.ts > a dry run of the three transactional messages (Resend mocked): what Martin would receive > outside test mode the owner address is not exempt: the standard policy blocks it and the failure is recorded, not hidden
+Email not sent: Email delivery is disabled in this non-production environment (PREVIEW_EMAIL_ENABLED is not true).
+Email not sent: Email delivery is disabled in this non-production environment (PREVIEW_EMAIL_ENABLED is not true).
+
+ ✓ |unit| app/lib/scheduling/email-test-mode.test.ts (22 tests) 97ms
+ ✓ |unit| app/lib/scheduling/phase2g.test.ts (37 tests) 478ms
+
+ Test Files  5 passed (5)
+      Tests  91 passed (91)
+   Start at  18:17:37
+   Duration  1.03s (transform 463ms, setup 0ms, collect 1.39s, tests 609ms, environment 0ms, prepare 257ms)
+

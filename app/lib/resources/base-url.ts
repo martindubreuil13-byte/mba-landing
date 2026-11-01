@@ -6,6 +6,6 @@ import { SITE_URL } from "@/app/lib/seo";
  * APP_BASE_URL unset and gets the canonical site; any other environment gets its
  * own URL, never the production domain (see deployment.ts).
  */
-export function appBaseUrl(): string {
-  return resolveBaseUrl(SITE_URL);
+export function appBaseUrl(env: Record<string, string | undefined> = process.env): string {
+  return resolveBaseUrl(SITE_URL, env);
 }

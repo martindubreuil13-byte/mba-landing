@@ -1,0 +1,14 @@
+{
+  "migrationsApplied": 4,
+  "existingPublicationSentinels": 3,
+  "transitionSentinel": "Calendly",
+  "rls": "14/14",
+  "anon": {
+    "tablePrivileges": 0,
+    "operationalRPCs": 0
+  },
+  "authenticated": {
+    "tablePrivileges": 0,
+    "operationalRPCs": 0
+  }
+}

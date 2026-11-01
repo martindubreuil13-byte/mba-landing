@@ -15,6 +15,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const isPickMyBrain = pathname.startsWith("/admin/pick-my-brain");
   const isPrograms = pathname.startsWith("/admin/programs");
   const isIntelligence = pathname.startsWith("/admin/intelligence");
+  const isScheduling = pathname.startsWith("/admin/scheduling");
 
   const handleSignOut = async () => {
     const supabase = getBrowserClient();
@@ -68,6 +69,14 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               }`}
             >
               Programs
+            </Link>
+            <Link
+              href="/admin/scheduling"
+              className={`text-sm tracking-wide ${
+                isScheduling ? "text-[#6b1f1f] font-semibold" : "text-[#1a1816]/60 hover:text-[#1a1816]"
+              }`}
+            >
+              Scheduling
             </Link>
             <Link
               href="/admin/intelligence"

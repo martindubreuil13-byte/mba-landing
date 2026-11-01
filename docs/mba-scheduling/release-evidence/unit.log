@@ -1,0 +1,320 @@
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ RUN  v2.1.9 /Users/martin/Documents/The Modern Business Architect (MBA)/mba-scheduling-release
+
+ ↓ |unit| app/lib/publications/queries.local-db.test.ts (18 tests | 18 skipped)
+ ✓ |unit| app/lib/scheduling/adapters/adapters.test.ts (53 tests) 52ms
+stderr | app/lib/resources/optin.integration.test.ts > Test 1: new lead, GET THE GUIDE + KEEP ME ON THE SHORTLIST > unlocks the resource and records consent with its evidence
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+
+stderr | app/lib/resources/optin.integration.test.ts > Test 2: new lead, JUST SEND ME THE GUIDE > unlocks identically but records no marketing consent
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+
+stderr | app/lib/resources/optin.integration.test.ts > Test 5: existing non-opted-in lead now opts in > updates the same lead (no duplicate) and records new consent evidence
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+
+stderr | app/lib/resources/optin.integration.test.ts > Test 6: existing opted-in lead downloads resource only > delivers the resource, keeps the subscription and the original evidence, records the download
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+
+stderr | app/lib/resources/optin.integration.test.ts > Test 6: existing opted-in lead downloads resource only > choosing 'join' again does not rewrite the original consent either
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+
+stderr | app/lib/resources/optin.integration.test.ts > Consent safety rules > never reactivates a suppressed lead, but still delivers the resource
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+
+stderr | app/lib/resources/optin.integration.test.ts > Consent safety rules > a previously unsubscribed lead is NOT re-subscribed by either button, and still gets the resource
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+
+stderr | app/lib/resources/optin.integration.test.ts > Consent safety rules > a legacy lead who was opted in but is no longer (no opt-out stamp) is also protected
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+
+stderr | app/lib/resources/optin.integration.test.ts > Consent safety rules > never leaves consent without evidence: if the record cannot be written the flag is undone and the request fails
+Resource request capture failed: Error: Failed to write consent record: simulated insert failure
+    at Module.recordExplicitOptIn (/Users/martin/Documents/The Modern Business Architect (MBA)/mba-scheduling-release/app/lib/leads/consent.ts:245:11)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Module.captureLeadAndRequestResource (/Users/martin/Documents/The Modern Business Architect (MBA)/mba-scheduling-release/app/lib/resources/queries.ts:164:19)
+    at Module.POST (/Users/martin/Documents/The Modern Business Architect (MBA)/mba-scheduling-release/app/api/resources/request/route.ts:68:39)
+    at /Users/martin/Documents/The Modern Business Architect (MBA)/mba-scheduling-release/app/lib/resources/optin.integration.test.ts:224:17
+    at file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:533:5
+    at runTest (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:1056:11)
+    at runSuite (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runFiles (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:1262:5)
+
+stderr | app/lib/resources/optin.integration.test.ts > Consent safety rules > a page opened before the release (old checkbox boolean) still works and is recorded as legacy checkbox consent
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+
+stderr | app/lib/resources/optin.integration.test.ts > Test 7: admin and CSV > shows first name, email and consent state with its metadata, one row per lead
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+
+stderr | app/lib/resources/optin.integration.test.ts > Test 8: another resource uses the same shared mechanism > a Checklist gets checklist wording and identical behaviour with no page-specific code
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+
+stderr | app/lib/resources/optin.integration.test.ts > Delivery email (shared branded template) > is sent to a resource-only recipient with the branded template, the exact download link, and no consent change
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+
+stderr | app/lib/resources/optin.integration.test.ts > Delivery email (shared branded template) > is sent to an opted-in recipient, with an unsubscribe link, and without adding anything
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+
+stderr | app/lib/resources/optin.integration.test.ts > Delivery email (shared branded template) > an existing subscriber who takes resource-only still gets the email, with an unsubscribe link, and keeps their subscription
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+
+stderr | app/lib/resources/optin.integration.test.ts > Delivery email (shared branded template) > an unsubscribed lead gets the resource email with no unsubscribe link and stays unsubscribed
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+
+ ✓ |unit| app/lib/resources/optin.integration.test.ts (23 tests) 42ms
+stderr | app/lib/resources/optin.integration.test.ts > Delivery email (shared branded template) > a failing email provider never blocks delivery on screen
+Resource delivery email failed to send: Error: provider down
+    at Array.sent.push (/Users/martin/Documents/The Modern Business Architect (MBA)/mba-scheduling-release/app/lib/resources/optin.integration.test.ts:350:31)
+    at Object.send (/Users/martin/Documents/The Modern Business Architect (MBA)/mba-scheduling-release/app/lib/resources/optin.integration.test.ts:5:8)
+    at Module.POST (/Users/martin/Documents/The Modern Business Architect (MBA)/mba-scheduling-release/app/api/resources/request/route.ts:116:27)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/martin/Documents/The Modern Business Architect (MBA)/mba-scheduling-release/app/lib/resources/optin.integration.test.ts:351:17
+    at file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:533:5
+    at runTest (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:1056:11)
+    at runSuite (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runFiles (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:1262:5)
+Website Intelligence: could not record guide_request conversion: __vite_ssr_import_3__.getServiceClient(...).rpc is not a function
+
+stderr | app/lib/scheduling/email-test-mode.test.ts > the booking email provider, through the real policy and client (Resend mocked) > without the flag, a non-production environment still sends nothing (the existing protection), and fails the send honestly
+Email not sent: Email delivery is disabled in this non-production environment (PREVIEW_EMAIL_ENABLED is not true).
+
+stderr | app/lib/scheduling/email-test-mode.test.ts > the booking email provider, through the real policy and client (Resend mocked) > on a Vercel preview the flag does nothing and the existing block applies
+Email not sent: Email delivery is disabled in this non-production environment (PREVIEW_EMAIL_ENABLED is not true).
+
+stderr | app/lib/scheduling/email-test-mode.test.ts > a dry run of the three transactional messages (Resend mocked): what Martin would receive > outside test mode the owner address is not exempt: the standard policy blocks it and the failure is recorded, not hidden
+Email not sent: Email delivery is disabled in this non-production environment (PREVIEW_EMAIL_ENABLED is not true).
+Email not sent: Email delivery is disabled in this non-production environment (PREVIEW_EMAIL_ENABLED is not true).
+
+ ✓ |unit| app/lib/scheduling/email-test-mode.test.ts (22 tests) 150ms
+ ✓ |unit| app/lib/scheduling/phase2g.test.ts (37 tests) 700ms
+ ✓ |unit| app/lib/scheduling/service.test.ts (31 tests) 779ms
+ ✓ |unit| app/lib/scheduling/phase2f.test.ts (34 tests) 725ms
+stderr | app/lib/scheduling/remediation.test.ts > P1-4 webhooks: a failed delivery is retried, a processed one is a replay > Zoom: the audit reproducer. A transient failure answers 5xx; the identical retry RUNS the effect; a third delivery is a replay
+scheduling prototype error Error: synthetic database outage
+    at /Users/martin/Documents/The Modern Business Architect (MBA)/mba-scheduling-release/app/lib/scheduling/remediation.test.ts:336:66
+    at file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:533:5
+    at runTest (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:1056:11)
+    at runSuite (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runFiles (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:1262:5)
+    at startTests (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:1271:3)
+    at file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/vitest/dist/chunks/runBaseTests.3qpJUEJM.js:126:11
+    at withEnv (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/vitest/dist/chunks/runBaseTests.3qpJUEJM.js:90:5)
+    at run (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/vitest/dist/chunks/runBaseTests.3qpJUEJM.js:112:3)
+
+stderr | app/lib/scheduling/remediation.test.ts > P1-4 webhooks: a failed delivery is retried, a processed one is a replay > Resend: a delivery status lost to a transient failure is applied on the retry, once; a bounce is never overwritten
+scheduling prototype error Error: synthetic persistence outage
+    at /Users/martin/Documents/The Modern Business Architect (MBA)/mba-scheduling-release/app/lib/scheduling/remediation.test.ts:387:64
+    at file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:533:5
+    at runTest (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:1056:11)
+    at runSuite (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runFiles (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:1262:5)
+    at startTests (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/@vitest/runner/dist/index.js:1271:3)
+    at file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/vitest/dist/chunks/runBaseTests.3qpJUEJM.js:126:11
+    at withEnv (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/vitest/dist/chunks/runBaseTests.3qpJUEJM.js:90:5)
+    at run (file:///Users/martin/Documents/The%20Modern%20Business%20Architect%20(MBA)/mba-scheduling-release/node_modules/vitest/dist/chunks/runBaseTests.3qpJUEJM.js:112:3)
+
+ ✓ |unit| app/lib/scheduling/integration-routes.test.ts (28 tests) 601ms
+ ✓ |unit| app/lib/scheduling/remediation.test.ts (47 tests) 744ms
+ ✓ |unit| app/lib/programs/email.test.ts (21 tests) 18ms
+stderr | app/api/programs/corporate-transition/apply/route.test.ts > 3. booking never depends on email delivery > the provider refuses: still saved, still 200, booking link returned, truthful message state
+Transition invitation email failed: provider refused
+
+stderr | app/api/programs/corporate-transition/apply/route.test.ts > 3. booking never depends on email delivery > the provider is unreachable: still saved, still 200, booking link returned, truthful message state
+Transition invitation email failed: network down
+
+stderr | app/api/programs/corporate-transition/apply/route.test.ts > 5. retries and repeated submissions do not create duplicate invitations > a retry after a failed invitation does not email again on its own (a resend is an explicit admin action)
+Transition invitation email failed: provider refused
+
+stderr | app/api/programs/corporate-transition/apply/route.test.ts > invalid or incomplete submissions are still refused and store nothing > a persistence failure is reported and nothing is sent
+Transition application persistence failed: Failed to create application: simulated insert failure
+
+ ✓ |unit| app/api/programs/corporate-transition/apply/route.test.ts (36 tests) 35ms
+stderr | app/api/programs/corporate-transition/community/route.test.ts > opt-in regions (EEA, UK, Switzerland, Brazil, Quebec, unknown): the click is a request the existing confirmation email completes > a failed confirmation email is reported truthfully and can be retried
+Transition community confirmation email failed: refused
+
+stderr | app/api/programs/corporate-transition/community/route.test.ts > 8. a failure in the community choice never interferes with booking > when the choice cannot be saved the response says so, and the booking details are exactly as they were
+Transition community choice failed: Could not load the applicant.
+
+ ✓ |unit| app/api/programs/corporate-transition/community/route.test.ts (21 tests) 32ms
+ ✓ |unit| app/lib/scheduling/isolation.test.ts (16 tests) 37ms
+ ✓ |unit| app/lib/resources/delivery-email.test.ts (18 tests) 7ms
+ ✓ |unit| app/lib/scheduling/buffers.test.ts (17 tests) 443ms
+ ✓ |unit| app/lib/scheduling/availability.test.ts (16 tests) 38ms
+ ✓ |unit| app/lib/napkin/calculations.test.ts (38 tests) 17ms
+ ✓ |unit| app/lib/resources/funnel.test.ts (21 tests) 9ms
+ ✓ |unit| app/lib/publications/validation.test.ts (46 tests) 17ms
+ ✓ |unit| app/lib/programs/invitation.test.ts (19 tests) 26ms
+ ✓ |unit| app/lib/scheduling/sync.test.ts (23 tests) 747ms
+ ✓ |unit| app/lib/programs/calendly.test.ts (15 tests) 23ms
+ ✓ |unit| app/lib/publications/publications.guards.test.ts (16 tests) 11ms
+ ✓ |unit| app/lib/leads/confirmation-email.test.ts (15 tests) 10ms
+ ✓ |unit| app/lib/scheduling/timezone.test.ts (14 tests) 73ms
+ ✓ |unit| app/lib/architecture-guards.test.ts (13 tests) 21ms
+ ✓ |unit| app/lib/consent/ga.test.ts (11 tests) 28ms
+ ✓ |unit| app/admin/programs/corporate-transition/page.test.tsx (11 tests) 43ms
+ ✓ |unit| app/lib/napkin/interpretation.test.ts (21 tests) 4ms
+stdout | app/api/qualify/route.test.ts > /api/qualify > returns success only when the provider accepted the notification, and sends program + attribution to the owner
+INQUIRY RECEIVED: { program: 'pre-architecture', hasAttribution: true }
+INQUIRY NOTIFICATION ACCEPTED by email provider: id=msg_1
+INQUIRY AUTO-REPLY ACCEPTED by email provider: id=msg_1
+
+stdout | app/api/qualify/route.test.ts > /api/qualify > records one server-confirmed inquiry conversion only after the owner notification was accepted, with no personal data
+INQUIRY RECEIVED: { program: 'pre-architecture', hasAttribution: true }
+INQUIRY NOTIFICATION ACCEPTED by email provider: id=msg_1
+INQUIRY AUTO-REPLY ACCEPTED by email provider: id=msg_1
+
+stdout | app/api/qualify/route.test.ts > /api/qualify > records NO conversion when the notification was blocked, rejected, thrown, or empty
+INQUIRY RECEIVED: { program: 'pre-architecture', hasAttribution: true }
+INQUIRY RECEIVED: { program: 'pre-architecture', hasAttribution: true }
+INQUIRY RECEIVED: { program: 'pre-architecture', hasAttribution: true }
+INQUIRY RECEIVED: { program: 'pre-architecture', hasAttribution: true }
+
+stderr | app/api/qualify/route.test.ts > /api/qualify > records NO conversion when the notification was blocked, rejected, thrown, or empty
+INQUIRY NOT DELIVERED: email_disabled (403): disabled
+INQUIRY NOT DELIVERED: provider_rejected (403): x
+INQUIRY NOT DELIVERED: provider_error: network down
+INQUIRY NOT DELIVERED: provider_error: The provider returned neither an id nor an error.
+
+stdout | app/api/qualify/route.test.ts > /api/qualify > is NOT a success when the email policy blocks the send (returned error, not thrown)
+INQUIRY RECEIVED: { program: 'pre-architecture', hasAttribution: true }
+
+stderr | app/api/qualify/route.test.ts > /api/qualify > is NOT a success when the email policy blocks the send (returned error, not thrown)
+INQUIRY NOT DELIVERED: email_disabled (403): disabled
+
+stdout | app/api/qualify/route.test.ts > /api/qualify > is NOT a success when the provider rejects the send
+INQUIRY RECEIVED: { program: 'pre-architecture', hasAttribution: true }
+
+stderr | app/api/qualify/route.test.ts > /api/qualify > is NOT a success when the provider rejects the send
+INQUIRY NOT DELIVERED: provider_rejected (403): domain not verified
+
+stdout | app/api/qualify/route.test.ts > /api/qualify > is NOT a success when the provider call throws
+INQUIRY RECEIVED: { program: 'pre-architecture', hasAttribution: true }
+
+stderr | app/api/qualify/route.test.ts > /api/qualify > is NOT a success when the provider call throws
+INQUIRY NOT DELIVERED: provider_error: network down
+
+stdout | app/api/qualify/route.test.ts > /api/qualify > is NOT a success when the provider returns neither id nor error
+INQUIRY RECEIVED: { program: 'pre-architecture', hasAttribution: true }
+
+stderr | app/api/qualify/route.test.ts > /api/qualify > is NOT a success when the provider returns neither id nor error
+INQUIRY NOT DELIVERED: provider_error: The provider returned neither an id nor an error.
+
+stdout | app/api/qualify/route.test.ts > /api/qualify > still succeeds if only the visitor auto-reply fails, and says so
+INQUIRY RECEIVED: { program: 'pre-architecture', hasAttribution: true }
+INQUIRY NOTIFICATION ACCEPTED by email provider: id=msg_1
+
+stderr | app/api/qualify/route.test.ts > /api/qualify > still succeeds if only the visitor auto-reply fails, and says so
+INQUIRY AUTO-REPLY NOT SENT: provider_rejected: bad to
+
+stdout | app/api/qualify/route.test.ts > /api/qualify > honours INQUIRY_NOTIFY_EMAIL
+INQUIRY RECEIVED: { program: 'pre-architecture', hasAttribution: true }
+INQUIRY NOTIFICATION ACCEPTED by email provider: id=m
+INQUIRY AUTO-REPLY ACCEPTED by email provider: id=m
+
+stdout | app/api/qualify/route.test.ts > /api/qualify > ignores an unknown program slug
+INQUIRY RECEIVED: { program: null, hasAttribution: true }
+INQUIRY NOTIFICATION ACCEPTED by email provider: id=m
+INQUIRY AUTO-REPLY ACCEPTED by email provider: id=m
+
+ ✓ |unit| app/api/qualify/route.test.ts (11 tests) 98ms
+ ✓ |unit| app/lib/service-programs/inquiry-emails.test.ts (14 tests) 11ms
+ ✓ |unit| app/lib/service-programs/catalog.test.ts (16 tests) 8ms
+ ✓ |unit| app/lib/deployment.test.ts (12 tests) 3ms
+ ✓ |unit| app/lib/resources/standard-delivery-email.test.ts (6 tests) 3ms
+ ✓ |unit| app/lib/napkin/admin-model.test.ts (10 tests) 12ms
+ ✓ |unit| app/lib/resources/membership-email.test.ts (8 tests) 5ms
+ ✓ |unit| app/lib/scheduling/release-gates.test.ts (11 tests) 18ms
+ ✓ |unit| app/components/programs/TransitionConfirmation.test.tsx (12 tests) 8ms
+ ✓ |unit| app/lib/intelligence/journeys-model.test.ts (9 tests) 18ms
+stderr | app/lib/intelligence/ingest.test.ts > handleCollect > fails soft when the database errors
+Website Intelligence ingest failed: boom
+
+ ✓ |unit| app/lib/intelligence/ingest.test.ts (7 tests) 68ms
+ ✓ |unit| app/lib/scheduling/admin-views.test.ts (9 tests) 3ms
+ ✓ |unit| app/lib/scheduling/preview.test.ts (10 tests) 8ms
+ ✓ |unit| app/lib/consent/consent.test.ts (12 tests) 7ms
+ ✓ |unit| app/lib/intelligence/classify.test.ts (16 tests) 7ms
+ ✓ |unit| app/lib/scheduling/admin-actions.test.ts (5 tests) 273ms
+ ✓ |unit| app/lib/intelligence/benchmarks-model.test.ts (9 tests) 12ms
+ ✓ |unit| app/api/admin/programs/corporate-transition/[id]/respond/route.test.ts (3 tests) 13ms
+ ✓ |unit| app/lib/scheduling/dst-guest.test.ts (5 tests) 31ms
+ ✓ |unit| app/api/webhooks/resend/route.test.ts (5 tests) 11ms
+ ✓ |unit| app/api/admin/programs/corporate-transition/[id]/resend/route.test.ts (6 tests) 14ms
+ ✓ |unit| app/components/publications/book-structured-data.test.ts (7 tests) 7ms
+ ✓ |unit| app/lib/resources/member-access.guards.test.ts (8 tests) 3ms
+stderr | app/api/webhooks/calendly/route.test.ts > POST /api/webhooks/calendly > invalid JSON with a valid signature is a 400; a database failure is a 500 so Calendly retries
+Calendly booking event failed: simulated insert failure
+
+ ✓ |unit| app/api/webhooks/calendly/route.test.ts (5 tests) 10ms
+ ✓ |unit| app/lib/email-policy.test.ts (9 tests) 5ms
+ ✓ |unit| app/lib/publications/admin-route.test.ts (4 tests) 21ms
+ ✓ |unit| app/lib/intelligence/content-table.test.ts (6 tests) 10ms
+ ✓ |unit| app/lib/intelligence/payload.test.ts (7 tests) 6ms
+ ✓ |unit| app/lib/resources/optin.test.ts (8 tests) 6ms
+ ✓ |unit| app/lib/resources/access-config.test.ts (8 tests) 2ms
+ ✓ |unit| app/lib/scheduling/http.test.ts (5 tests) 14ms
+ ✓ |unit| app/lib/publications/request-guards.test.ts (6 tests) 15ms
+ ✓ |unit| app/lib/leads/consent.test.ts (12 tests) 3ms
+ ✓ |unit| app/lib/intelligence/isolation.test.ts (5 tests) 211ms
+ ✓ |unit| app/lib/intelligence/ranges.test.ts (8 tests) 4ms
+ ✓ |unit| app/lib/booking.test.ts (6 tests) 46ms
+ ✓ |unit| app/lib/publications/images.test.ts (11 tests) 1826ms
+   ✓ cover processing > accepts JPEG, PNG and WebP and produces a sanitised source plus WebP derivatives 1167ms
+ ✓ |unit| app/lib/resources/member-access.test.ts (9 tests) 3ms
+stderr | app/lib/email-client.test.ts > createResend (the single email choke point) > does not call the provider at all while email is disabled, and returns the provider's error shape
+Email not sent: Email delivery is disabled in this non-production environment (PREVIEW_EMAIL_ENABLED is not true).
+
+stderr | app/lib/email-client.test.ts > createResend (the single email choke point) > delivers to the allowlisted admin address only
+Email not sent: Email blocked: the recipient is not on this environment's allowlist.
+
+stderr | app/lib/email-client.test.ts > createResend (the single email choke point) > also checks cc and bcc
+Email not sent: Email blocked: the recipient is not on this environment's allowlist.
+
+ ✓ |unit| app/lib/email-client.test.ts (4 tests) 4ms
+ ✓ |unit| app/lib/resources/download-token.test.ts (6 tests) 3ms
+stderr | app/lib/intelligence/conversions.test.ts > recordConversion > never throws or blocks the visitor flow when recording fails
+Website Intelligence: could not record inquiry conversion: boom
+Website Intelligence: could not record inquiry conversion: network
+
+ ✓ |unit| app/lib/intelligence/conversions.test.ts (5 tests) 63ms
+ ✓ |unit| app/lib/resources/webhook-signature.test.ts (4 tests) 2ms
+ ✓ |unit| app/lib/publications/related-index.test.ts (5 tests) 6ms
+ ✓ |unit| app/lib/resources/delivery-status.test.ts (4 tests) 3ms
+stderr | app/api/cron/intelligence-maintenance/route.test.ts > /api/cron/intelligence-maintenance > reports failure without leaking details
+Website Intelligence maintenance failed: secret detail
+
+ ✓ |unit| app/api/cron/intelligence-maintenance/route.test.ts (4 tests) 37ms
+ ✓ |unit| app/lib/napkin/validation.test.ts (7 tests) 9ms
+ ✓ |unit| app/lib/leads/confirmation-token.test.ts (4 tests) 3ms
+ ✓ |unit| app/lib/seo-preview.test.ts (3 tests) 2ms
+ ✓ |unit| app/lib/service-programs/inquiry.test.ts (4 tests) 41ms
+ ✓ |unit| app/lib/intelligence/session.test.ts (3 tests) 3ms
+ ✓ |unit| app/lib/resources/validation.test.ts (10 tests) 5ms
+ ✓ |unit| app/api/consent/region/route.test.ts (3 tests) 5ms
+ ✓ |unit| app/api/sitemap/route.test.ts (2 tests) 6ms
+ ✓ |unit| app/lib/resources/guides/build-the-bridge-first.test.ts (3 tests) 2ms
+ ✓ |unit| app/lib/napkin/email-links.test.ts (2 tests) 15ms
+ ✓ |unit| app/lib/supabase/admin-authorization.test.ts (2 tests) 1ms
+ ✓ |unit| app/lib/napkin/unsubscribe.test.ts (2 tests) 1ms
+
+ Test Files  85 passed | 1 skipped (86)
+      Tests  1080 passed | 18 skipped (1098)
+   Start at  18:19:34
+   Duration  5.50s (transform 2.26s, setup 0ms, collect 7.95s, tests 8.47s, environment 15ms, prepare 3.94s)
+

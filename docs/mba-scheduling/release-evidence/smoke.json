@@ -1,0 +1,32 @@
+[
+  {
+    "method": "GET",
+    "path": "/book/release-test",
+    "status": 404
+  },
+  {
+    "method": "POST",
+    "path": "/api/scheduling/book",
+    "status": 404
+  },
+  {
+    "method": "GET",
+    "path": "/api/scheduling/slots",
+    "status": 404
+  },
+  {
+    "method": "GET",
+    "path": "/scheduling-preview",
+    "status": 404
+  },
+  {
+    "method": "POST",
+    "path": "/api/scheduling-preview/reset",
+    "status": 404
+  },
+  {
+    "method": "GET",
+    "path": "/api/cron/scheduling-health",
+    "status": 404
+  }
+]

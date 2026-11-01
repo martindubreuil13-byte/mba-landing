@@ -1,0 +1,15 @@
+{
+  "originalFilesChecked": 972,
+  "originalFilesChanged": [],
+  "base": "2e0f68b97a2723a3bbee6445e4ea8c67b6e66302",
+  "branch": "release/mba-scheduling-production-prep",
+  "publications": {
+    "compared": 42,
+    "changed": []
+  },
+  "transition": {
+    "compared": 67,
+    "changed": []
+  },
+  "migrationHashesMatchApprovedSource": true
+}

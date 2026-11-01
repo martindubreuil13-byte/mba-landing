@@ -1,4 +1,4 @@
-import { isProductionDeployment } from "./deployment";
+import { deploymentEnv, isProductionDeployment } from "./deployment";
 
 /**
  * Outbound email policy.
@@ -32,8 +32,42 @@ export function previewAllowlist(env: Env = process.env): { ok: true; list: stri
   return { ok: true, list };
 }
 
-export function evaluateEmailPolicy(recipients: string[], env: Env = process.env): EmailDecision {
+/**
+ * THE ONE EXCEPTION to "non-production sends only to ADMIN_EMAIL", for MBA Scheduling's booking emails during local development.
+ * It exists so the three transactional messages (confirmation, reschedule, cancellation) can be checked in a real mail client, and nothing else.
+ *   - The recipient is this constant, in code: it cannot be repointed from the environment, so changing it is a reviewed code change.
+ *   - It applies only to a caller that declares the purpose "scheduling-transactional" (see createResend); every other caller, including
+ *     the Transition and resource flows, is evaluated by the unchanged rules above and never sees the exception.
+ *   - It never widens anything in production (production is unrestricted before this is reached) and is not even considered there.
+ */
+export const SCHEDULING_TEST_RECIPIENT = "martindubreuil13@gmail.com";
+export type EmailPurpose = "scheduling-transactional";
+
+/**
+ * Is the scheduling test mode on? ALL of these must hold, or it is off:
+ *   - the explicit opt-in SCHEDULING_EMAIL_TEST_MODE=true (put it in .env.development.local or the shell, never in a shared or hosted environment),
+ *   - the process is a local `next dev` server (NODE_ENV=development; a build, `next start` and tests are not),
+ *   - it is not running on Vercel at all (no VERCEL / VERCEL_ENV, whatever their values),
+ *   - the deployment is classified "development" (never production, never preview).
+ * Production cannot activate it: the flag is ignored there.
+ */
+export function schedulingTestModeActive(env: Env = process.env): boolean {
+  if (env.SCHEDULING_EMAIL_TEST_MODE !== "true") return false;
+  if (env.VERCEL || env.VERCEL_ENV) return false;
+  if (env.NODE_ENV !== "development") return false;
+  return deploymentEnv(env) === "development";
+}
+
+export function evaluateEmailPolicy(recipients: string[], env: Env = process.env, purpose?: EmailPurpose): EmailDecision {
   if (isProductionDeployment(env)) return { allowed: true };
+  const standard = evaluateStandard(recipients, env);
+  if (standard.allowed) return standard;
+  // The single scheduling exception: one recipient in total (no cc / bcc), exactly the test address, for scheduling's own purpose only.
+  if (purpose === "scheduling-transactional" && schedulingTestModeActive(env) && recipients.length === 1 && bareAddress(recipients[0]) === SCHEDULING_TEST_RECIPIENT) return { allowed: true };
+  return standard;
+}
+
+function evaluateStandard(recipients: string[], env: Env): EmailDecision {
   const allowlist = previewAllowlist(env);
   if (!allowlist.ok) return { allowed: false, reason: allowlist.reason };
   const blocked = recipients.map(bareAddress).filter((address) => !allowlist.list.includes(address));

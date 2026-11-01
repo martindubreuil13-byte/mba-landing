@@ -1,0 +1,221 @@
+{
+  "google": {
+    "status": "In production; API enabled; branding verified/published; data-access verification unresolved",
+    "projectName": "MBA Scheduling Production",
+    "account": "martindubreuil13@gmail.com",
+    "calendar": "primary",
+    "appName": "MBA Scheduling",
+    "homepage": "https://modernbusinessarchitect.com",
+    "privacyPolicy": "https://modernbusinessarchitect.com/privacy",
+    "authorizedDomains": [
+      "modernbusinessarchitect.com"
+    ],
+    "redirectURIs": [
+      "https://modernbusinessarchitect.com/api/admin/scheduling/google/callback"
+    ],
+    "scopes": [
+      "https://www.googleapis.com/auth/calendar.freebusy",
+      "https://www.googleapis.com/auth/calendar.events.owned",
+      "openid",
+      "email"
+    ],
+    "publishingTarget": "In production; completed",
+    "developmentProjectPreserved": "sincere-charmer-513211-r5",
+    "projectId": "unique-caldron-513311-j2",
+    "billingLinkedByAgent": false,
+    "oauthClientCreated": true,
+    "brandingSaved": true,
+    "policyAcceptedByOwner": true,
+    "clientName": "MBA Scheduling Production Web",
+    "javascriptOrigins": [],
+    "audienceStatus": "In production",
+    "publishButtonEnabled": true,
+    "credentialsProvisionedProduction": true,
+    "scopesSaved": true,
+    "calendarApiEnabled": true,
+    "googleCalendarAuthorized": false,
+    "brandingVerified": true,
+    "brandingPublished": true,
+    "dataAccessVerified": false
+  },
+  "resend": {
+    "endpoint": "https://modernbusinessarchitect.com/api/webhooks/scheduling/resend",
+    "events": [
+      "email.delivered",
+      "email.bounced",
+      "email.failed"
+    ],
+    "status": "NOT_CREATED; must not create enabled before deployed endpoint verified",
+    "secretVariable": "SCHEDULING_RESEND_WEBHOOK_SECRET",
+    "existingWebhookPreserved": true
+  },
+  "recovery": {
+    "vaultName": "mba_scheduling_recovery",
+    "environmentVariable": "SCHEDULING_RECOVERY_SECRET",
+    "vaultProvisioned": false,
+    "cronActivated": false,
+    "schedule": "* * * * *",
+    "jobName": "mba-scheduling-sweep",
+    "endpoint": "https://modernbusinessarchitect.com/api/cron/scheduling-sync",
+    "zoomScanMinutes": 5,
+    "conflictScanMinutes": 15,
+    "healthEndpoint": "https://modernbusinessarchitect.com/api/cron/scheduling-health"
+  },
+  "environment": {
+    "existingPreserved": true,
+    "added": [
+      {
+        "key": "SCHEDULING_RECOVERY_SECRET",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive",
+        "visibility": "secret"
+      },
+      {
+        "key": "SCHEDULING_TOKEN_KEY",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive",
+        "visibility": "secret"
+      },
+      {
+        "key": "SCHEDULING_ZOOM_USER_ID",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive",
+        "visibility": "secret"
+      },
+      {
+        "key": "SCHEDULING_ZOOM_CLIENT_SECRET",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive",
+        "visibility": "secret"
+      },
+      {
+        "key": "SCHEDULING_ZOOM_CLIENT_ID",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive",
+        "visibility": "secret"
+      },
+      {
+        "key": "SCHEDULING_ZOOM_ACCOUNT_ID",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive",
+        "visibility": "secret"
+      },
+      {
+        "key": "SCHEDULING_EMAIL_REPLY_TO",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive",
+        "visibility": "secret"
+      },
+      {
+        "key": "SCHEDULING_EMAIL_FROM",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive",
+        "visibility": "secret"
+      },
+      {
+        "key": "SCHEDULING_EMAIL",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive",
+        "visibility": "secret"
+      },
+      {
+        "key": "SCHEDULING_ZOOM",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive",
+        "visibility": "secret"
+      },
+      {
+        "key": "SCHEDULING_TOKEN_KEY_VERSION",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive",
+        "visibility": "secret"
+      },
+      {
+        "key": "SCHEDULING_GOOGLE_INVITE_GUEST",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive",
+        "visibility": "secret"
+      },
+      {
+        "key": "SCHEDULING_GOOGLE_REDIRECT_URI",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive",
+        "visibility": "secret"
+      },
+      {
+        "key": "SCHEDULING_GOOGLE",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive",
+        "visibility": "secret"
+      },
+      {
+        "key": "SCHEDULING_BACKEND",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive",
+        "visibility": "secret"
+      },
+      {
+        "key": "SCHEDULING_PUBLIC_INTAKE_ENABLED",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive",
+        "visibility": "secret"
+      },
+      {
+        "key": "SCHEDULING_OPERATIONS_ENABLED",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive",
+        "visibility": "secret"
+      },
+      {
+        "key": "SCHEDULING_GOOGLE_CLIENT_ID",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive",
+        "visibility": "secret"
+      },
+      {
+        "key": "SCHEDULING_GOOGLE_CLIENT_SECRET",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive",
+        "visibility": "secret"
+      }
+    ]
+  }
+}

@@ -1,0 +1,3 @@
+-- Superseded production preparation template: use PRODUCTION-RECOVERY.sql.
+-- The production worker uses SCHEDULING_RECOVERY_SECRET, not the existing site-wide CRON_SECRET.
+-- No production SQL has been executed.

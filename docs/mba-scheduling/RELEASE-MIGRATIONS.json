@@ -1,0 +1,18 @@
+[
+  {
+    "file": "supabase/migrations/20261101090000_mba_scheduling.sql",
+    "sha256": "891ffb02027d85a82796eb9566df7385561963016b3cbe1f0dc940c918e44f4e"
+  },
+  {
+    "file": "supabase/migrations/20261102090000_mba_scheduling_phase2e.sql",
+    "sha256": "e33cebea549e9c652dacff2073fa7cde070a6128b394eeaf80958b310b96fc6d"
+  },
+  {
+    "file": "supabase/migrations/20261103090000_mba_scheduling_phase2f.sql",
+    "sha256": "87a6400550dbdd67d1802f7daa48415d0bac69c2d1ac5364e0eb385441725744"
+  },
+  {
+    "file": "supabase/migrations/20261104090000_mba_scheduling_phase2g.sql",
+    "sha256": "3e833d094a6aa4afb0646397567cd100e47bc2ead503ea08b4c92f95b55ce398"
+  }
+]

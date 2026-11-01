@@ -1,0 +1,23 @@
+{
+  "zoom": {
+    "tokenStatus": 200,
+    "scopes": [
+      "meeting:read:list_meetings:admin",
+      "meeting:write:meeting:admin",
+      "meeting:read:meeting:admin",
+      "meeting:update:meeting:admin",
+      "meeting:delete:meeting:admin"
+    ],
+    "hostReadStatus": 200,
+    "explicitHost": true
+  },
+  "domainsReadStatus": 200,
+  "resendDomains": [
+    {
+      "name": "mindrasolutions.com",
+      "status": "verified"
+    }
+  ],
+  "webhooksReadStatus": 200,
+  "schedulingWebhooks": []
+}

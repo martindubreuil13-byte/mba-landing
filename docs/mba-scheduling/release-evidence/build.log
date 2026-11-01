@@ -1,0 +1,195 @@
+
+> mba-site@0.1.0 build
+> next build
+
+▲ Next.js 16.2.0 (Turbopack)
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 5.2s
+  Running TypeScript ...
+  Finished TypeScript in 8.9s ...
+  Collecting page data using 7 workers ...
+⚠ Using edge runtime on a page currently disables static generation for that page
+  Generating static pages using 7 workers (0/86) ...
+  Generating static pages using 7 workers (21/86) 
+  Generating static pages using 7 workers (42/86) 
+  Generating static pages using 7 workers (64/86) 
+✓ Generating static pages using 7 workers (86/86) in 309ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ○ /_not-found
+├ ƒ /admin
+├ ƒ /admin/assessments
+├ ƒ /admin/assessments/[id]
+├ ƒ /admin/guides
+├ ƒ /admin/guides/[slug]
+├ ƒ /admin/intelligence
+├ ƒ /admin/intelligence/ai-visibility
+├ ƒ /admin/intelligence/ai-visibility/benchmarks
+├ ƒ /admin/intelligence/content
+├ ƒ /admin/intelligence/conversions
+├ ƒ /admin/intelligence/journeys
+├ ƒ /admin/intelligence/journeys/[id]
+├ ƒ /admin/intelligence/traffic
+├ ƒ /admin/leads
+├ ƒ /admin/leads/[id]
+├ ƒ /admin/napkin
+├ ƒ /admin/napkin/[id]
+├ ƒ /admin/pick-my-brain
+├ ƒ /admin/programs/corporate-transition
+├ ƒ /admin/programs/corporate-transition/[id]
+├ ƒ /admin/publications
+├ ƒ /admin/publications/[id]/edit
+├ ƒ /admin/publications/[id]/preview
+├ ƒ /admin/publications/new
+├ ƒ /admin/resources
+├ ƒ /admin/resources/[id]/edit
+├ ƒ /admin/resources/new
+├ ƒ /admin/scheduling
+├ ƒ /admin/scheduling/availability
+├ ƒ /admin/scheduling/bookings
+├ ƒ /admin/scheduling/calendar
+├ ƒ /admin/scheduling/integrations
+├ ƒ /admin/scheduling/meeting-types
+├ ƒ /admin/scheduling/meeting-types/[id]
+├ ƒ /admin/scheduling/meeting-types/new
+├ ○ /answers
+├ ○ /answers/am-i-too-old-to-start-a-business
+├ ○ /answers/can-i-start-a-business-without-risking-my-financial-future
+├ ○ /answers/full-time-or-flexible-job-starting-business
+├ ○ /answers/how-do-i-define-my-ideal-customer-profile
+├ ○ /answers/how-do-i-find-a-business-idea
+├ ○ /answers/how-do-i-get-investors-for-my-business-idea
+├ ○ /answers/how-do-i-know-if-my-business-idea-is-actually-viable
+├ ○ /answers/how-do-i-turn-my-years-of-experience-into-a-business
+├ ○ /answers/how-do-you-build-a-product-if-you-cannot-get-funding
+├ ○ /answers/how-should-i-use-ai-in-my-business
+├ ○ /answers/how-to-start-a-restaurant-consulting-business
+├ ○ /answers/i-built-an-app-how-do-i-turn-it-into-a-business
+├ ○ /answers/i-have-a-business-idea-but-no-money-what-should-i-do
+├ ○ /answers/the-10-signs-youre-serious-about-starting-a-business
+├ ○ /answers/what-does-a-business-architect-do
+├ ○ /answers/what-is-business-architecture
+├ ○ /answers/what-kind-of-business-can-i-start-with-the-skills-i-already-have
+├ ƒ /api/admin/leads/export
+├ ƒ /api/admin/napkin/[id]
+├ ƒ /api/admin/napkin/export
+├ ƒ /api/admin/pick-my-brain/[id]
+├ ƒ /api/admin/programs/corporate-transition/[id]/resend
+├ ƒ /api/admin/programs/corporate-transition/[id]/respond
+├ ƒ /api/admin/publications
+├ ƒ /api/admin/publications/[id]
+├ ƒ /api/admin/publications/[id]/cover
+├ ƒ /api/admin/publications/[id]/feature
+├ ƒ /api/admin/publications/[id]/status
+├ ƒ /api/admin/publications/reorder
+├ ƒ /api/admin/resources
+├ ƒ /api/admin/resources/[id]
+├ ƒ /api/admin/scheduling/[...path]
+├ ƒ /api/admin/scheduling/google/callback
+├ ƒ /api/admin/scheduling/google/connect
+├ ƒ /api/admin/scheduling/google/disconnect
+├ ƒ /api/assessment/cta
+├ ƒ /api/assessment/process
+├ ƒ /api/assessment/submit
+├ ƒ /api/confirm
+├ ƒ /api/consent/region
+├ ƒ /api/cron/intelligence-maintenance
+├ ƒ /api/cron/scheduling-health
+├ ƒ /api/cron/scheduling-sync
+├ ƒ /api/membership/rejoin
+├ ƒ /api/napkin/cta
+├ ƒ /api/napkin/join
+├ ƒ /api/napkin/submit
+├ ƒ /api/napkin/unsubscribe
+├ ƒ /api/pick-my-brain/ask
+├ ƒ /api/pick-my-brain/click
+├ ƒ /api/pick-my-brain/search
+├ ƒ /api/programs/corporate-transition/apply
+├ ƒ /api/programs/corporate-transition/community
+├ ƒ /api/programs/corporate-transition/receipt
+├ ƒ /api/qualify
+├ ƒ /api/resources/cover
+├ ƒ /api/resources/download
+├ ƒ /api/resources/events
+├ ƒ /api/resources/member-access
+├ ƒ /api/resources/printable-guide
+├ ƒ /api/resources/request
+├ ƒ /api/scheduling-preview/[...path]
+├ ƒ /api/scheduling/book
+├ ƒ /api/scheduling/booking/[reference]
+├ ƒ /api/scheduling/community
+├ ƒ /api/scheduling/replay
+├ ƒ /api/scheduling/slots
+├ ƒ /api/sitemap
+├ ƒ /api/unsubscribe
+├ ƒ /api/webhooks/calendly
+├ ƒ /api/webhooks/resend
+├ ƒ /api/webhooks/scheduling/google
+├ ƒ /api/webhooks/scheduling/resend
+├ ƒ /api/webhooks/scheduling/zoom
+├ ƒ /api/wi
+├ ƒ /book/[meetingType]
+├ ƒ /book/confirmed/[reference]
+├ ○ /cases
+├ ○ /cases/create-it
+├ ○ /cases/evolve-it
+├ ○ /cases/find-it
+├ ○ /cases/kill-it
+├ ○ /cases/validate-it
+├ ƒ /confirm
+├ ○ /lets-talk
+├ ƒ /llms.txt
+├ ○ /martin
+├ ○ /privacy
+├ ƒ /publications
+├ ƒ /publications/[slug]
+├ ƒ /publications/[slug]/og
+├ ○ /rejoin
+├ ƒ /resources
+├ ƒ /resources/[slug]
+├ ƒ /resources/-/opengraph-image
+├ ƒ /resources/business-idea-reality-check
+├ ƒ /resources/business-idea-reality-check/result/[id]
+├ ƒ /resources/napkin-principle
+├ ○ /robots.txt
+├ ƒ /scheduling-preview
+├ ƒ /scheduling-preview/availability
+├ ƒ /scheduling-preview/bookings
+├ ƒ /scheduling-preview/calendar
+├ ƒ /scheduling-preview/integrations
+├ ƒ /scheduling-preview/meeting-types
+├ ƒ /scheduling-preview/meeting-types/[id]
+├ ƒ /scheduling-preview/meeting-types/new
+├ ○ /thinking
+├ ○ /thinking/an-app-is-not-a-business
+├ ○ /thinking/anticipatory-business-architecture
+├ ○ /thinking/architecting-intelligence
+├ ○ /thinking/how-to-define-your-ideal-customer
+├ ○ /thinking/the-being-economy
+├ ○ /thinking/the-brutal-truth-about-startup-fundraising
+├ ○ /thinking/the-business-architects-frame
+├ ○ /thinking/the-fastest-way-to-build-the-wrong-business
+├ ○ /thinking/your-business-idea-is-worth-nothing
+├ ○ /thinking/your-corporate-experience-may-be-working-against-you
+├ ○ /thinking/your-life-is-perfectly-designed-to-kill-your-business-before-it-starts
+├ ○ /thinking/your-next-customer-might-not-visit-your-website
+├ ○ /transition
+├ ƒ /unsubscribe
+├ ƒ /unsubscribe/napkin
+├ ○ /work
+└ ● /work/[slug]
+  ├ /work/architecting-the-entrepreneur
+  ├ /work/discovering-business-opportunities
+  ├ /work/pre-architecture
+  └ [+5 more paths]
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+
