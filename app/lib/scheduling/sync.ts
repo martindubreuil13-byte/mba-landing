@@ -49,6 +49,11 @@ export const ZOOM_SCAN_EVERY_MS = 5 * 60_000;
 /** Owner notifications are retried on their own schedule, a few times, and never hold the booking's own synchronisation hostage. */
 export const OWNER_BACKOFF_SECONDS = [60, 300, 1_800, 7_200];
 export const OWNER_MAX_ATTEMPTS = 5;
+/** Resend deduplicates a repeated key for 24 hours; stop resending under the same key a little before that. */
+export const EMAIL_DEDUP_SAFE_MS = 20 * 3_600_000;
+/** Prefix of a failed attempt's error when the provider might have accepted the message anyway. */
+const OUTCOME_UNKNOWN = "outcome unknown: ";
+const isNamed = (e: unknown, name: string) => e instanceof Error && e.name === name;
 /** A cancel or reschedule that lands while a worker is mid-run makes it run again; this bounds that (the booking is re-queued, never lost). */
 const MAX_PASSES = 4;
 
@@ -644,15 +649,33 @@ export class BookingSync {
   private async deliver(b: Booking, kind: EmailKind, version: number, to: string, content: EmailContent, errors: string[], o: { type: MeetingType; claim: Ctx | null; nonce?: string; replyTo?: string }) {
     const { repo, email } = this.d;
     const idempotencyKey = `sched-email/${b.id}/${kind}/${version}${o.nonce ? `/${o.nonce}` : ""}`;
+    const fail = async (error: string) => { await repo.recordEmailAttempt({ id: newId(), bookingId: b.id, kind, version, to, status: "failed", providerMessageId: null, error, includedZoom: false, idempotencyKey, attemptedAt: this.iso() }).catch(() => undefined); errors.push(`email: ${error}`); return false; };
+    // The provider remembers a key for 24 hours. If an earlier try under THIS key may have been accepted (its outcome was unknown) and that was almost a day ago,
+    // sending again could deliver a second copy. Hold for a person instead: an administrator can check Resend, then use "Resend confirmation".
+    const earlier = (await repo.listEmailAttempts(b.id).catch(() => [])).filter((a) => a.idempotencyKey === idempotencyKey);
+    if (!earlier.some((a) => a.status === "accepted") && earlier.some((a) => a.status === "failed" && a.error?.startsWith(OUTCOME_UNKNOWN) && this.d.now() - Date.parse(a.attemptedAt) >= EMAIL_DEDUP_SAFE_MS)) {
+      errors.push("email: an earlier send may have been delivered and the provider's duplicate protection has expired; check Resend, then use Resend confirmation if the guest has not received it");
+      return false;
+    }
+    let sent: { id: string | null; simulated?: boolean };
     try {
-      const sent = await email.send({ to, subject: content.subject, text: content.text, idempotencyKey, content, replyTo: o.replyTo, tags: { scheduling_booking: b.id, scheduling_kind: kind } });
+      sent = await email.send({ to, subject: content.subject, text: content.text, idempotencyKey, content, replyTo: o.replyTo, tags: { scheduling_booking: b.id, scheduling_kind: kind } });
+    } catch (e) {
+      // "Already holds a message under this key" means an earlier attempt was accepted but its record was lost: the message was sent. Record it so retries stop.
+      // It is recorded WITHOUT the Zoom link flag: this try's content is unknown, so the link is still sent separately if the guest was not given it.
+      if (isNamed(e, "EmailAlreadyAcceptedError")) {
+        await repo.recordEmailAttempt({ id: newId(), bookingId: b.id, kind, version, to, status: "accepted", providerMessageId: null, error: "recovered: the provider had already accepted this message", includedZoom: false, idempotencyKey, attemptedAt: this.iso() }).catch(() => undefined);
+        return true;
+      }
+      return fail(`${isNamed(e, "EmailOutcomeUnknownError") ? OUTCOME_UNKNOWN : ""}${errText(e)}`);
+    }
+    try {
       await repo.recordEmailAttempt({ id: newId(), bookingId: b.id, kind, version, to, status: "accepted", providerMessageId: sent.id, error: null, includedZoom: !!b.zoom.joinUrl, idempotencyKey, attemptedAt: this.iso() });
       if (email.simulated || sent.simulated) await repo.addOutbox?.(outboxRecord(newId(), this.iso(), kind, b, o.type, content, to));
       return true;
     } catch (e) {
-      await repo.recordEmailAttempt({ id: newId(), bookingId: b.id, kind, version, to, status: "failed", providerMessageId: null, error: errText(e), includedZoom: false, idempotencyKey, attemptedAt: this.iso() });
-      errors.push(`email: ${errText(e)}`);
-      return false;
+      // The provider accepted the message but this worker could not record it: the next try is deduplicated by the key (and held if that protection has expired).
+      return fail(`${OUTCOME_UNKNOWN}accepted by the provider, but not recorded: ${errText(e)}`);
     }
   }
 

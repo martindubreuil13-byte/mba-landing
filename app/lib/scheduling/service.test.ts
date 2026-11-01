@@ -15,7 +15,7 @@ let svc: SchedulingService;
 
 beforeEach(async () => {
   flags = { outage: false, zoom: false };
-  store = new MemoryStore(await buildSeedData(NOW));
+  store = new MemoryStore(await buildSeedData(NOW, "America/Toronto"));
   svc = new SchedulingService({
     store, now: () => NOW,
     calendar: createMockGoogleCalendar({ homeTimeZone: () => TZ, outage: () => flags.outage }),
@@ -249,9 +249,9 @@ describe("community invitation", () => {
     expect(await svc.recordCommunity(r, "declined")).toBe("joined"); // later clicks change nothing
     const d = await store.read();
     expect(d.consents).toHaveLength(1);
-    expect(d.consents[0]).toMatchObject({ choice: "joined", simulated: false, source: "booking_confirmation", wordingVersion: "scheduling-community-v1" });
+    expect(d.consents[0]).toMatchObject({ choice: "joined", simulated: false, source: "booking_confirmation", wordingVersion: "scheduling-community-v2" });
     expect(Date.parse(d.consents[0].at)).not.toBeNaN();                                                                  // the timestamp is stored
-    expect(d.consents[0].wording).toContain("Yes, count me in");
+    expect(d.consents[0].wording).toContain("Yes, keep me in the loop");
   });
   it("closing the invitation records no consent and never enrolls anyone", async () => {
     const r = await ref();
@@ -319,7 +319,7 @@ describe("administrator configuration", () => {
   it("reset restores the sample data", async () => {
     await svc.saveSettings({ homeTimeZone: "Europe/London" });
     await svc.resetPrototype();
-    expect((await store.read()).settings.homeTimeZone).toBe("America/Toronto");
+    expect((await store.read()).settings.homeTimeZone).toBe("Asia/Bangkok");
     expect((await store.read()).meetingTypes).toHaveLength(3);
   });
 });

@@ -207,6 +207,43 @@ describe("GoogleOAuth", () => {
     expect((await store.get())!.status).toBe("connected");
   });
 
+  it("re-encrypts a credential stored under a retired key as soon as it has been used, so the old key can be dropped", async () => {
+    const { o } = await connected();
+    const oldKey = { version: 1, key: Buffer.from(randomBytes(32)) };
+    const withOld = new TokenVault(oldKey);
+    const stored = (await store.get())!;
+    await store.save({ ...stored, refreshTokenEnc: withOld.encrypt("RT-1", "google-refresh-token"), keyVersion: 1 });   // as if it had been saved before the rotation
+    const newKey = { version: 2, key: Buffer.from(randomBytes(32)) };
+    const rotated = new GoogleOAuth({ config, vault: new TokenVault(newKey, oldKey), connections: store, states: store, fetch: fakeFetch([{ match: /token/, replies: [{ json: { access_token: "AT-R", expires_in: 3600 } }] }]).f, now: () => now });
+    void o;
+    now += 3600_000;
+    expect(await rotated.accessToken()).toBe("AT-R");
+    const after = (await store.get())!;
+    expect(after.keyVersion).toBe(2);
+    expect(after.refreshTokenEnc!.startsWith("v2.")).toBe(true);
+    expect(after.status).toBe("connected");
+    // The previous key is no longer needed: a service holding only the new key can read it.
+    expect(new TokenVault(newKey).decrypt(after.refreshTokenEnc!, "google-refresh-token")).toBe("RT-1");
+  });
+
+  it("does not overwrite a credential that was replaced (reconnected) while the rotation was in progress", async () => {
+    const { o } = await connected();
+    void o;
+    const oldKey = { version: 1, key: Buffer.from(randomBytes(32)) };
+    const stored = (await store.get())!;
+    await store.save({ ...stored, refreshTokenEnc: new TokenVault(oldKey).encrypt("RT-1", "google-refresh-token"), keyVersion: 1 });
+    const newer = new TokenVault({ version: 2, key: randomBytes(32) }, oldKey).encrypt("RT-RECONNECTED", "google-refresh-token");
+    const racing = { get: async () => ({ ...(await store.get())!, refreshTokenEnc: newer }), save: store.save.bind(store), setStatus: store.setStatus.bind(store), clear: store.clear.bind(store) };
+    let reads = 0;
+    const connections = { ...racing, get: async () => (reads++ === 0 ? store.get() : racing.get()) } as typeof store;
+    const rotated = new GoogleOAuth({ config, vault: new TokenVault({ version: 2, key: randomBytes(32) }, oldKey), connections, states: store, fetch: fakeFetch([{ match: /token/, replies: [{ json: { access_token: "AT-R", expires_in: 3600 } }] }]).f, now: () => now });
+    now += 3600_000;
+    await rotated.accessToken();
+    const after = (await store.get())!;
+    expect(after.keyVersion).toBe(1);                       // not re-encrypted over the newer credential
+    expect(after.refreshTokenEnc!.startsWith("v1.")).toBe(true);
+  });
+
   it("fails safe when the stored token cannot be decrypted (wrong key): needs reconnection", async () => {
     const { o } = await connected();
     const other = new GoogleOAuth({ config, vault: new TokenVault({ version: 1, key: randomBytes(32) }), connections: store, states: store, fetch: fakeFetch([]).f, now: () => now });

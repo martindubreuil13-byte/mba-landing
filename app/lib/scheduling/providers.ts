@@ -1,4 +1,5 @@
 import type { BusyInterval } from "./types";
+import { OWNER_NOTIFICATION_EMAIL } from "./owner-address";
 import type { EmailContent } from "./notifications";
 import { addDays, localDate, localToInstant } from "./timezone";
 
@@ -32,6 +33,14 @@ export class ZoomGoneError extends ZoomUnavailableError {
 }
 export class EmailSendError extends Error {
   constructor(message = "The email could not be sent.") { super(message); this.name = "EmailSendError"; }
+}
+/** The provider already holds a message under this idempotency key (accepted earlier, with different content): that message WAS sent. */
+export class EmailAlreadyAcceptedError extends EmailSendError {
+  constructor(message = "The provider already accepted a message under this key.") { super(message); this.name = "EmailAlreadyAcceptedError"; }
+}
+/** The provider may or may not have accepted the message (network failure, timeout, server error): the outcome is unknown, not a refusal. */
+export class EmailOutcomeUnknownError extends EmailSendError {
+  constructor(message = "The email provider did not answer, so it is unknown whether the message was accepted.") { super(message); this.name = "EmailOutcomeUnknownError"; }
 }
 
 /** A calendar event for one booking. `eventId` is deterministic per booking, so create and retry are the same call. */
@@ -89,6 +98,8 @@ export interface EmailProvider {
   readonly testMode?: boolean;
   /** `simulated` is set when this one message was not really sent (for example, a test-mode message for any other recipient). */
   send(message: OutgoingEmail): Promise<{ id: string; simulated?: boolean }>;
+  /** An operational alert to the owner's one approved address (aggregate counts only). Providers that cannot deliver one leave this out. */
+  alert?(message: { subject: string; text: string; idempotencyKey: string }): Promise<{ id: string; simulated?: boolean }>;
 }
 
 function hash(text: string): number {
@@ -207,6 +218,7 @@ export function createSimulatedEmail(): MockEmail {
       sent.push({ ...message, id });
       return { id };
     },
+    async alert(message) { return m.send({ ...message, to: OWNER_NOTIFICATION_EMAIL, tags: { scheduling_kind: "operational_alert" } }); },
   };
   return m;
 }

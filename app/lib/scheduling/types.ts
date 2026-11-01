@@ -156,6 +156,7 @@ export type SchedulingData = {
   externalRefs?: ExternalRef[];
   emailAttempts?: EmailAttempt[];
   /** Zoom meetings condemned for deletion (see SchedulingRepository.condemnZoomMeeting). */
+  alertState?: { signature: string; sentAt: string | null };
   zoomTombstones?: Array<{ externalId: string; bookingId: string; reason: string; status: "pending" | "deleted" }>;
   /** Webhook inbox: "provider|key" -> state of that delivery (see SchedulingRepository.beginWebhook). */
   webhookSeen?: Record<string, WebhookEntry>;

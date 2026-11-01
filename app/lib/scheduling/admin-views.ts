@@ -34,6 +34,12 @@ export function recoveryOf(b: Pick<Booking, "sync" | "createdAt">, now: number):
   return now - since > STUCK_AFTER_MS ? { state: "stuck", label: "Waiting for the recovery worker" } : { state: "syncing", label: "Syncing…" };
 }
 
+/**
+ * Is the Zoom link something an administrator is still waiting for? Display only: the stored provider history is untouched.
+ * A canceled booking has no link to wait for: its meeting was deleted (or never created) and any cleanup still outstanding is shown by the recovery state instead.
+ */
+export const zoomAwaited = (r: Pick<BookingRow, "status" | "zoom">) => r.status === "confirmed" && r.zoom.status === "pending";
+
 /** Rows an administrator should look at: a failed, repeatedly failing or stuck synchronisation (also for canceled bookings: an external object may remain), or a conflict. */
 export const needsAttention = (r: Pick<BookingRow, "status" | "recovery" | "conflict">) =>
   r.recovery.state === "failed" || r.recovery.state === "retrying" || r.recovery.state === "stuck" || (r.status === "confirmed" && r.conflict);

@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import { useBookingDrawer } from "./BookingDrawer";
 import { field, label } from "@/app/components/scheduling/ui";
-import { needsAttention, type BookingRow } from "@/app/lib/scheduling/admin-views";
+import { needsAttention, zoomAwaited, type BookingRow } from "@/app/lib/scheduling/admin-views";
 import { formatDateShort, formatTime, zoneOffsetLabel } from "@/app/lib/scheduling/timezone";
 
 type Filter = "attention" | "upcoming" | "past" | "canceled" | "all";
@@ -49,7 +49,7 @@ export default function BookingsTable({ rows, homeTimeZone, nowIso }: { rows: Bo
                   <td className="py-5 pr-4"><button type="button" onClick={(e) => { e.stopPropagation(); open(r.id); }} className="text-left"><span className="font-medium group-hover:text-[#6b1f1f]">{r.guestName}</span><br /><span className="text-[#1a1816]/50">{r.guestEmail}</span></button></td>
                   <td className="pr-4">{r.typeName}<br /><span className="text-[#1a1816]/45">{r.durationMinutes} min</span></td>
                   <td className="whitespace-nowrap pr-4">{formatDateShort(s, homeTimeZone)}<br /><span className="text-[#1a1816]/55">{formatTime(s, homeTimeZone)}</span> <span className="text-xs text-[#1a1816]/35">{zoneOffsetLabel(s, homeTimeZone)}</span></td>
-                  <td className="pr-4"><span className="inline-flex items-center gap-2"><span aria-hidden className={`h-2 w-2 rounded-full ${canceled ? "bg-[#8b2525]" : "bg-[#2f5d3a]"}`} />{canceled ? "Canceled" : "Confirmed"}</span>{r.rescheduled && !canceled && <span className="ml-2 text-xs text-[#1a1816]/45">moved</span>}{r.zoom.status === "pending" && r.recovery.state === "ok" && <span className="ml-2 text-xs text-[#8b2525]">Zoom pending</span>}{r.recovery.state !== "ok" && <span className={`mt-1 block text-xs ${r.recovery.state === "syncing" ? "text-[#1a1816]/45" : "text-[#8b2525]"}`}>{r.recovery.label}</span>}{r.conflict && !canceled && <span className="mt-1 block text-xs text-[#8b2525]">Calendar conflict</span>}</td>
+                  <td className="pr-4"><span className="inline-flex items-center gap-2"><span aria-hidden className={`h-2 w-2 rounded-full ${canceled ? "bg-[#8b2525]" : "bg-[#2f5d3a]"}`} />{canceled ? "Canceled" : "Confirmed"}</span>{r.rescheduled && !canceled && <span className="ml-2 text-xs text-[#1a1816]/45">moved</span>}{zoomAwaited(r) && r.recovery.state === "ok" && <span className="ml-2 text-xs text-[#8b2525]">Zoom pending</span>}{r.recovery.state !== "ok" && <span className={`mt-1 block text-xs ${r.recovery.state === "syncing" ? "text-[#1a1816]/45" : "text-[#8b2525]"}`}>{r.recovery.label}</span>}{r.conflict && !canceled && <span className="mt-1 block text-xs text-[#8b2525]">Calendar conflict</span>}</td>
                   <td className="text-[#1a1816]/60">{r.source ?? "Unknown"}</td>
                 </tr>
               );

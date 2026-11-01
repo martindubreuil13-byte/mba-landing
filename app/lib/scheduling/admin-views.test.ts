@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { needsAttention, recoveryOf, workerState, type BookingRow } from "./admin-views";
+import { needsAttention, recoveryOf, workerState, zoomAwaited, type BookingRow } from "./admin-views";
 import { OWNER_RETRY_NOTE } from "./constants";
 
 const NOW = Date.parse("2031-03-01T12:00:00Z");
@@ -54,5 +54,17 @@ describe("whether the recovery worker is alive", () => {
     expect(workerState(new Date(NOW - 300_000).toISOString(), NOW).state).toBe("ok");
     expect(workerState(new Date(NOW - 301_000).toISOString(), NOW).state).toBe("stale");
     expect(workerState(new Date(NOW + 5_000).toISOString(), NOW).ageSeconds).toBe(0);                 // a clock a little ahead is not an error
+  });
+});
+
+describe("whether an administrator is still waiting for a Zoom link", () => {
+  const zoom = (status: "pending" | "ready" | "failed" | "simulated") => ({ status, meetingId: null, joinUrl: null });
+  it("waits for a confirmed booking whose link is pending", () => {
+    expect(zoomAwaited({ status: "confirmed", zoom: zoom("pending") })).toBe(true);
+    expect(zoomAwaited({ status: "confirmed", zoom: zoom("ready") })).toBe(false);
+  });
+  it("never waits for a canceled booking, whose meeting was deleted or never needed (the stored provider history stays 'pending'/'deleted')", () => {
+    expect(zoomAwaited({ status: "canceled", zoom: zoom("pending") })).toBe(false);
+    expect(zoomAwaited({ status: "canceled", zoom: zoom("failed") })).toBe(false);
   });
 });

@@ -244,6 +244,13 @@ export class SupabaseRepository implements SchedulingRepository {
     const r = must<any>((await this.db.from("sched_worker_heartbeat").select("last_run_at, last_summary").eq("id", true).maybeSingle()) as any);
     return r ? { at: iso(r.last_run_at)!, summary: r.last_summary as SweepSummary } : null;
   }
+  async getAlertState() {
+    const r = must<any>((await this.db.from("sched_alert_state").select("signature, sent_at").eq("id", true).maybeSingle()) as any);
+    return { signature: (r?.signature as string | undefined) ?? "", sentAt: r ? iso(r.sent_at) : null };
+  }
+  async setAlertState(signature: string, sentAtIso: string) {
+    must((await this.db.from("sched_alert_state").upsert({ id: true, signature, sent_at: sentAtIso, updated_at: sentAtIso }, { onConflict: "id" })) as any);
+  }
   async beginWebhook(provider: string, key: string, nowIso: string, leaseSeconds: number) {
     return must<{ state: WebhookClaim; token: string | null }>((await this.db.rpc("sched_webhook_begin", { p_provider: provider, p_key: key, p_now: nowIso, p_lease_seconds: leaseSeconds })) as any);
   }

@@ -1,6 +1,7 @@
 import "server-only";
 import { after } from "next/server";
 import { assertSchedulingRuntime } from "./release-gates";
+import { deploymentEnv } from "@/app/lib/deployment";
 import { schedulingTestModeActive } from "@/app/lib/email-policy";
 import { getServiceClient } from "@/app/lib/supabase/service";
 import { appBaseUrl } from "@/app/lib/resources/base-url";
@@ -18,6 +19,8 @@ import { ResendEmailProvider } from "./adapters/resend-email";
 import { SupabaseConnectionStore } from "./adapters/supabase-connection";
 import { SupabaseRepository } from "./adapters/supabase-repository";
 import { TokenVault } from "./adapters/token-vault";
+import { admitBooking } from "./adapters/booking-budget";
+import { leadsConsent } from "./adapters/leads-consent";
 import { ZoomClient } from "./adapters/zoom";
 
 /**
@@ -33,12 +36,20 @@ import { ZoomClient } from "./adapters/zoom";
 type Env = Record<string, string | undefined>;
 export type { Modes, IntegrationStatus } from "./integration-types";
 
+/**
+ * Which providers are real. In PRODUCTION the explicit settings decide (and assertSchedulingRuntime insists on the live ones). Anywhere else (local
+ * development, tests, previews) every provider is a mock unless the process was started with SCHEDULING_ALLOW_LIVE_DEV=true. The credentials and the
+ * SCHEDULING_GOOGLE / ZOOM / EMAIL settings in a development env file are therefore NOT enough to reach Google, Zoom or Resend: starting `next dev`
+ * for ordinary UI testing can never create a meeting or an event or send a message. Live development is a deliberate act: put the variable on the
+ * command line for that one run (`SCHEDULING_ALLOW_LIVE_DEV=true npm run dev`), never in a file, and read the page banner before submitting anything.
+ */
 export function readModes(env: Env = process.env): Modes {
+  const live = deploymentEnv(env) === "production" || env.SCHEDULING_ALLOW_LIVE_DEV === "true";
   return {
     backend: env.SCHEDULING_BACKEND === "supabase" ? "supabase" : "file",
-    google: env.SCHEDULING_GOOGLE === "live" ? "live" : "mock",
-    zoom: env.SCHEDULING_ZOOM === "live" ? "live" : "mock",
-    email: env.SCHEDULING_EMAIL === "resend" ? "resend" : "simulated",
+    google: live && env.SCHEDULING_GOOGLE === "live" ? "live" : "mock",
+    zoom: live && env.SCHEDULING_ZOOM === "live" ? "live" : "mock",
+    email: live && env.SCHEDULING_EMAIL === "resend" ? "resend" : "simulated",
   };
 }
 
@@ -94,7 +105,7 @@ export function buildScheduling(env: Env = process.env): Built {
   // `after` throws outside a request (scripts, the cron worker); the service then simply runs the work inline.
   const defer = env.SCHEDULING_SYNC === "inline" ? undefined : (task: () => Promise<unknown>) => after(task);
   // The host is told about every new booking, reschedule and cancellation (see notifications.ts). Guest invitations through Google stay OFF unless explicitly enabled above.
-  const service = new SchedulingService({ repo, calendar, zoom, email, inviteGuestInCalendar: env.SCHEDULING_GOOGLE_INVITE_GUEST === "true", defer, ownerEmail: ownerNotificationAddress(env), adminUrl: `${appBaseUrl()}/admin/scheduling/bookings` });
+  const service = new SchedulingService({ repo, calendar, zoom, email, inviteGuestInCalendar: env.SCHEDULING_GOOGLE_INVITE_GUEST === "true", defer, ownerEmail: ownerNotificationAddress(env), adminUrl: `${appBaseUrl()}/admin/scheduling/bookings`, bookingBudget: db ? admitBooking : undefined, communityConsent: db ? leadsConsent : undefined });
   return { service, oauth, modes, connections };
 }
 

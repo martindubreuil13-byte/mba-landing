@@ -146,7 +146,17 @@ export class GoogleOAuth {
       throw e instanceof GoogleOAuthError ? new CalendarUnavailableError(e.message) : e;
     }
     this.cached = { token: res.access_token, expiresAt: this.now() + (res.expires_in ?? 3600) * 1000 - 60_000 };
+    // Key rotation: a credential stored under an older key is re-encrypted under the current one as soon as it has just been proven usable,
+    // so the previous key can then be retired. Best effort; a failure leaves the old (still readable) value in place.
+    if (this.d.vault.needsRotation(c.refreshTokenEnc)) await this.reencrypt(c.refreshTokenEnc, refresh).catch(() => undefined);
     return res.access_token;
+  }
+
+  /** Replaces the stored credential only if it is still exactly the value that was just used: a reconnection made in the meantime always wins. */
+  private async reencrypt(stored: string, refreshToken: string) {
+    const latest = await this.d.connections.get();
+    if (!latest || latest.status !== "connected" || latest.refreshTokenEnc !== stored) return;
+    await this.d.connections.save({ ...latest, refreshTokenEnc: this.d.vault.encrypt(refreshToken, REFRESH_PURPOSE), keyVersion: this.d.vault.keyVersion });
   }
 
   /** The API rejected our access token (revoked mid-flight): drop the cache so the next call refreshes. */

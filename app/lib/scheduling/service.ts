@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 import type { ActivityKind, Availability, Booking, BusyInterval, CommunityState, MeetingType, SchedulingData, Settings, Slot, SweepSummary } from "./types";
 import { computeSlots, validateAvailability } from "./availability";
-import { COMMUNITY_SOURCE, COMMUNITY_WORDING, SCHEDULING_COMMUNITY_VERSION } from "./community";
+import { COMMUNITY_SOURCE, COMMUNITY_WORDING, SCHEDULING_COMMUNITY_VERSION, type CommunityConsentPort, type CommunityConsentResult, type CommunityVisitor } from "./community";
 import { BUFFER_OPTIONS, DEFAULT_BUFFER_AFTER, DEFAULT_BUFFER_BEFORE, isBufferOption } from "./constants";
 import { DocumentRepository } from "./document-repository";
 import { composeEmail } from "./notifications";
@@ -11,6 +11,8 @@ import { isRepositoryError, type SchedulingRepository } from "./repository";
 import { buildSeedData, newId, newToken } from "./seed";
 import type { SchedulingStore } from "./store";
 import { isApprovedOwnerAddress } from "./owner-address";
+import { runAlertCheck } from "./alerts";
+import type { Admission } from "./rate-limit";
 import { BookingSync, MAX_ATTEMPTS, ZOOM_SCAN_EVERY_MS, zoomMarkerFor, type SyncResult } from "./sync";
 import { addDays, isValidTimeZone, localDate, localToInstant } from "./timezone";
 
@@ -55,6 +57,10 @@ export type SchedulingDeps = {
   now?: () => number; inviteGuestInCalendar?: boolean;
   /** Where the host's own notifications go (new booking, reschedule, cancellation). Absent: none are sent. */
   ownerEmail?: string | null; adminUrl?: string | null;
+  /** Abuse budget for a new booking (production wiring only). Asked once per genuinely new request, never for a repeat of an earlier key. */
+  bookingBudget?: (guestEmail: string) => Promise<Admission>;
+  /** Where an explicit "yes" to the community invitation is recorded as consent (the site's Leads and consent records). Absent in the local prototype. */
+  communityConsent?: CommunityConsentPort;
   /**
    * Runs background work after the response is sent (Next's `after`). Absent, or throwing because there is no request to attach to,
    * the work simply runs inline before the call returns: the behaviour of scripts, tests and the cron worker.
@@ -119,6 +125,9 @@ export class SchedulingService {
   private calendar: CalendarProvider;
   private zoom: ZoomProvider;
   private email: EmailProvider;
+  private adminUrl: string | null;
+  private bookingBudget: ((guestEmail: string) => Promise<Admission>) | null;
+  private communityConsent: CommunityConsentPort | null;
   private clock: () => number;
   private defer?: (task: () => Promise<unknown>) => void;
   constructor(deps: SchedulingDeps) {
@@ -128,6 +137,9 @@ export class SchedulingService {
     this.calendar = deps.calendar;
     this.zoom = deps.zoom;
     this.email = deps.email ?? createSimulatedEmail();
+    this.adminUrl = deps.adminUrl ?? null;
+    this.bookingBudget = deps.bookingBudget ?? null;
+    this.communityConsent = deps.communityConsent ?? null;
     this.clock = deps.now ?? (() => Date.now());
     this.defer = deps.defer;
     this.sync = new BookingSync({ repo: this.repo, calendar: deps.calendar, zoom: deps.zoom, email: this.email, now: this.clock, inviteGuestInCalendar: deps.inviteGuestInCalendar, ownerEmail: deps.ownerEmail ?? null, adminUrl: deps.adminUrl ?? null });
@@ -183,9 +195,16 @@ export class SchedulingService {
     if (Number.isNaN(from) || Number.isNaN(to) || to <= from || to - from > 70 * 86_400_000) throw new SchedulingError("invalid_input", "Choose a date range of up to ten weeks.", 400);
   }
 
+  /** A visitor asks about the near future: not last year, not a decade ahead (each query costs a live calendar read). */
+  private publicRangeError(from: number, to: number) {
+    this.rangeError(from, to);
+    const now = this.clock();
+    if (from < now - 2 * 86_400_000 || to > now + 400 * 86_400_000) throw new SchedulingError("invalid_input", "Choose dates in the coming months.", 400);
+  }
+
   async publicSlots(slug: string, invite: string | undefined, fromIso: string, toIso: string): Promise<Slot[]> {
     const from = Date.parse(fromIso), to = Date.parse(toIso);
-    this.rangeError(from, to);
+    this.publicRangeError(from, to);
     const found = await this.publicMeetingType(slug, invite);
     if (!found.ok) throw new SchedulingError(found.reason, found.reason === "not_found" ? "This booking page does not exist." : "This booking link is private.", found.reason === "not_found" ? 404 : 403);
     const [types, settings] = [await this.repo.listMeetingTypes(), await this.repo.getSettings()];
@@ -248,6 +267,9 @@ export class SchedulingService {
 
   // ------------------------------------------------------------------------------------------------ booking
 
+  /** Evaluates health and tells the owner by email when it changes (see alerts.ts). Called by the scheduled alert job. */
+  async checkAlerts() { return runAlertCheck({ repo: this.repo, email: this.email, now: this.clock, adminUrl: this.adminUrl }); }
+
   async createBooking(raw: BookingInput): Promise<{ booking: PublicBooking; replay: boolean }> {
     const parsed = bookingSchema.safeParse(raw);
     if (!parsed.success) throw new SchedulingError("invalid_input", firstIssue(parsed.error), 400, { field: String(parsed.error.issues[0]?.path[0] ?? "") });
@@ -269,6 +291,12 @@ export class SchedulingService {
     const type = types.find((m) => m.slug === input.slug && m.active);
     if (!type) throw new SchedulingError("not_found", "This booking page does not exist.", 404);
     if (type.visibility === "invitation" && (!input.invite || input.invite !== type.inviteCode)) throw new SchedulingError("invitation_required", "This booking link is private.", 403);
+    // Abuse budget: only for a genuinely new, well-formed request for a real meeting type, and before Google is queried or anything is sent.
+    if (this.bookingBudget) {
+      const verdict = await this.bookingBudget(input.guestEmail);
+      if (verdict === "limited") throw new SchedulingError("rate_limited", "Too many booking requests for this address or right now. Please wait a while and try again.", 429);
+      if (verdict === "unavailable") throw new SchedulingError("calendar_unavailable", "Booking is temporarily unavailable. Please try again in a moment.", 503);
+    }
     // 3. Re-check the slot NOW against Google Calendar and every confirmed booking. The visitor's view may be stale.
     const slots = await this.guardCalendar(() => this.slotsFor(types, settings.homeTimeZone, type, startMs, startMs + 1));
     const slot = slots.find((s) => Date.parse(s.startUtc) === startMs);
@@ -477,18 +505,28 @@ export class SchedulingService {
    * for a CONFIRMED booking whose Zoom details are ready. Recording "joined" is the explicit opt-in itself: nothing is subscribed anywhere (no mailing
    * list is connected), and the booking does not depend on the answer.
    */
-  async recordCommunity(reference: string, action: "shown" | "declined" | "joined" | "dismissed"): Promise<CommunityState> {
+  async answerCommunity(reference: string, action: "shown" | "declined" | "joined" | "dismissed", visitor: CommunityVisitor = { ip: null, userAgent: null, country: null, region: null }): Promise<{ state: CommunityState; consent: CommunityConsentResult | null }> {
     const b = await this.repo.getBookingByReference(reference);
     if (!b) throw new SchedulingError("not_found", "Booking not found.", 404);
     if (b.status !== "confirmed") throw new SchedulingError("conflict", "This booking is not confirmed.", 409);
     if (b.zoom.status !== "ready" && b.zoom.status !== "simulated") throw new SchedulingError("conflict", "The invitation is offered once your Zoom details are ready.", 409);
     const before = b.community.state;
+    // Only a first, explicit "yes" becomes consent in the Leads records, and BEFORE the booking notes it, so a failure here is reported to the visitor and
+    // can be retried, and never leaves a "yes" on the booking without a consent record. A "no", a closed window or no answer never reaches the Leads.
+    let consent: CommunityConsentResult | null = null;
+    if (action === "joined" && this.communityConsent && (before === "unseen" || before === "shown")) {
+      consent = await this.communityConsent.join({ guestName: b.guestName, email: b.guestEmail, visitor });
+    }
     let state: CommunityState;
     try { state = await this.repo.setCommunity(reference, action, { email: b.guestEmail, wordingVersion: SCHEDULING_COMMUNITY_VERSION, wording: COMMUNITY_WORDING, at: this.iso(), source: COMMUNITY_SOURCE }); } catch (e) { this.mapRepo(e); }
     if (action !== "shown" && state === action && before !== state) {
       await this.log("community_choice", `${b.guestName}: ${action === "joined" ? "said yes to community emails" : action === "declined" ? "said no to community emails" : "closed the invitation without answering"}`, b.id);
     }
-    return state;
+    return { state, consent: state === "joined" ? consent : null };
+  }
+
+  async recordCommunity(reference: string, action: "shown" | "declined" | "joined" | "dismissed", visitor?: CommunityVisitor): Promise<CommunityState> {
+    return (await this.answerCommunity(reference, action, visitor)).state;
   }
 
   /** Developer aid for the prototype only: show the invitation again on a seeded sample booking. */

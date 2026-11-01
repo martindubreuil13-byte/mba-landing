@@ -204,7 +204,15 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
                     {lead.napkin_count > 0 && ` · Napkin ×${lead.napkin_count}`}
                     {lead.reality_check_count > 0 && ` · Reality ×${lead.reality_check_count}`}
                   </td>
-                  <td className="py-3 pr-4 text-[#1a1816]/70">{SUBSCRIPTION_STATUS_LABELS[lead.subscription_status]}</td>
+                  <td className="py-3 pr-4 text-[#1a1816]/70">
+                    {SUBSCRIPTION_STATUS_LABELS[lead.subscription_status]}
+                    {lead.consent_at && (
+                      <span className="block text-xs text-[#1a1816]/45">
+                        {new Date(lead.consent_at).toISOString().slice(0, 10)}
+                        {lead.consent_source ? ` · ${lead.consent_source}` : ""}
+                      </span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

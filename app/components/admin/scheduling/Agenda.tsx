@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useBookingDrawer } from "./BookingDrawer";
 import { useAdminBase } from "./AdminContext";
 import { btnQuiet, eyebrow, label, textLink } from "@/app/components/scheduling/ui";
-import type { BookingRow } from "@/app/lib/scheduling/admin-views";
+import { zoomAwaited, type BookingRow } from "@/app/lib/scheduling/admin-views";
 import { addDays, formatTime, localDate, MONTH_NAMES, WEEKDAY_NAMES, zonedParts, zoneOffsetLabel } from "@/app/lib/scheduling/timezone";
 
 function dayHeading(date: string, today: string, instant: number, tz: string) {
@@ -50,7 +50,7 @@ export default function Agenda({ rows, homeTimeZone, nowIso }: { rows: BookingRo
             <div>
               <p className="text-4xl font-light tracking-tight md:text-5xl">{dayHeading(localDate(Date.parse(next.startUtc), tz), today, Date.parse(next.startUtc), tz)} <span className="text-[#1a1816]/40">·</span> {formatTime(Date.parse(next.startUtc), tz)}</p>
               <p className="mt-3 text-lg">{next.guestName} <span className="text-[#1a1816]/45">· {next.typeName}</span></p>
-              <p className="mt-1 text-sm text-[#1a1816]/50">{until(Date.parse(next.startUtc) - now)} · {zoneOffsetLabel(Date.parse(next.startUtc), tz)}{next.zoom.status === "pending" ? " · Zoom link pending" : ""}</p>
+              <p className="mt-1 text-sm text-[#1a1816]/50">{until(Date.parse(next.startUtc) - now)} · {zoneOffsetLabel(Date.parse(next.startUtc), tz)}{zoomAwaited(next) ? " · Zoom link pending" : ""}</p>
             </div>
             <button type="button" onClick={() => open(next.id)} className={btnQuiet}>Open</button>
           </div>
@@ -69,7 +69,7 @@ export default function Agenda({ rows, homeTimeZone, nowIso }: { rows: BookingRo
                   <li key={r.id}>
                     <button type="button" onClick={() => open(r.id)} className="group flex w-full items-baseline justify-between gap-4 py-2 text-left">
                       <span><span className="inline-block w-24 text-[#1a1816]/85">{formatTime(Date.parse(r.startUtc), tz)}</span><span className="group-hover:text-[#6b1f1f]">{r.guestName}</span> <span className="text-[#1a1816]/45">· {r.typeName}</span></span>
-                      {r.zoom.status === "pending" && <span className="text-xs text-[#8b2525]">Zoom pending</span>}
+                      {zoomAwaited(r) && <span className="text-xs text-[#8b2525]">Zoom pending</span>}
                     </button>
                   </li>
                 ))}

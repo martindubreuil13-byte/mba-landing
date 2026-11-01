@@ -604,8 +604,8 @@ describe("community consent", () => {
     expect(await f.svc.recordCommunity(b.reference, "declined")).toBe("joined");     // the first answer stands
     const consents = (await f.svc.readAll()).consents.filter((c) => c.bookingId === b.id);
     expect(consents).toHaveLength(1);
-    expect(consents[0]).toMatchObject({ choice: "joined", source: "booking_confirmation", wordingVersion: "scheduling-community-v1", email: b.guestEmail, simulated: false });
-    expect(Number.isNaN(Date.parse(consents[0].at))).toBe(false); expect(consents[0].wording).toContain("Yes, count me in");
+    expect(consents[0]).toMatchObject({ choice: "joined", source: "booking_confirmation", wordingVersion: "scheduling-community-v2", email: b.guestEmail, simulated: false });
+    expect(Number.isNaN(Date.parse(consents[0].at))).toBe(false); expect(consents[0].wording).toContain("Yes, keep me in the loop");
     const after = await f.svc.repo.getBooking(b.id);
     expect(after).toMatchObject({ status: "confirmed", startUtc: before!.startUtc, version: before!.version });
   });

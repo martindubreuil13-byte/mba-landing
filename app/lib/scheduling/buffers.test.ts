@@ -22,7 +22,7 @@ const calendar: CalendarProvider = {
 
 beforeEach(async () => {
   busy = [];
-  const seed = await buildSeedData(NOW);
+  const seed = await buildSeedData(NOW, "America/Toronto");
   seed.bookings = []; seed.meetingTypes = [];
   store = new MemoryStore(seed);
   svc = new SchedulingService({ store, now: () => NOW, calendar, zoom: createMockZoom({ failing: () => false }) });
@@ -199,7 +199,7 @@ describe("buffers across daylight-saving changes (elapsed minutes, not clock tim
   });
   it("spring forward, America/Toronto 2026-03-08: 1:30 AM EST to 3:00 AM EDT is 30 real minutes, enough for a 30 minute buffer and no more", async () => {
     const early = Date.parse("2026-03-01T12:00:00Z");
-    const seed = await buildSeedData(early); seed.bookings = []; seed.meetingTypes = [];
+    const seed = await buildSeedData(early, "America/Toronto"); seed.bookings = []; seed.meetingTypes = [];
     const s2 = new SchedulingService({ store: new MemoryStore(seed), now: () => early, calendar, zoom: createMockZoom({ failing: () => false }) });
     await s2.saveMeetingType({ slug: "dst-spring", name: "dst-spring", description: "", durationMinutes: 30, visibility: "public", minNoticeHours: 0, maxPerDay: null, slotIntervalMinutes: 15, active: true, bufferAfterMinutes: 30, bufferBeforeMinutes: 0, availability: day("2026-03-08", "00:00", "05:00") });
     await s2.createBooking({ slug: "dst-spring", startUtc: "2026-03-08T06:00:00.000Z", guestName: "G", guestEmail: "spring@example.com", guestTimeZone: "UTC", idempotencyKey: "dst-spring-key-1" }); // 1:00 AM EST

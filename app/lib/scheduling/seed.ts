@@ -4,7 +4,8 @@ import { computeSlots } from "./availability";
 import { createMockGoogleCalendar } from "./providers";
 import { localDate, localToInstant } from "./timezone";
 
-export const DEFAULT_HOME_TIME_ZONE = "America/Toronto";
+/** The host's time zone (Martin works in Bangkok). Availability windows, the admin screens, calendar events and host notices are all in this zone; guests always see their own. */
+export const DEFAULT_HOME_TIME_ZONE = "Asia/Bangkok";
 import { DEMO_REFERENCE } from "./constants";
 export { DEMO_REFERENCE };
 
@@ -47,9 +48,9 @@ export function seedMeetingTypes(): MeetingType[] {
  * Fresh demo data relative to `now`. The bookings are picked from slots the engine really offers, so the admin calendar is
  * populated and the sample guests cover several time zones; the one "later today" booking is placed by hand.
  */
-export async function buildSeedData(now: number): Promise<SchedulingData> {
+export async function buildSeedData(now: number, homeTimeZone: string = DEFAULT_HOME_TIME_ZONE): Promise<SchedulingData> {
   const meetingTypes = seedMeetingTypes();
-  const tz = DEFAULT_HOME_TIME_ZONE;
+  const tz = homeTimeZone;
   const calendar = createMockGoogleCalendar({ homeTimeZone: () => tz, outage: () => false });
   const data: SchedulingData = { version: 1, settings: { homeTimeZone: tz, simulate: { googleOutage: false, zoomFailure: false } }, meetingTypes, bookings: [], activity: [], outbox: [], consents: [], idempotency: {}, externalRefs: [], emailAttempts: [] };
 

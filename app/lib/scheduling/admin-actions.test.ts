@@ -8,7 +8,7 @@ import { MemoryStore } from "./store";
 const NOW = Date.parse("2026-10-26T12:00:00Z");
 let svc: SchedulingService, store: MemoryStore;
 beforeEach(async () => {
-  store = new MemoryStore(await buildSeedData(NOW));
+  store = new MemoryStore(await buildSeedData(NOW, "America/Toronto"));
   svc = new SchedulingService({ store, now: () => NOW, calendar: createMockGoogleCalendar({ homeTimeZone: () => "America/Toronto", outage: () => false }), zoom: createMockZoom({ failing: () => false }) });
 });
 const act = (method: string, path: string, body: Record<string, unknown> = {}) => {
@@ -50,7 +50,7 @@ describe("the shared admin action dispatcher", () => {
     expect((await act("PUT", "settings", { homeTimeZone: "Europe/London", simulate: { zoomFailure: true } })).body).toMatchObject({ settings: { homeTimeZone: "Europe/London", simulate: { zoomFailure: true } } });
     expect(await attempt(act("PUT", "settings", { homeTimeZone: "EST" }))).toBe("invalid_input");
     await act("POST", "reset");
-    expect((await store.read()).settings.homeTimeZone).toBe("America/Toronto");
+    expect((await store.read()).settings.homeTimeZone).toBe("Asia/Bangkok");
   });
   it("re-arms the community invitation on sample bookings only, never on a real booking", async () => {
     await svc.recordCommunity("demo-confirmation", "declined");

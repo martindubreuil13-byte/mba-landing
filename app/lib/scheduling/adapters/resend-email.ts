@@ -3,8 +3,8 @@ import { createResend } from "@/app/lib/email-client";
 import { bareAddress, SCHEDULING_TEST_RECIPIENT, schedulingTestModeActive } from "@/app/lib/email-policy";
 import { appBaseUrl } from "@/app/lib/resources/base-url";
 import { isHttpsUrl, renderEmail, type Block } from "@/app/lib/programs/email-shell";
-import { isApprovedOwnerAddress } from "../owner-address";
-import { EmailSendError, type EmailProvider, type OutgoingEmail } from "../providers";
+import { isApprovedOwnerAddress, OWNER_NOTIFICATION_EMAIL } from "../owner-address";
+import { EmailAlreadyAcceptedError, EmailOutcomeUnknownError, EmailSendError, type EmailProvider, type OutgoingEmail } from "../providers";
 import type { EmailContent } from "../notifications";
 import type { EmailKind } from "../types";
 
@@ -50,15 +50,40 @@ export class ResendEmailProvider implements EmailProvider {
     if (kind.startsWith("owner_") && !isApprovedOwnerAddress(m.to)) throw new EmailSendError("Owner notifications go only to the approved owner address.");
     // Test mode: the single developer address gets the real message; every other recipient is simulated and NEVER reaches Resend.
     if (schedulingTestModeActive(this.o.env ?? process.env) && bareAddress(m.to) !== SCHEDULING_TEST_RECIPIENT) return { id: `suppressed_${m.idempotencyKey.length}_${Date.now().toString(36)}`, simulated: true };
-    const from = this.o.from ?? process.env.SCHEDULING_EMAIL_FROM ?? process.env.RESOURCE_EMAIL_FROM ?? DEFAULT_SCHEDULING_FROM;
+    const from = this.from();
     // A notification to the host is answered to the guest it is about; everything else is answered to the host.
     const replyTo = kind.startsWith("owner_") && m.replyTo &&!/[,;\s<>]/.test(m.replyTo) ? m.replyTo : this.o.replyTo ?? process.env.SCHEDULING_EMAIL_REPLY_TO ?? bare(from);
     const body = m.content ? renderBookingEmail(m.content) : { html: m.html, text: m.text };
-    const { data, error } = await (this.o.resend ?? createResend(undefined, { purpose: "scheduling-transactional" })).emails.send(
-      { from, to: m.to, subject: m.subject, text: body.text, ...(body.html ? { html: body.html } : {}), replyTo, tags: Object.entries(m.tags ?? {}).map(([name, value]) => ({ name, value })) },
-      { idempotencyKey: m.idempotencyKey },
-    );
-    if (error || !data?.id) throw new EmailSendError(`Email provider refused the message${error?.message ? `: ${error.message}` : ""}`);
-    return { id: data.id };
+    return this.post({ from, to: m.to, subject: m.subject, text: body.text, ...(body.html ? { html: body.html } : {}), replyTo, tags: Object.entries(m.tags ?? {}).map(([name, value]) => ({ name, value })) }, m.idempotencyKey);
+  }
+
+  /**
+   * An operational alert to the owner: aggregate counts only, never guest details. Goes to the one approved owner address and nowhere else, and is
+   * subject to the same development test-mode confinement as every other message.
+   */
+  async alert(m: { subject: string; text: string; idempotencyKey: string }): Promise<{ id: string; simulated?: boolean }> {
+    const to = OWNER_NOTIFICATION_EMAIL;
+    if (schedulingTestModeActive(this.o.env ?? process.env) && bareAddress(to) !== SCHEDULING_TEST_RECIPIENT) return { id: `suppressed_${m.idempotencyKey.length}_${Date.now().toString(36)}`, simulated: true };
+    const from = this.from();
+    return this.post({ from, to, subject: m.subject, text: m.text, replyTo: this.o.replyTo ?? process.env.SCHEDULING_EMAIL_REPLY_TO ?? bare(from), tags: [{ name: "scheduling_kind", value: "operational_alert" }] }, m.idempotencyKey);
+  }
+
+  private from() { return this.o.from ?? process.env.SCHEDULING_EMAIL_FROM ?? process.env.RESOURCE_EMAIL_FROM ?? DEFAULT_SCHEDULING_FROM; }
+
+  /** One call to Resend, with its answer read three ways: accepted, definitely refused, or outcome unknown. */
+  private async post(payload: { from: string; to: string; subject: string; text: string; html?: string; replyTo: string; tags: Array<{ name: string; value: string }> }, idempotencyKey: string): Promise<{ id: string }> {
+    let result;
+    try {
+      result = await (this.o.resend ?? createResend(undefined, { purpose: "scheduling-transactional" })).emails.send(payload, { idempotencyKey });
+    } catch (e) { throw new EmailOutcomeUnknownError(`Email provider did not answer: ${e instanceof Error ? e.message : "unknown error"}`); }
+    const { data, error } = result;
+    if (!error && data?.id) return { id: data.id };
+    const e = (error ?? {}) as { name?: string; statusCode?: number | null; message?: string };
+    const detail = e.message ? `: ${e.message}` : "";
+    // Resend remembers an idempotency key for 24 hours. The same key with different content means the first message WAS accepted.
+    if (e.name === "invalid_idempotent_request") throw new EmailAlreadyAcceptedError(`Email provider already holds a message under this key${detail}`);
+    // No status (the SDK could not reach Resend), a server error, a message still being processed, or a reply with neither data nor error: the outcome is unknown.
+    if (!error || e.statusCode == null || e.statusCode >= 500 || e.name === "concurrent_idempotent_requests") throw new EmailOutcomeUnknownError(`Email provider outcome unknown${detail}`);
+    throw new EmailSendError(`Email provider refused the message${detail}`);
   }
 }

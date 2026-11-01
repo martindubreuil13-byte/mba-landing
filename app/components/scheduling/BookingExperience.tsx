@@ -17,7 +17,7 @@ export default function BookingExperience({ type, invite, source }: { type: Publ
   const [hour12, setHour12] = useState(true);
   const [step, setStep] = useState<"pick" | "details">("pick");
   const [selected, setSelected] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", message: "", contactUrl: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
@@ -51,7 +51,7 @@ export default function BookingExperience({ type, invite, source }: { type: Publ
     setBusy(true); setNotice("");
     key.current ??= newKey();
     try {
-      const r = await fetch("/api/scheduling/book", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ slug: type.slug, invite, startUtc: selected, name: form.name, email: form.email, message: form.message, timeZone: tz, idempotencyKey: key.current, source }) });
+      const r = await fetch("/api/scheduling/book", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ slug: type.slug, invite, startUtc: selected, name: form.name, email: form.email, message: form.message, contactUrl: form.contactUrl, timeZone: tz, idempotencyKey: key.current, source }) });
       const j = await r.json().catch(() => ({}));
       if (r.ok) { router.push(`/book/confirmed/${j.booking.reference}`); return; }
       if (r.status === 409) { setNotice(j.error || "That time is no longer available. Please choose another."); setSelected(null); setStep("pick"); setPickerKey((k) => k + 1); key.current = null; }
@@ -120,6 +120,11 @@ export default function BookingExperience({ type, invite, source }: { type: Publ
                     </dl>
                   )}
                   <div className="space-y-8">
+                    {/* Honeypot: hidden from visitors and from assistive technology; only an automated form-filler completes it. */}
+                    <div style={{ position: "absolute", left: "-9999px" }} aria-hidden="true">
+                      <label htmlFor="bk-contact-url">Leave this empty</label>
+                      <input id="bk-contact-url" name="contactUrl" type="text" tabIndex={-1} autoComplete="off" value={form.contactUrl} onChange={(e) => setForm({ ...form, contactUrl: e.target.value })} />
+                    </div>
                     <div><label htmlFor="bk-name" className={label}>Name</label>
                       <input id="bk-name" autoComplete="name" className={field} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} aria-invalid={!!errors.name} aria-describedby={errors.name ? "bk-name-e" : undefined} />
                       {errors.name && <p id="bk-name-e" role="alert" className="mt-2 text-sm text-[#8b2525]">{errors.name}</p>}</div>

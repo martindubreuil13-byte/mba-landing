@@ -199,26 +199,45 @@ describe("integration modes and configuration", () => {
     expect(readModes({ SCHEDULING_GOOGLE: "yes", SCHEDULING_ZOOM: "true", SCHEDULING_EMAIL: "on", SCHEDULING_BACKEND: "postgres" })).toEqual({ backend: "file", google: "mock", zoom: "mock", email: "simulated" });
   });
   it("go live only on the exact words, one integration at a time", () => {
-    expect(readModes({ SCHEDULING_GOOGLE: "live" }).google).toBe("live");
-    expect(readModes({ SCHEDULING_GOOGLE: "live" }).zoom).toBe("mock");
-    expect(readModes({ SCHEDULING_EMAIL: "resend", SCHEDULING_BACKEND: "supabase" })).toMatchObject({ email: "resend", backend: "supabase" });
+    expect(readModes({ SCHEDULING_ALLOW_LIVE_DEV: "true", SCHEDULING_GOOGLE: "live" }).google).toBe("live");
+    expect(readModes({ SCHEDULING_ALLOW_LIVE_DEV: "true", SCHEDULING_GOOGLE: "live" }).zoom).toBe("mock");
+    expect(readModes({ SCHEDULING_ALLOW_LIVE_DEV: "true", SCHEDULING_EMAIL: "resend", SCHEDULING_BACKEND: "supabase" })).toMatchObject({ email: "resend", backend: "supabase" });
+  });
+  it("outside production a development env file full of live settings and credentials still gives mocks only, unless the run opts in", () => {
+    const devFile = { SCHEDULING_GOOGLE: "live", SCHEDULING_ZOOM: "live", SCHEDULING_EMAIL: "resend", SCHEDULING_BACKEND: "supabase", SCHEDULING_EMAIL_TEST_MODE: "true", NODE_ENV: "development",
+      SCHEDULING_ZOOM_ACCOUNT_ID: "a", SCHEDULING_ZOOM_CLIENT_ID: "c", SCHEDULING_ZOOM_CLIENT_SECRET: "s", SCHEDULING_ZOOM_USER_ID: "u", SCHEDULING_GOOGLE_CLIENT_ID: "g", SCHEDULING_GOOGLE_CLIENT_SECRET: "gs", SCHEDULING_TOKEN_KEY: "k", RESEND_API_KEY: "r" };
+    expect(readModes(devFile)).toEqual({ backend: "supabase", google: "mock", zoom: "mock", email: "simulated" });
+    expect(readModes({ ...devFile, SCHEDULING_ALLOW_LIVE_DEV: "false" })).toMatchObject({ google: "mock", zoom: "mock", email: "simulated" });
+    expect(readModes({ ...devFile, SCHEDULING_ALLOW_LIVE_DEV: "yes" })).toMatchObject({ google: "mock", zoom: "mock", email: "simulated" });
+    expect(readModes({ ...devFile, SCHEDULING_ALLOW_LIVE_DEV: "true" })).toMatchObject({ google: "live", zoom: "live", email: "resend" });
+    // preview and hosted environments never get live providers through the opt-in either: the service refuses to start there (see release-gates)
+    expect(readModes({ SCHEDULING_GOOGLE: "live", VERCEL_ENV: "production", NODE_ENV: "production" }).google).toBe("live");   // production is decided by the explicit settings, as before
+  });
+  it("builds an all-mock service from a development env file full of live settings: no Google client, simulated email, mock Zoom", async () => {
+    const devFile = { SCHEDULING_GOOGLE: "live", SCHEDULING_ZOOM: "live", SCHEDULING_EMAIL: "resend", SCHEDULING_EMAIL_TEST_MODE: "true", NODE_ENV: "development",
+      SCHEDULING_ZOOM_ACCOUNT_ID: "a", SCHEDULING_ZOOM_CLIENT_ID: "c", SCHEDULING_ZOOM_CLIENT_SECRET: "s", SCHEDULING_ZOOM_USER_ID: "u", SCHEDULING_GOOGLE_CLIENT_ID: "g", SCHEDULING_GOOGLE_CLIENT_SECRET: "gs", SCHEDULING_TOKEN_KEY: Buffer.alloc(32, 7).toString("base64"), RESEND_API_KEY: "r" };
+    const built = buildScheduling(devFile);
+    expect(built.modes).toEqual({ backend: "file", google: "mock", zoom: "mock", email: "simulated" });
+    expect(built.oauth).toBeNull();
+    expect(built.connections).toBeNull();
+    expect((built.service as unknown as { email: { simulated: boolean } }).email.simulated).toBe(true);
   });
   it("name every missing variable (never a value) for each live mode", () => {
-    const live = readModes({ SCHEDULING_GOOGLE: "live", SCHEDULING_ZOOM: "live", SCHEDULING_EMAIL: "resend", SCHEDULING_BACKEND: "supabase" });
+    const live = readModes({ SCHEDULING_ALLOW_LIVE_DEV: "true", SCHEDULING_GOOGLE: "live", SCHEDULING_ZOOM: "live", SCHEDULING_EMAIL: "resend", SCHEDULING_BACKEND: "supabase" });
     const missing = missingConfig(live, {});
     expect(missing.google).toEqual(["SCHEDULING_GOOGLE_CLIENT_ID", "SCHEDULING_GOOGLE_CLIENT_SECRET", "SCHEDULING_TOKEN_KEY"]);
     expect(missing.zoom).toEqual(["SCHEDULING_ZOOM_ACCOUNT_ID", "SCHEDULING_ZOOM_CLIENT_ID", "SCHEDULING_ZOOM_CLIENT_SECRET", "SCHEDULING_ZOOM_USER_ID"]);
     expect(missing.email).toEqual(["RESEND_API_KEY"]); expect(missing.backend).toEqual([]);   // validated by getServiceClient
     expect(missingConfig(live, { SCHEDULING_GOOGLE_CLIENT_ID: "x", SCHEDULING_GOOGLE_CLIENT_SECRET: "y", SCHEDULING_TOKEN_KEY: "z" }).google).toEqual([]);
-    expect(missingConfig(readModes({ SCHEDULING_GOOGLE: "live" }), { SCHEDULING_GOOGLE_CLIENT_ID: "x", SCHEDULING_GOOGLE_CLIENT_SECRET: "y", SCHEDULING_TOKEN_KEY: "z" }).google[0]).toMatch(/SCHEDULING_BACKEND=supabase/);
+    expect(missingConfig(readModes({ SCHEDULING_ALLOW_LIVE_DEV: "true", SCHEDULING_GOOGLE: "live" }), { SCHEDULING_GOOGLE_CLIENT_ID: "x", SCHEDULING_GOOGLE_CLIENT_SECRET: "y", SCHEDULING_TOKEN_KEY: "z" }).google[0]).toMatch(/SCHEDULING_BACKEND=supabase/);
     expect(missingConfig(readModes({}), {})).toEqual({ backend: [], google: [], zoom: [], email: [] });
   });
   it("refuses to start a half-configured live mode, naming what is missing and leaking nothing", () => {
-    expect(() => buildScheduling({ SCHEDULING_ZOOM: "live", SCHEDULING_ZOOM_ACCOUNT_ID: "acct-secret-value" })).toThrow(/Missing: zoom: SCHEDULING_ZOOM_CLIENT_ID, SCHEDULING_ZOOM_CLIENT_SECRET, SCHEDULING_ZOOM_USER_ID/);
-    try { buildScheduling({ SCHEDULING_ZOOM: "live", SCHEDULING_ZOOM_ACCOUNT_ID: "acct-secret-value" }); } catch (e) { expect((e as Error).message).not.toContain("acct-secret-value"); }
+    expect(() => buildScheduling({ SCHEDULING_ALLOW_LIVE_DEV: "true", SCHEDULING_ZOOM: "live", SCHEDULING_ZOOM_ACCOUNT_ID: "acct-secret-value" })).toThrow(/Missing: zoom: SCHEDULING_ZOOM_CLIENT_ID, SCHEDULING_ZOOM_CLIENT_SECRET, SCHEDULING_ZOOM_USER_ID/);
+    try { buildScheduling({ SCHEDULING_ALLOW_LIVE_DEV: "true", SCHEDULING_ZOOM: "live", SCHEDULING_ZOOM_ACCOUNT_ID: "acct-secret-value" }); } catch (e) { expect((e as Error).message).not.toContain("acct-secret-value"); }
   });
   it("reports Zoom connected only after authentication and host access pass, without exposing errors", async () => {
-    const env = { SCHEDULING_ZOOM: "live", SCHEDULING_ZOOM_ACCOUNT_ID: "a", SCHEDULING_ZOOM_CLIENT_ID: "c", SCHEDULING_ZOOM_CLIENT_SECRET: "secret-value", SCHEDULING_ZOOM_USER_ID: "host@example.com" };
+    const env = { SCHEDULING_ALLOW_LIVE_DEV: "true", SCHEDULING_ZOOM: "live", SCHEDULING_ZOOM_ACCOUNT_ID: "a", SCHEDULING_ZOOM_CLIENT_ID: "c", SCHEDULING_ZOOM_CLIENT_SECRET: "secret-value", SCHEDULING_ZOOM_USER_ID: "host@example.com" };
     const check = vi.fn(async () => undefined);
     expect((await describeIntegrations(null, env, check)).zoom.state).toBe("connected");
     expect(check).toHaveBeenCalledOnce();
@@ -229,12 +248,12 @@ describe("integration modes and configuration", () => {
   it("describes the integrations for the admin without exposing a secret", async () => {
     const mock = await describeIntegrations(null, {});
     expect(mock).toMatchObject({ google: { state: "mock" }, zoom: { state: "mock" }, email: { state: "simulated", from: null }, backend: { state: "file" } });
-    const env = { SCHEDULING_GOOGLE: "live", SCHEDULING_BACKEND: "supabase", SCHEDULING_GOOGLE_CLIENT_ID: "id", SCHEDULING_GOOGLE_CLIENT_SECRET: "TOP-SECRET", SCHEDULING_TOKEN_KEY: "abc" };
+    const env = { SCHEDULING_ALLOW_LIVE_DEV: "true", SCHEDULING_GOOGLE: "live", SCHEDULING_BACKEND: "supabase", SCHEDULING_GOOGLE_CLIENT_ID: "id", SCHEDULING_GOOGLE_CLIENT_SECRET: "TOP-SECRET", SCHEDULING_TOKEN_KEY: "abc" };
     const conn = { get: async () => ({ status: "needs_reauth" as const, accountEmail: "owner@example.com", scopes: [], calendarId: "primary", refreshTokenEnc: "v1.x.y.z", keyVersion: 1, lastError: "revoked", connectedAt: "2026-10-01T00:00:00Z", lastRefreshedAt: null }), save: async () => undefined, setStatus: async () => undefined, clear: async () => undefined };
     const live = await describeIntegrations(conn, env);
     expect(live.google).toMatchObject({ state: "needs_reauth", accountEmail: "owner@example.com", lastError: "revoked" });
     expect(JSON.stringify(live)).not.toContain("TOP-SECRET"); expect(JSON.stringify(live)).not.toContain("v1.x.y.z");
-    expect((await describeIntegrations(null, { SCHEDULING_GOOGLE: "live" })).google.state).toBe("not_configured");
+    expect((await describeIntegrations(null, { SCHEDULING_ALLOW_LIVE_DEV: "true", SCHEDULING_GOOGLE: "live" })).google.state).toBe("not_configured");
     expect((await describeIntegrations(conn, { ...env })).google.redirectUri).toContain("/api/admin/scheduling/google/callback");
   });
 });

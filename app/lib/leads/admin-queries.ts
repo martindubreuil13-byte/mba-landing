@@ -56,6 +56,7 @@ type ConsentOptInRow = {
 
 /** Where an opt-in came from, e.g. "resource: the-second-act", or blank when the evidence does not say. */
 export function consentSourceLabel(record: Pick<ConsentOptInRow, "source_type" | "resource">): string {
+  if (record.source_type === "scheduling_booking") return "booking confirmation invitation";
   const res = Array.isArray(record.resource) ? record.resource[0] : record.resource;
   if (res?.slug) return `${record.source_type ?? "resource"}: ${res.slug}`;
   return record.source_type ?? "";
@@ -73,7 +74,7 @@ type PmbQuestionRow = {
 
 async function fetchAll() {
   const supabase = getServiceClient();
-  const [{ data: leads, error: leadsError }, { data: requests }, { data: assessments }, { data: napkin }, { data: pmb }, { data: consent }] =
+  const [{ data: leads, error: leadsError }, { data: requests }, { data: assessments }, { data: napkin }, { data: pmb }, { data: consent }, { data: bookingConsent }] =
     await Promise.all([
       supabase.from("leads").select("*").order("created_at", { ascending: false }),
       supabase
@@ -93,6 +94,13 @@ async function fetchAll() {
         .select("lead_id, created_at, wording_version, source_type, resource:resources(slug)")
         .eq("action", "opt_in")
         .order("created_at", { ascending: false }),
+      // Contacts who answered "yes" to the community invitation after a booking (any state: confirmed, still awaiting confirmation, or since withdrawn).
+      supabase
+        .from("consent_records")
+        .select("lead_id, created_at")
+        .eq("source_type", "scheduling_booking")
+        .in("action", ["opt_in", "opt_in_requested"])
+        .order("created_at", { ascending: true }),
     ]);
 
   if (leadsError) throw new Error(`Failed to load leads: ${leadsError.message}`);
@@ -104,6 +112,7 @@ async function fetchAll() {
     napkin: (napkin ?? []) as NapkinRow[],
     pmb: (pmb ?? []) as PmbQuestionRow[],
     consent: (consent ?? []) as ConsentOptInRow[],
+    bookingConsent: (bookingConsent ?? []) as Array<{ lead_id: string; created_at: string }>,
   };
 }
 
@@ -160,7 +169,7 @@ export const SUBSCRIPTION_STATUS_LABELS: Record<SubscriptionStatus, string> = {
 };
 
 export async function listUnifiedLeadsAdmin(): Promise<UnifiedLeadRow[]> {
-  const { leads, requests, assessments, napkin, pmb, consent } = await fetchAll();
+  const { leads, requests, assessments, napkin, pmb, consent, bookingConsent } = await fetchAll();
   const latestConsent = new Map<string, ConsentOptInRow>(); // rows arrive newest first
   for (const c of consent) if (!latestConsent.has(c.lead_id)) latestConsent.set(c.lead_id, c);
   const pmbByEmail = new Map<string, PmbQuestionRow[]>();
@@ -180,7 +189,7 @@ export async function listUnifiedLeadsAdmin(): Promise<UnifiedLeadRow[]> {
     // Acquisition = the earliest activity of any kind. Falls back to the
     // lead's own created_at (a resource request always creates the lead at
     // the same instant, so this is only a fallback in practice).
-    type Acquisition = { at: string; type: "resource" | "napkin" | "reality_check"; label: string };
+    type Acquisition = { at: string; type: "resource" | "napkin" | "reality_check" | "booking"; label: string };
     const candidates: Acquisition[] = [
       ...leadRequests.map((r) => ({
         at: r.requested_at,
@@ -192,6 +201,7 @@ export async function listUnifiedLeadsAdmin(): Promise<UnifiedLeadRow[]> {
         type: "reality_check" as const,
         label: `Reality Check${[a.source, a.medium, a.campaign].filter(Boolean).length ? ` (${[a.source, a.medium, a.campaign].filter(Boolean).join(" / ")})` : ""}`,
       })),
+      ...bookingConsent.filter((c) => c.lead_id === lead.id).slice(0, 1).map((c) => ({ at: c.created_at, type: "booking" as const, label: "Booking — community invitation" })),
       ...leadNapkin.map((n) => ({
         at: n.joined_at ?? n.created_at,
         type: "napkin" as const,

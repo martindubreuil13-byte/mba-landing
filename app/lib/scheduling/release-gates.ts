@@ -26,6 +26,7 @@ export function assertSchedulingRuntime(env: Env = process.env) {
   for (const [key, value] of Object.entries(required)) if (env[key] !== value) throw new Error(`Production Scheduling requires ${key}=${value}.`);
   if (env.SCHEDULING_EMAIL_TEST_MODE === "true" || env.SCHEDULING_PROTOTYPE === "true") throw new Error("Development Scheduling flags are forbidden in production.");
   if ((env.SCHEDULING_RECOVERY_SECRET?.length ?? 0) < 32) throw new Error("SCHEDULING_RECOVERY_SECRET must contain at least 32 random characters.");
+  if (env.SCHEDULING_RECOVERY_SECRET_PREVIOUS && (env.SCHEDULING_RECOVERY_SECRET_PREVIOUS.length < 32 || env.SCHEDULING_RECOVERY_SECRET_PREVIOUS === env.SCHEDULING_RECOVERY_SECRET)) throw new Error("SCHEDULING_RECOVERY_SECRET_PREVIOUS must be a different secret of at least 32 characters (or unset).");
   if (env.SCHEDULING_GOOGLE_REDIRECT_URI !== `${appBaseUrl({ ...env, APP_BASE_URL: undefined })}/api/admin/scheduling/google/callback`) throw new Error("Production Scheduling requires the canonical HTTPS Google callback.");
   if (env.SCHEDULING_EMAIL_FROM !== "Martin Dubreuil <martin@mindrasolutions.com>" || env.SCHEDULING_EMAIL_REPLY_TO !== "martin@mindrasolutions.com") throw new Error("Production Scheduling sender and reply-to must be explicitly configured to the approved addresses.");
   if (env.SCHEDULING_GOOGLE_INVITE_GUEST === "true") throw new Error("Google invitation email must remain disabled; Scheduling sends its own notifications.");

@@ -237,6 +237,8 @@ export class DocumentRepository implements SchedulingRepository {
 
   async recordSweep(nowIso: string, summary: SweepSummary) { await this.mutate((d) => { d.lastSweep = { at: nowIso, summary }; }); }
   async getLastSweep() { return (await this.read()).lastSweep ?? null; }
+  async getAlertState() { return (await this.read()).alertState ?? { signature: "", sentAt: null }; }
+  async setAlertState(signature: string, sentAtIso: string) { await this.mutate((d) => { d.alertState = { signature, sentAt: sentAtIso }; }); }
 
   async beginWebhook(provider: string, key: string, nowIso: string, leaseSeconds: number) {
     return this.mutate((d): { state: WebhookClaim; token: string | null } => {

@@ -114,6 +114,9 @@ export interface SchedulingRepository {
   /** Records that a sweep just finished (and what it did). */
   recordSweep(nowIso: string, summary: SweepSummary): Promise<void>;
   getLastSweep(): Promise<{ at: string; summary: SweepSummary } | null>;
+  /** What the owner was last alerted about (an empty signature means "nothing outstanding"). */
+  getAlertState(): Promise<{ signature: string; sentAt: string | null }>;
+  setAlertState(signature: string, sentAtIso: string): Promise<void>;
 
   // ---- inbound webhook inbox
   /**

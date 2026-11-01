@@ -16,7 +16,7 @@ let store: MemoryStore; let cal: MockCalendar; let zoom: MockZoom; let email: Mo
 
 beforeEach(async () => {
   now = Date.parse("2026-10-26T12:00:00Z");
-  const seed = await buildSeedData(now); seed.bookings = []; seed.meetingTypes = [];
+  const seed = await buildSeedData(now, "America/Toronto"); seed.bookings = []; seed.meetingTypes = [];
   store = new MemoryStore(seed);
   cal = createMockGoogleCalendar({ homeTimeZone: () => TZ, outage: () => false, pretendCommitments: false });
   zoom = createMockZoom({ failing: () => false });

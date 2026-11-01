@@ -424,6 +424,16 @@ function describeRepo(name: string, factory: Factory, skip = false) {
       expect(new Set(racers.map((r) => Date.parse(r))).size).toBe(1); expect(Date.parse(racers[0])).toBe(Date.parse(first));
     });
 
+    it("remembers what the owner was last alerted about, durably, and starts empty", async () => {
+      const before = await c.repo.getAlertState();                                                         // the developer's own state, if any: restored at the end
+      try {
+        await c.repo.setAlertState("worker-stalled", "2031-03-01T12:00:00.000Z");
+        expect(await c.repo.getAlertState()).toEqual({ signature: "worker-stalled", sentAt: "2031-03-01T12:00:00.000Z" });
+        await c.repo.setAlertState("", "2031-03-01T13:00:00.000Z");
+        expect(await c.repo.getAlertState()).toEqual({ signature: "", sentAt: "2031-03-01T13:00:00.000Z" });
+      } finally { await c.repo.setAlertState(before.signature, before.sentAt ?? "2031-03-01T00:00:00.000Z"); }
+    });
+
     it("records the community answer once, with evidence", async () => {
       const t = await mk();
       const { booking: b } = await c.repo.createBooking(booking(t.id, at(17, 10)));
