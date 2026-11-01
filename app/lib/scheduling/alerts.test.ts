@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { buildSeedData } from "./seed";
-import { createMockGoogleCalendar, createMockZoom, createSimulatedEmail } from "./providers";
+import { createMockGoogleCalendar, createMockZoom, createSimulatedEmail, EmailAlreadyAcceptedError } from "./providers";
+import { recoveryHealth } from "./recovery-health";
 import { OWNER_NOTIFICATION_EMAIL } from "./owner-address";
 import { ALERT_REMIND_MS, alertFindings, composeAlert, decideAlert } from "./alerts";
 import { SchedulingService } from "./service";
@@ -58,7 +59,7 @@ describe("when the owner is told", () => {
 
   it("reports an overdue scan only while the worker is running, so one cause is one alert", async () => {
     const f = await fx(); await f.beat();
-    f.advance(30 * MIN);
+    f.advance(40 * MIN);
     await f.svc.repo.recordSweep(new Date(f.clock.now).toISOString(), { reconciled: 0, processed: 0, succeeded: 0, failed: 0, skipped: 0, conflictsFlagged: 0, conflictScanAt: new Date(NOW).toISOString(), zoomScanAt: new Date(NOW).toISOString() });
     const running = alertFindings({ bookings: [], pulse: await f.svc.repo.getLastSweep(), bouncedUpcoming: 0, now: f.clock.now }).map((x) => x.code);
     expect(running).toEqual(["zoom-scan-overdue", "calendar-scan-overdue"]);
@@ -139,14 +140,70 @@ describe("when the owner is told", () => {
     expect(await svc.checkAlerts()).toMatchObject({ sent: null, unavailable: true });
   });
 
-  it("a retry of the same notice within the period cannot send it twice (the provider key is stable)", async () => {
-    const f = await fx(); await f.beat();
-    f.advance(10 * MIN);
-    await f.svc.checkAlerts();
-    await f.svc.repo.setAlertState("", new Date(f.clock.now).toISOString());     // as if the state write had been lost after the send
-    f.advance(MIN);
-    await f.svc.checkAlerts();
-    expect(f.alerts()).toHaveLength(1);                                           // same key: the provider returns the first message
+});
+
+/** Behaves like Resend: the same idempotency key with a different body within 24 hours is refused ("already accepted"). */
+function resendLikeAlerts(f: Awaited<ReturnType<typeof fx>>) {
+  const seen = new Map<string, string>(); const delivered: string[] = [];
+  f.email.alert = async (m) => {
+    const prior = seen.get(m.idempotencyKey);
+    if (prior !== undefined) { if (prior !== m.text) throw new EmailAlreadyAcceptedError("key reused with a different body"); return { id: "dup" }; }
+    seen.set(m.idempotencyKey, m.text); delivered.push(m.subject); return { id: `msg_${delivered.length}` };
+  };
+  return delivered;
+}
+const bad = (f: Awaited<ReturnType<typeof fx>>) => f.svc.repo.recordSweep(new Date(f.clock.now - 20 * MIN).toISOString(), { reconciled: 0, processed: 0, succeeded: 0, failed: 0, skipped: 0, conflictsFlagged: 0, conflictScanAt: new Date(f.clock.now).toISOString(), zoomScanAt: new Date(f.clock.now).toISOString() });
+
+describe("notices inside one six-hour window (the production failure of 1 November)", () => {
+  it("sends every genuinely new notice: alert, recovered, the SAME problem again, recovered again, with no error, though the provider refuses a reused key", async () => {
+    const f = await fx(); const delivered = resendLikeAlerts(f); await f.beat();
+    for (let round = 0; round < 3; round++) {
+      await bad(f); f.advance(MIN);
+      expect((await f.svc.checkAlerts()).sent).toBe("alert");
+      f.advance(MIN); await f.beat();
+      expect((await f.svc.checkAlerts()).sent).toBe("recovered");
+      f.advance(MIN);
+    }
+    expect(delivered).toHaveLength(6);                                   // all inside well under six hours
+    expect((await f.svc.repo.getAlertState()).signature).toBe("");
+  });
+
+  it("a retry of the SAME notice (sent, but its record was lost) does not send a second copy and does not fail", async () => {
+    const f = await fx(); const delivered = resendLikeAlerts(f); await f.beat();
+    await bad(f); f.advance(MIN);
+    const real = f.svc.repo.setAlertState.bind(f.svc.repo);
+    let lose = true;
+    f.svc.repo.setAlertState = async (sig, at) => { if (lose) { lose = false; throw new Error("database blip"); } return real(sig, at); };
+    await expect(f.svc.checkAlerts()).rejects.toThrow("database blip");      // the email went out, recording it failed
+    expect(delivered).toHaveLength(1);
+    f.advance(5 * MIN); await bad(f); f.advance(MIN);                         // the next run finds the same unrecorded notice (later body, same notice)
+    expect((await f.svc.checkAlerts()).sent).toBe("alert");                   // recorded now, no error, no duplicate
+    expect(delivered).toHaveLength(1);
+    expect((await f.svc.repo.getAlertState()).signature).toBe("worker-stalled");
+  });
+
+  it("still surfaces any other provider failure", async () => {
+    const f = await fx(); await f.beat(); await bad(f); f.advance(MIN);
+    f.email.alert = async () => { throw new Error("provider down"); };
+    await expect(f.svc.checkAlerts()).rejects.toThrow("provider down");
+    expect((await f.svc.repo.getAlertState()).signature).toBe("");
+  });
+});
+
+describe("scan freshness limits", () => {
+  const pulse = (zoomAgeS: number, calAgeS: number, now: number) => ({ at: new Date(now - 20_000).toISOString(), summary: { reconciled: 0, processed: 0, succeeded: 0, failed: 0, skipped: 0, conflictsFlagged: 0, zoomScanAt: new Date(now - zoomAgeS * 1000).toISOString(), conflictScanAt: new Date(now - calAgeS * 1000).toISOString() } });
+  it("does not call a scan overdue for a few seconds of timing: the 09:00 UTC case (a Zoom scan 360.4 seconds old when the monitor fires in the same minute)", () => {
+    expect(recoveryHealth([], pulse(360.4, 120, NOW), NOW).checks.zoomScan).toBe(true);
+    expect(recoveryHealth([], pulse(400, 1000, NOW), NOW).checks).toMatchObject({ zoomScan: true, calendarScan: true });
+  });
+  it("still calls a scan overdue once it has really been missed (two full periods)", () => {
+    expect(recoveryHealth([], pulse(721, 120, NOW), NOW).checks.zoomScan).toBe(false);
+    expect(recoveryHealth([], pulse(120, 1861, NOW), NOW).checks.calendarScan).toBe(false);
+    expect(alertFindings({ bookings: [], pulse: pulse(800, 120, NOW), bouncedUpcoming: 0, now: NOW }).map((x) => x.code)).toEqual(["zoom-scan-overdue"]);
+  });
+  it("the heartbeat limit is unchanged: a stalled worker is still found after five minutes", () => {
+    const p = pulse(100, 100, NOW); p.at = new Date(NOW - 301_000).toISOString();
+    expect(recoveryHealth([], p, NOW).checks.heartbeat).toBe(false);
   });
 });
 

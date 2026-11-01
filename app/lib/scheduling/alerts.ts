@@ -74,9 +74,14 @@ export async function runAlertCheck(d: Deps): Promise<{ findings: number; sent: 
   if (!d.email.alert) return { findings: findings.length, sent: null, unavailable: true };
   const message = composeAlert(decision, findings, d.adminUrl, now);
   const signature = signatureOf(findings);
-  // The provider remembers this key for 24 hours: a retry of the same notice (same problem, same six-hour period) cannot send it twice.
-  const idempotencyKey = `sched-alert/${decision}/${createHash("sha256").update(signature).digest("hex").slice(0, 16)}/${Math.floor(now / ALERT_REMIND_MS)}`;
-  await d.email.alert({ ...message, idempotencyKey });
+  // The key names THIS notice: the transition from what the owner was last told (signature and time) to what they are told now. A retry of the same notice (the send
+  // worked but recording it failed) has the same key; every genuinely new notice has a new one, even within the same six hours.
+  const idempotencyKey = `sched-alert/${decision}/${createHash("sha256").update(`${state.signature}|${state.sentAt ?? ""}|${signature}`).digest("hex").slice(0, 24)}`;
+  try { await d.email.alert({ ...message, idempotencyKey }); }
+  catch (e) {
+    // "The provider already holds a message under this key" means this very notice WAS sent earlier and only its record was lost: record it now, do not fail.
+    if (!(e instanceof Error && e.name === "EmailAlreadyAcceptedError")) throw e;
+  }
   await d.repo.setAlertState(decision === "alert" ? signature : "", new Date(now).toISOString());
   return { findings: findings.length, sent: decision };
 }
