@@ -1,4 +1,5 @@
 import { appBaseUrl } from "@/app/lib/resources/base-url";
+import { refExchangeEnabled } from "@/app/lib/inquiries/config";
 
 /**
  * The ONE place the public introductory-booking link lives. Every email template, button and page that sends
@@ -18,15 +19,22 @@ export const INTRO_BOOKING_MINUTES = 45;
 
 /** Where the booking started, shown to the administrator beside each booking. Short, fixed vocabulary: never free text from a visitor. */
 export type BookingOrigin = "transition" | "inquiry" | "answers";
-type Origin = BookingOrigin | `inquiry-${string}`;
+export type Origin = BookingOrigin | `inquiry-${string}`;
 
-/** The query string: an origin tag and, for a Transition applicant, their opaque `booking_ref`. Nothing personal is ever added. */
-function query(ref?: string | null, origin?: Origin): string {
+/**
+ * The part of the link after the path: an origin tag and, for someone who came from an application or inquiry, their opaque reference. Nothing personal is ever added.
+ *
+ * With BOOKING_REF_EXCHANGE_ENABLED the reference travels in the URL FRAGMENT (`#r=...`). Browsers never send a fragment to a server, so it is absent from
+ * request logs and Referer headers, and the booking page removes it from the address bar before any script can report the page. Without the switch it is the
+ * original `&ref=` query parameter, which the booking page still understands in both cases (links already sent keep working).
+ */
+function linkSuffix(ref?: string | null, origin?: Origin): string {
   const q = new URLSearchParams();
   if (origin) q.set("source", origin);
-  if (ref) q.set("ref", ref);
+  const fragment = ref && refExchangeEnabled();
+  if (ref && !fragment) q.set("ref", ref);
   const s = q.toString();
-  return s ? `?${s}` : "";
+  return `${s ? `?${s}` : ""}${fragment ? `#r=${encodeURIComponent(ref)}` : ""}`;
 }
 
 /**
@@ -35,10 +43,18 @@ function query(ref?: string | null, origin?: Origin): string {
  * name and email, and no name, email or answer is ever put in a URL. With neither argument this is the plain shared link.
  */
 export function introBookingUrl(ref?: string | null, origin?: Origin): string {
-  return `${appBaseUrl()}${INTRO_BOOKING_PATH}${query(ref, origin)}`;
+  return `${appBaseUrl()}${INTRO_BOOKING_PATH}${linkSuffix(ref, origin)}`;
 }
 
 /** The same link as a site-relative path, for buttons on this website (so it works on every deployment). */
 export function introBookingPath(ref?: string | null, origin?: Origin): string {
-  return `${INTRO_BOOKING_PATH}${query(ref, origin)}`;
+  return `${INTRO_BOOKING_PATH}${linkSuffix(ref, origin)}`;
+}
+
+/** Browser-side variant for a reference the server already decided to hand out in fragment form (the server's switches are not visible to the browser). */
+export function introBookingPathWithFragmentRef(ref: string, origin?: Origin): string {
+  const q = new URLSearchParams();
+  if (origin) q.set("source", origin);
+  const s = q.toString();
+  return `${INTRO_BOOKING_PATH}${s ? `?${s}` : ""}#r=${encodeURIComponent(ref)}`;
 }

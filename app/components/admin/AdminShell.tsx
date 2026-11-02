@@ -12,6 +12,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const isGuides = pathname.startsWith("/admin/guides");
   const isPublications = pathname.startsWith("/admin/publications");
   const isLeads = pathname.startsWith("/admin/leads");
+  const isInquiries = pathname.startsWith("/admin/inquiries");
   const isPickMyBrain = pathname.startsWith("/admin/pick-my-brain");
   const isPrograms = pathname.startsWith("/admin/programs");
   const isIntelligence = pathname.startsWith("/admin/intelligence");
@@ -61,6 +62,14 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               }`}
             >
               Leads
+            </Link>
+            <Link
+              href="/admin/inquiries"
+              className={`text-sm tracking-wide ${
+                isInquiries ? "text-[#6b1f1f] font-semibold" : "text-[#1a1816]/60 hover:text-[#1a1816]"
+              }`}
+            >
+              Inquiries
             </Link>
             <Link
               href="/admin/programs/corporate-transition"

@@ -10,6 +10,7 @@ const LOCAL_DB_TESTS = [
   "app/lib/scheduling/contract.test.ts",
   "app/lib/scheduling/kill.test.ts",
   "app/lib/scheduling/supabase-service.test.ts",
+  "app/lib/inquiries/local-db.test.ts",
 ];
 
 /**

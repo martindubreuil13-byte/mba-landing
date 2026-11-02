@@ -32,6 +32,8 @@ export const RATES = {
   bookEmail: { name: "book-email", windowSeconds: 3600, limit: 5 },
   bookAll: { name: "book-all", windowSeconds: 3600, limit: 30 },
   community: { name: "community", windowSeconds: 3600, limit: 30 },
+  /** Exchanging a booking reference for the visitor's own details: once per page load, so this is generous for a person and useless for guessing. */
+  bookingContext: { name: "booking-context", windowSeconds: 600, limit: 30 },
   /** The confirmation page polls every few seconds while its Zoom link is being prepared. */
   status: { name: "status", windowSeconds: 60, limit: 60 },
 } as const satisfies Record<string, RateRule>;

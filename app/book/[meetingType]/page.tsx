@@ -8,6 +8,8 @@ import { requireSchedulingOperations, schedulingIntakeEnabled } from "@/app/lib/
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Book a conversation", robots: { index: false, follow: false } };
 
+import { TAKE_REF_FROM_FRAGMENT } from "@/app/lib/inquiries/take-ref";
+
 type Props = { params: Promise<{ meetingType: string }>; searchParams: Promise<{ invite?: string; source?: string; ref?: string }> };
 
 export default async function BookPage({ params, searchParams }: Props) {
@@ -32,5 +34,12 @@ export default async function BookPage({ params, searchParams }: Props) {
   }
   // A visitor who comes from their application's confirmation screen or invitation email carries an opaque reference: it only prefills their own name and email.
   const prefill = await getScheduling().prefillFor(ref);
-  return <main><BookingExperience type={found.type} invite={invite} source={typeof source === "string" ? source.slice(0, 60) : undefined} preview={preview} prefill={prefill} /></main>;
+  return (
+    <main>
+      {/* Runs while the page is still being parsed, before hydration and before any analytics script: a reference in the URL fragment (#r=...) is moved into
+          memory and taken out of the address bar and the history entry, so it can never be reported with the page's address. See BookingExperience. */}
+      <script dangerouslySetInnerHTML={{ __html: TAKE_REF_FROM_FRAGMENT }} />
+      <BookingExperience type={found.type} invite={invite} source={typeof source === "string" ? source.slice(0, 60) : undefined} preview={preview} prefill={prefill} />
+    </main>
+  );
 }

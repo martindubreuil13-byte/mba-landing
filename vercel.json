@@ -1,3 +1,6 @@
 {
-  "crons": [{ "path": "/api/cron/intelligence-maintenance", "schedule": "17 3 * * *" }]
+  "crons": [
+    { "path": "/api/cron/intelligence-maintenance", "schedule": "17 3 * * *" },
+    { "path": "/api/cron/inquiry-retention", "schedule": "43 3 * * *" }
+  ]
 }

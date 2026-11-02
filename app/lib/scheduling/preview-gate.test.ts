@@ -27,6 +27,10 @@ const slotsUrl = "https://modernbusinessarchitect.com/api/scheduling/slots?type=
 beforeEach(() => { admin.user = null; admin.calls = 0; vi.clearAllMocks(); svc.publicMeetingType.mockResolvedValue({ ok: true, type: publicType }); });
 afterEach(() => vi.unstubAllEnvs());
 
+/** The booking page's <main> now holds the inline script and then the booking experience: find the experience's props. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const experienceProps = (el: any) => (Array.isArray(el.props.children) ? el.props.children : [el.props.children]).find((c: any) => c?.props?.type)?.props;
+
 describe("the availability lookup while intake is closed", () => {
   it("answers 404 to a visitor, and never even asks who they are for another route", async () => {
     closedProduction();
@@ -96,8 +100,8 @@ describe("the booking page while intake is closed", () => {
   it("shows the administrator the real page in preview mode", async () => {
     closedProduction(); admin.user = { email: "owner@example.test" };
     const el = (await render()) as { props: { children: { props: { preview: boolean; type: { slug: string } } } } };
-    expect(el.props.children.props.preview).toBe(true);
-    expect(el.props.children.props.type.slug).toBe("complementary-session");
+    expect(experienceProps(el).preview).toBe(true);
+    expect(experienceProps(el).type.slug).toBe("complementary-session");
   });
   it("still says 'not found' to the administrator for a link that does not exist", async () => {
     closedProduction(); admin.user = { email: "owner@example.test" };
@@ -107,7 +111,7 @@ describe("the booking page while intake is closed", () => {
   it("is the ordinary public page, not a preview, once intake opens, and needs no session", async () => {
     open();
     const el = (await render()) as { props: { children: { props: { preview: boolean } } } };
-    expect(el.props.children.props.preview).toBe(false);
+    expect(experienceProps(el).preview).toBe(false);
     expect(admin.calls).toBe(0);
   });
 });

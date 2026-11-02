@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { isRefShaped } from "@/app/lib/inquiries/refs";
 import { z } from "zod";
 import type { ActivityKind, Availability, Booking, BusyInterval, CommunityState, MeetingType, SchedulingData, Settings, Slot, SweepSummary } from "./types";
 import { computeSlots, validateAvailability } from "./availability";
@@ -281,7 +282,7 @@ export class SchedulingService {
    * a malformed, unknown or unreadable reference simply means an empty form. The reference is an unguessable random token (144 bits).
    */
   async prefillFor(ref: unknown): Promise<BookingPrefill | null> {
-    if (!this.inquiryPrefill || typeof ref !== "string" || !/^[A-Za-z0-9_-]{16,64}$/.test(ref)) return null;
+    if (!this.inquiryPrefill || !isRefShaped(ref)) return null;
     try { return await this.inquiryPrefill(ref); } catch { return null; }
   }
 

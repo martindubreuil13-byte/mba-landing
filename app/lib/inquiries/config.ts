@@ -1,0 +1,45 @@
+/**
+ * Phase 2a switches and limits. Every switch is OFF unless the variable is exactly "true", so a release that contains this code behaves like the
+ * previous one until someone turns a switch on deliberately (and turning it off again restores the previous behaviour).
+ */
+const on = (name: string) => process.env[name] === "true";
+
+/** Accepted inquiries are stored (program_inquiries) before the owner is notified; no stored row means no notification. */
+export const inquiryStoreEnabled = () => on("PROGRAM_INQUIRY_STORE_ENABLED");
+
+/** The daily retention job actually blanks expired inquiry messages (it reports what it would do when this is off). */
+export const inquiryPurgeEnabled = () => on("PROGRAM_INQUIRY_PURGE_ENABLED");
+
+/** New booking links carry the reference in the URL fragment and the booking page exchanges it for the visitor's own details. */
+export const refExchangeEnabled = () => on("BOOKING_REF_EXCHANGE_ENABLED");
+
+/** The longest an inquiry message is kept. Configurable downwards only. */
+export const MAX_RETENTION_MONTHS = 24;
+
+/** INQUIRY_RETENTION_MONTHS, clamped to 1-24; unset or unreadable means the 24-month maximum. */
+export function retentionMonths(env: Record<string, string | undefined> = process.env): number {
+  const n = Number.parseInt(env.INQUIRY_RETENTION_MONTHS ?? "", 10);
+  if (!Number.isFinite(n)) return MAX_RETENTION_MONTHS;
+  return Math.min(MAX_RETENTION_MONTHS, Math.max(1, n));
+}
+
+/** Messages created before this instant are past retention. Calendar-month arithmetic in UTC. */
+export function retentionCutoff(now: number = Date.now(), months: number = retentionMonths()): Date {
+  const d = new Date(now);
+  d.setUTCMonth(d.getUTCMonth() - months);
+  return d;
+}
+
+/** How long a booking reference may pre-fill the visitor's own name and e-mail. Expiry never stops an ordinary booking. */
+export const REF_PREFILL_DAYS = 60;
+
+/** The thresholds: 5 submissions/hour per client, 3 new inquiries/day per address. The global figure only raises a log warning; it never refuses anyone. */
+export const INQUIRY_LIMITS = {
+  client: { windowSeconds: 3600, limit: 5 },
+  email: { windowSeconds: 86_400, limit: 3 },
+  globalSoft: { windowSeconds: 3600, limit: 60 },
+} as const;
+
+/** A human cannot complete the form faster than this; the form's signed token must be at least this old and at most a day old. */
+export const FORM_MIN_AGE_MS = 2_000;
+export const FORM_MAX_AGE_MS = 24 * 3_600_000;

@@ -14,6 +14,14 @@ const newKey = () => (typeof crypto !== "undefined" && "randomUUID" in crypto ? 
 /** The form's starting values. A visitor who arrives from a known inquiry gets their own name and email filled in (still editable); everything else starts empty. */
 export const initialBookingForm = (prefill?: { name: string; email: string } | null) => ({ name: prefill?.name ?? "", email: prefill?.email ?? "", message: "", contactUrl: "" });
 
+/** The reference the page's inline script left in memory (window.__mbaRef). Read once and removed from the window; held here only until it has been exchanged. */
+let heldRef: string | null = null;
+function takeHeldRef(): string | null {
+  const w = window as unknown as { __mbaRef?: string };
+  if (typeof w.__mbaRef === "string") { heldRef = w.__mbaRef; delete w.__mbaRef; }
+  return heldRef;
+}
+
 export default function BookingExperience({ type, invite, source, preview = false, prefill = null }: { type: PublicMeetingType; invite?: string; source?: string; /** Administrator preview while public intake is closed: everything works except the final booking. */ preview?: boolean; /** The visitor's own name and email, when they arrive from a known inquiry. The fields are only filled in; they stay editable. */ prefill?: { name: string; email: string } | null }) {
   const router = useRouter();
   const [tz, setTz] = useState<string | null>(null);
@@ -35,11 +43,27 @@ export default function BookingExperience({ type, invite, source, preview = fals
     setTz(detected);
   }, []);
   useEffect(() => { if (step === "details") heading.current?.focus(); }, [step]);
-  // Once the details are in the form, the inquiry reference is no longer needed: take it out of the address bar (best effort) so it is not copied, shared or logged along with the page.
+  // A link from an older e-mail carries the reference as ?ref=... (the server has already used it to fill the form). Take it out of the address bar whether or not
+  // it matched anything, so it is not copied, shared or reported along with the page (the inline script on the page normally does this even earlier).
   useEffect(() => {
-    if (!prefill) return;
     try { const u = new URL(window.location.href); if (u.searchParams.has("ref")) { u.searchParams.delete("ref"); window.history.replaceState(window.history.state, "", `${u.pathname}${u.search}${u.hash}`); } } catch { /* the address bar is cosmetic */ }
-  }, [prefill]);
+  }, []);
+  // A newer link carries the reference in the URL fragment; the page's inline script moved it into memory. Exchange it ONCE, in a request body, for this visitor's own
+  // name and e-mail, and never keep it afterwards. Only empty fields are filled, so nothing the visitor has already typed is overwritten. Failure is silent: an empty form.
+  useEffect(() => {
+    const ref = takeHeldRef();
+    if (!ref) return;
+    const controller = new AbortController();
+    fetch("/api/scheduling/booking-context", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ref }), cache: "no-store", signal: controller.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: { prefill?: { name?: unknown; email?: unknown } | null } | null) => {
+        heldRef = null;
+        const p = j?.prefill;
+        if (p && typeof p.name === "string" && typeof p.email === "string") setForm((f) => ({ ...f, name: f.name || (p.name as string), email: f.email || (p.email as string) }));
+      })
+      .catch((e: unknown) => { if ((e as { name?: string } | null)?.name !== "AbortError") heldRef = null; });
+    return () => controller.abort();
+  }, []);
 
   const load = useCallback(async (from: string, to: string): Promise<PickerSlot[]> => {
     const q = new URLSearchParams({ type: type.slug, from, to });

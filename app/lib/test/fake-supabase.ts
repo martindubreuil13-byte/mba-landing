@@ -21,6 +21,7 @@ export class FakeDb {
     program_applications: [],
     program_invitation_sends: [],
     program_bookings: [],
+    program_inquiries: [],
   };
 
   insertCount: Record<string, number> = {};
@@ -51,7 +52,7 @@ function parseOr(expr: string): Filter {
 
 class Query implements PromiseLike<Result> {
   private filters: Filter[] = [];
-  private action: "select" | "insert" | "update" = "select";
+  private action: "select" | "insert" | "update" | "delete" = "select";
   private payload: Row | Row[] | null = null;
   private selectCols = "*";
   private returning = false;
@@ -68,6 +69,8 @@ class Query implements PromiseLike<Result> {
   }
   insert(payload: Row | Row[]) { this.action = "insert"; this.payload = payload; return this; }
   update(payload: Row) { this.action = "update"; this.payload = payload; return this; }
+  delete() { this.action = "delete"; return this; }
+  lt(col: string, value: unknown) { this.filters.push((r) => r[col] != null && (r[col] as any) < (value as any)); return this; }
   eq(col: string, value: unknown) { this.filters.push((r) => r[col] === value); return this; }
   in(col: string, values: unknown[]) { this.filters.push((r) => values.includes(r[col])); return this; }
   neq(col: string, value: unknown) { this.filters.push((r) => r[col] !== value); return this; }
@@ -114,11 +117,12 @@ class Query implements PromiseLike<Result> {
           Object.assign(row, { country: null, ongoing_content_opt_in_at: null, ongoing_content_opt_out_at: null, suppressed_at: null, consent_requested_at: null, updated_at: now }, item, { id: row.id, created_at: now });
         }
         if (rows.some((r) => r.id === row.id) || (this.table === "program_invitation_sends" && row.status === "pending" && rows.some((r) => r.application_id === row.application_id && r.status === "pending"))) return { data: null, error: { message: "duplicate key", code: "23505" } };
-        const UNIQUE: Record<string, string[]> = { program_applications: ["idempotency_key", "booking_ref", "receipt_token"], program_bookings: ["calendly_invitee_uri"] };
+        const UNIQUE: Record<string, string[]> = { program_applications: ["idempotency_key", "booking_ref", "receipt_token"], program_bookings: ["calendly_invitee_uri"], program_inquiries: ["idempotency_key", "booking_ref"] };
         for (const col of UNIQUE[this.table] ?? []) {
           if (row[col] != null && rows.some((r) => r[col] === row[col])) return { data: null, error: { message: `duplicate key value violates unique constraint ${this.table}_${col}_key`, code: "23505" } };
         }
         if (this.table === "program_applications") Object.assign(row, { submitted_at: now, booking_status: "unsupported", booked_at: null, meeting_at: null, community_choice: null, ai_route: null, ai_confidence: null, applicant_email_status: "not_sent", applicant_email_error: null, admin_notification_status: "not_sent", admin_notification_error: null, ...item, id: row.id });
+        if (this.table === "program_inquiries") Object.assign(row, { message: "", situation: null, program_slug: null, attribution: {}, owner_status: "pending", owner_claimed_at: null, owner_attempts: 0, owner_message_id: null, owner_error: null, owner_accepted_at: null, auto_reply_status: "pending", auto_reply_message_id: null, auto_reply_error: null, message_purged_at: null, updated_at: now, ...item, id: row.id });
         if (this.table === "program_invitation_sends") Object.assign(row, { attempted_at: now, provider_message_id: null, error: null, delivery_status: null, delivery_updated_at: null, ...item, id: row.id });
         if (this.table === "program_bookings") Object.assign(row, { booking_ref: null, calendly_event_uri: null, start_time: null, end_time: null, booked_at: null, canceled_at: null, rescheduled: false, ...item, id: row.id });
         if (this.table === "resource_requests") Object.assign(row, { requested_at: now, benefit_fulfilled_at: null, ...item, id: row.id });
@@ -127,6 +131,13 @@ class Query implements PromiseLike<Result> {
       }
       this.db.insertCount[this.table] = (this.db.insertCount[this.table] ?? 0) + created.length;
       return this.finish(created);
+    }
+
+    if (this.action === "delete") {
+      if (this.table === "consent_records") return { data: null, error: { message: "consent_records is append-only" } };
+      const hit = rows.filter(match);
+      this.db.tables[this.table] = rows.filter((r) => !hit.includes(r));
+      return this.returning ? this.finish(hit) : { data: null, error: null };
     }
 
     if (this.action === "update") {

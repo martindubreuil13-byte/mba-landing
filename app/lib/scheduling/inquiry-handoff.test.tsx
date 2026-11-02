@@ -58,6 +58,9 @@ const toApplicant = () => sent.filter((m) => m.to === "elena@example.com");
 beforeEach(() => { vi.stubEnv("VERCEL_ENV", "production"); vi.stubEnv("VERCEL", "1"); vi.stubEnv("APP_BASE_URL", ""); for (const k of Object.keys(db.tables)) db.tables[k] = []; sent.length = 0; refuse = () => false; vi.clearAllMocks(); });
 afterEach(() => vi.unstubAllEnvs());
 
+/** The booking page's <main> now holds the inline script and then the booking experience: find the experience's props. */
+const experienceProps = (el: any) => (Array.isArray(el.props.children) ? el.props.children : [el.props.children]).find((c: any) => c?.props?.type)?.props;
+
 describe("Transition: the application is saved, then the visitor is handed to the booking page", () => {
   it("saves the contact, the answers and the program interest, and records that NO session is booked yet", async () => {
     const res = await submit(); expect(res.status).toBe(200);
@@ -152,13 +155,13 @@ describe("the booking page greets the applicant without a second form and withou
     svc.prefillFor.mockResolvedValue({ name: "Elena Test", email: "elena@example.com" });
     const { default: Page } = await import("@/app/book/[meetingType]/page");
     const el = (await Page({ params: Promise.resolve({ meetingType: "complementary-session" }), searchParams: Promise.resolve({ source: "transition", ref: "0123456789abcdefghijklmn" }) })) as any;
-    const props = el.props.children.props;
+    const props = experienceProps(el);
     expect(svc.prefillFor).toHaveBeenCalledWith("0123456789abcdefghijklmn");
     expect(props).toMatchObject({ prefill: { name: "Elena Test", email: "elena@example.com" }, source: "transition", preview: false });
     // no ref at all: an ordinary visitor, an empty form
     svc.prefillFor.mockResolvedValue(null);
     const plain = (await Page({ params: Promise.resolve({ meetingType: "complementary-session" }), searchParams: Promise.resolve({}) })) as any;
-    expect(plain.props.children.props.prefill).toBeNull();
+    expect(experienceProps(plain).prefill).toBeNull();
     vi.unstubAllEnvs();
   });
 
@@ -233,9 +236,9 @@ describe("wiring of the inquiry form's success screen (the page itself is a larg
   const page = fs.readFileSync(path.resolve(__dirname, "../../lets-talk/page.tsx"), "utf8");
   it("shows the booking button only on the success screen, tagged with the selected program, using the API's real autoReply answer", () => {
     expect(page).toContain('import InquiryBookingCta from "@/app/components/programs/InquiryBookingCta";');
-    expect(page).toContain("<InquiryBookingCta programSlug={program?.slug ?? null} autoReplySent={autoReplySent} />");
+    expect(page).toContain("<InquiryBookingCta programSlug={program?.slug ?? null} autoReplySent={autoReplySent} bookingRef={bookingRef} />");
     expect(page.indexOf("<InquiryBookingCta")).toBeGreaterThan(page.indexOf('submitStatus === "success"'));
-    expect(page).toContain("d?.autoReply === true");
+    expect(page).toContain("result.autoReply === true");
     expect(page).toContain("get back to you personally within 48 hours");                       // the existing promise is kept
   });
 });

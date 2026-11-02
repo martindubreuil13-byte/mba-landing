@@ -53,6 +53,12 @@ export default function LetsTalkPage() {
   const [errorMessage, setErrorMessage] = useState("");
   // Whether the visitor's confirmation email (which also carries the booking link) was accepted, so the page never claims an email that was not sent.
   const [autoReplySent, setAutoReplySent] = useState(false);
+  // Set only when the server stores inquiries and hands out new-style links: the opaque reference for THIS visitor's booking link.
+  const [bookingRef, setBookingRef] = useState<string | null>(null);
+  // Proof the form was open for a moment (fetched on load) and one retry-safe key per form, so a repeated send is one inquiry, not two. Nothing personal in either.
+  const formToken = useRef<string | null>(null);
+  const submissionKey = useRef<string | null>(null);
+  const [trap, setTrap] = useState("");
   const conversationRef = useRef<HTMLDivElement>(null);
   const successRef = useRef<HTMLDivElement>(null);
 
@@ -61,6 +67,14 @@ export default function LetsTalkPage() {
   };
 
   const hasContext = Boolean(selectedSituation || program);
+
+  const fetchFormToken = async () => {
+    try {
+      const r = await fetch("/api/qualify/challenge", { cache: "no-store" });
+      formToken.current = r.ok ? ((await r.json()) as { token?: string }).token ?? null : null;
+    } catch { formToken.current = null; }
+  };
+  useEffect(() => { void fetchFormToken(); }, []);
 
   // Scroll to conversation/form when situation is selected
   useEffect(() => {
@@ -128,7 +142,8 @@ export default function LetsTalkPage() {
         ? `Program ${program.number}: ${program.name}`
         : SITUATIONS.find((s) => s.id === selectedSituation)?.title || "Unknown";
 
-      const response = await fetch("/api/qualify", {
+      submissionKey.current ??= typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `k-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const send = () => fetch("/api/qualify", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...intelligenceHeaders() },
         body: JSON.stringify({
@@ -139,19 +154,28 @@ export default function LetsTalkPage() {
           program: program ? { slug: program.slug } : undefined,
           // First-touch (the session's landing page and its UTM/referrer) wins; the current URL only has ?program=.
           attribution: { ...(readFirstTouch() ?? collectAttribution()), entryPage: window.location.pathname },
+          formToken: formToken.current ?? undefined,
+          idempotencyKey: submissionKey.current,
+          contactUrl: trap,
         }),
       });
+      let response = await send();
+      let result = (await response.clone().json().catch(() => ({}))) as { autoReply?: boolean; bookingRef?: string; message?: string; code?: string };
+      // Sent faster than a person could type: wait the two seconds the server asks for and send once more.
+      if (!response.ok && result.code === "too_fast") { await new Promise((resolve) => setTimeout(resolve, 2500)); response = await send(); result = (await response.clone().json().catch(() => ({}))) as typeof result; }
 
       if (response.ok) {
-        setAutoReplySent(await response.json().then((d: { autoReply?: boolean }) => d?.autoReply === true).catch(() => false));
+        setAutoReplySent(result.autoReply === true);
+        setBookingRef(typeof result.bookingRef === "string" ? result.bookingRef : null);
         setSubmitStatus("success");
+        submissionKey.current = null;
         // Keep the selection so the success state below (gated on it) actually renders.
         setFormData({ name: "", email: "", message: "" });
       } else {
-        // The API answers success only when the email provider accepted the message, so anything else is shown as a failure.
-        const detail = await response.json().then((d: { message?: string }) => d?.message).catch(() => undefined);
+        // The API answers success only when the inquiry was saved and the email provider accepted the message, so anything else is shown as a failure.
+        if (result.code === "stale_form" || result.code === "too_fast") void fetchFormToken();
         setSubmitStatus("error");
-        setErrorMessage(`${detail ?? "Something went wrong."} Please try again or email martin@mindrasolutions.com`);
+        setErrorMessage(`${result.message ?? "Something went wrong."} Please try again or email martin@mindrasolutions.com`);
       }
     } catch (error) {
       setSubmitStatus("error");
@@ -390,6 +414,12 @@ export default function LetsTalkPage() {
 
               <form onSubmit={handleSubmit} className="space-y-8">
 
+                {/* Spam trap: invisible and unreachable for people; a script that fills it is ignored. */}
+                <div aria-hidden="true" style={{ position: "absolute", left: "-10000px", width: 1, height: 1, overflow: "hidden" }}>
+                  <label htmlFor="contactUrl">Leave this field empty</label>
+                  <input type="text" id="contactUrl" name="contactUrl" value={trap} onChange={(e) => setTrap(e.target.value)} tabIndex={-1} autoComplete="off" />
+                </div>
+
                 {/* NAME FIELD */}
                 <div>
                   <label htmlFor="name" className="text-sm tracking-widest uppercase text-[#1a1816]/50 font-medium">
@@ -515,7 +545,7 @@ export default function LetsTalkPage() {
                   I'll read what you sent and get back to you personally within 48 hours.
                 </p>
 
-                <InquiryBookingCta programSlug={program?.slug ?? null} autoReplySent={autoReplySent} />
+                <InquiryBookingCta programSlug={program?.slug ?? null} autoReplySent={autoReplySent} bookingRef={bookingRef} />
 
                 <div className="border-t border-[#1a1816]/8 pt-8 mt-8">
                   <p className="text-lg md:text-xl font-light leading-relaxed text-[#1a1816]">
