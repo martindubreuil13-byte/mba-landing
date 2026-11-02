@@ -621,7 +621,9 @@ describe("community consent", () => {
   it("nothing in the modal is pre-selected, and the prompt offers accept, decline and dismiss", () => {
     const src = fs.readFileSync(path.resolve(__dirname, "../../components/scheduling/CommunityModal.tsx"), "utf8");
     expect(src).not.toMatch(/defaultChecked|checked=|type="checkbox"|type="radio"/);
-    expect(src).toMatch(/choose\("declined"\)/); expect(src).toMatch(/choose\("joined"\)/); expect(src).toMatch(/Not now/);
+    // The markup lives in CommunityDialog, which receives the same two answers; the labels come from the approved wording constants ("Not now" / "Yes, keep me in the loop").
+    expect(src).toMatch(/onChoose\("declined"\)/); expect(src).toMatch(/onChoose\("joined"\)/); expect(src).toMatch(/COMMUNITY_DECLINE/); expect(src).toMatch(/COMMUNITY_JOIN/);
+    expect(src).toMatch(/choose = async/); expect(src).toMatch(/close\(true\)/);                  // the answer handlers and the dismissal path are still the modal's own
     expect(src).toMatch(/Escape/); expect(src).toMatch(/aria-modal="true"/);
   });
 });

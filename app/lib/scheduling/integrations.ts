@@ -21,6 +21,7 @@ import { SupabaseRepository } from "./adapters/supabase-repository";
 import { TokenVault } from "./adapters/token-vault";
 import { admitBooking } from "./adapters/booking-budget";
 import { leadsConsent } from "./adapters/leads-consent";
+import { inquiryPrefill } from "./adapters/inquiry-prefill";
 import { ZoomClient } from "./adapters/zoom";
 
 /**
@@ -105,7 +106,7 @@ export function buildScheduling(env: Env = process.env): Built {
   // `after` throws outside a request (scripts, the cron worker); the service then simply runs the work inline.
   const defer = env.SCHEDULING_SYNC === "inline" ? undefined : (task: () => Promise<unknown>) => after(task);
   // The host is told about every new booking, reschedule and cancellation (see notifications.ts). Guest invitations through Google stay OFF unless explicitly enabled above.
-  const service = new SchedulingService({ repo, calendar, zoom, email, inviteGuestInCalendar: env.SCHEDULING_GOOGLE_INVITE_GUEST === "true", defer, ownerEmail: ownerNotificationAddress(env), adminUrl: `${appBaseUrl()}/admin/scheduling/bookings`, bookingBudget: db ? admitBooking : undefined, communityConsent: db ? leadsConsent : undefined });
+  const service = new SchedulingService({ repo, calendar, zoom, email, inviteGuestInCalendar: env.SCHEDULING_GOOGLE_INVITE_GUEST === "true", defer, ownerEmail: ownerNotificationAddress(env), adminUrl: `${appBaseUrl()}/admin/scheduling/bookings`, bookingBudget: db ? admitBooking : undefined, communityConsent: db ? leadsConsent : undefined, inquiryPrefill: db ? inquiryPrefill : undefined });
   return { service, oauth, modes, connections };
 }
 

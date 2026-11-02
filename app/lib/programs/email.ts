@@ -1,7 +1,7 @@
 import "server-only";
 import { createResend } from "@/app/lib/email-client";
 import { appBaseUrl } from "@/app/lib/resources/base-url";
-import { INTRO_BOOKING_URL } from "@/app/lib/booking";
+import { INTRO_BOOKING_MINUTES, introBookingUrl } from "@/app/lib/booking";
 import { isHttpsUrl, renderEmail, type Block } from "./email-shell";
 import { programAdminTo, programFrom, programReplyTo } from "./routing";
 
@@ -9,7 +9,8 @@ export type ProgramEmail = { subject: string; preview: string; html: string; tex
 
 /** The configured scheduling link, or null when it is not a valid https URL (the button is then omitted, never faked). */
 export function schedulingUrl(): string | null {
-  return isHttpsUrl(INTRO_BOOKING_URL) ? INTRO_BOOKING_URL : null;
+  const url = introBookingUrl();
+  return isHttpsUrl(url) ? url : null;
 }
 
 const transactionalFooter = () => ({
@@ -18,8 +19,10 @@ const transactionalFooter = () => ({
 });
 
 /**
- * The booking invitation: sent to EVERY valid applicant, with no screening and no marketing content. `bookingUrl` is the
- * same per-applicant link the confirmation screen shows (one Calendly event, so a booking made from either place is one appointment).
+ * The booking invitation: sent to EVERY valid applicant, with no screening and no marketing content. It acknowledges that the application
+ * was received and invites the applicant to book the free complimentary session. `bookingUrl` is the same per-applicant link the
+ * confirmation screen shows (one meeting type, so a booking made from either place is one appointment). Receiving this email is not a
+ * booking: the session is confirmed only when a time is chosen and the booking completes.
  * The button is omitted, never faked, if the link is not a valid https URL.
  */
 export function invitationMessage(firstName: string, bookingUrl: string | null): ProgramEmail {
@@ -28,10 +31,10 @@ export function invitationMessage(firstName: string, bookingUrl: string | null):
   const preview = "The next step is simple. Pick a time that works for you.";
   const blocks: Block[] = [
     { type: "p", text: `Hi ${firstName},` },
-    { type: "p", text: "Thanks for taking the time to tell me a little about yourself and what you’re thinking of doing." },
+    { type: "p", text: "I’ve received your application. Thanks for taking the time to tell me a little about yourself and what you’re thinking of doing." },
     { type: "p", text: "The next step is simple. Let’s have a conversation." },
-    { type: "p", text: "You can book a Zoom call with me using the button below." },
-    ...(url ? [{ type: "cta", label: "BOOK YOUR CONVERSATION", url } as Block, { type: "p", text: "Pick whatever works best for you." } as Block] : []),
+    { type: "p", text: `You can book your free ${INTRO_BOOKING_MINUTES}-minute Zoom conversation with me using the button below.` },
+    ...(url ? [{ type: "cta", label: "BOOK YOUR COMPLIMENTARY SESSION", url } as Block, { type: "p", text: "Pick whatever works best for you." } as Block] : []),
     { type: "p", text: "If you’ve already booked directly from the confirmation page, there’s nothing else you need to do. This is the same booking link, not a second appointment." },
     { type: "p", text: "One small thing: depending on where you are in the world, available slots can sometimes be limited because of time-zone differences." },
     { type: "p", text: "If you can’t find anything suitable, just reply to this email and we’ll figure something out." },

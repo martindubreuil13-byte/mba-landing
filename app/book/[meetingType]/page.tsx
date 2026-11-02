@@ -8,7 +8,7 @@ import { requireSchedulingOperations, schedulingIntakeEnabled } from "@/app/lib/
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Book a conversation", robots: { index: false, follow: false } };
 
-type Props = { params: Promise<{ meetingType: string }>; searchParams: Promise<{ invite?: string; source?: string }> };
+type Props = { params: Promise<{ meetingType: string }>; searchParams: Promise<{ invite?: string; source?: string; ref?: string }> };
 
 export default async function BookPage({ params, searchParams }: Props) {
   // While public intake is closed, the page is a PREVIEW for the signed-in administrator only (everyone else gets "not found"). Submitting stays impossible:
@@ -17,7 +17,7 @@ export default async function BookPage({ params, searchParams }: Props) {
   const preview = !schedulingIntakeEnabled();
   if (preview && !(await getAdminUser().catch(() => null))) notFound();
   const { meetingType } = await params;
-  const { invite, source } = await searchParams;
+  const { invite, source, ref } = await searchParams;
   const found = await getScheduling().publicMeetingType(meetingType, invite);
   if (!found.ok && found.reason === "not_found") notFound();
   if (!found.ok) {
@@ -30,5 +30,7 @@ export default async function BookPage({ params, searchParams }: Props) {
       </main>
     );
   }
-  return <main><BookingExperience type={found.type} invite={invite} source={typeof source === "string" ? source.slice(0, 60) : undefined} preview={preview} /></main>;
+  // A visitor who comes from their application's confirmation screen or invitation email carries an opaque reference: it only prefills their own name and email.
+  const prefill = await getScheduling().prefillFor(ref);
+  return <main><BookingExperience type={found.type} invite={invite} source={typeof source === "string" ? source.slice(0, 60) : undefined} preview={preview} prefill={prefill} /></main>;
 }

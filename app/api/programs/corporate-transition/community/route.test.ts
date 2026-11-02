@@ -17,6 +17,7 @@ process.env.EVIDENCE_HASH_SECRET = "s";
 process.env.NAPKIN_UNSUBSCRIBE_SECRET = "s";
 process.env.RESEND_API_KEY = "k";
 
+import { introBookingUrl } from "@/app/lib/booking";
 import { POST as community } from "./route";
 import { POST as receipt } from "../receipt/route";
 import { COMMUNITY_CONSENT_VERSION } from "@/app/lib/programs/corporate-transition";
@@ -31,6 +32,7 @@ const lead = () => db.tables.leads[0];
 const app = () => db.tables.program_applications[0];
 
 beforeEach(() => {
+  vi.stubEnv("VERCEL_ENV", "production"); vi.stubEnv("VERCEL", "1"); vi.stubEnv("APP_BASE_URL", "");   // production: the booking link is the canonical https page
   for (const k of Object.keys(db.tables)) db.tables[k] = [];
   sent.length = 0; state.refuse = false;
   db.tables.leads.push({ id: LEAD, email: "elena@example.com", first_name: "Elena", country: "Spain", ongoing_content_opt_in: false, ongoing_content_opt_in_at: null, ongoing_content_opt_out_at: null, suppressed_at: null, consent_requested_at: null });
@@ -177,7 +179,7 @@ describe("8. a failure in the community choice never interferes with booking", (
     expect(app()).toMatchObject({ status: "INVITED", booking_status: "not_booked", booking_ref: "ref-0123456789abcdefghij", community_choice: null });
     const r = await receipt(new Request("http://localhost/x", { method: "POST", body: JSON.stringify({ token: TOKEN }) }));
     expect(r.status).toBe(200);
-    expect((await r.json()).bookingUrl).toContain("utm_content=ref-0123456789abcdefghij");
+    expect((await r.json()).bookingUrl).toContain("ref=ref-0123456789abcdefghij");
   });
   it("declining after joining does not unsubscribe anyone; that is what the unsubscribe link is for", async () => {
     await choose("join");
@@ -196,7 +198,7 @@ describe("the receipt (restoring the confirmation screen after a refresh)", () =
     const json = await res.json();
     expect(res.headers.get("cache-control")).toBe("no-store");
     expect(json).toMatchObject({ success: true, receiptToken: TOKEN, invitationEmail: "sent", community: "declined" });
-    expect(json.bookingUrl).toContain("https://calendly.com/martindubreuil13/30min?");
+    expect(json.bookingUrl).toContain(`${introBookingUrl()}?`);
     expect(JSON.stringify(json)).not.toMatch(/elena|example\.com|Spain|aaaaaaaa/i);
   });
   it("says 'not_sent' when no invitation was accepted", async () => {

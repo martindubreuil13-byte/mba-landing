@@ -44,7 +44,8 @@ process.env.RESEND_API_KEY = "k";
 process.env.PROGRAM_ADMIN_EMAIL = "martin@example.com";
 
 import { POST } from "./route";
-import { INTRO_BOOKING_URL } from "@/app/lib/booking";
+import { introBookingUrl } from "@/app/lib/booking";
+const BOOKING_PAGE = () => introBookingUrl();
 
 const base = {
   employment: "Director / senior leader", experience: "20+ years", stage: "I have several ideas or possibilities and don’t know which one to pursue.",
@@ -56,6 +57,7 @@ const apply = (answers: Record<string, unknown>, key = "key-1", extra: Record<st
   POST(new Request("http://localhost/api/programs/corporate-transition/apply", { method: "POST", headers: { "content-type": "application/json", "user-agent": "t" }, body: JSON.stringify({ answers, attribution: { source: "linkedin", utm_campaign: "oct" }, idempotencyKey: key, website: "", ...extra }) }));
 
 beforeEach(() => {
+  vi.stubEnv("VERCEL_ENV", "production"); vi.stubEnv("VERCEL", "1"); vi.stubEnv("APP_BASE_URL", "");   // production: the booking link is the canonical https page
   for (const k of Object.keys(db.tables)) db.tables[k] = [];
   sent.length = 0; options.length = 0; providerMode = "ok"; state.limitOk = true;
   openai.mockClear(); recordConversion.mockClear();
@@ -78,7 +80,7 @@ describe("1-2. every valid applicant reaches the booking screen, with no screeni
     const json = await res.json();
     expect(res.status).toBe(200);
     expect(json.success).toBe(true);
-    expect(json.bookingUrl.startsWith(`${INTRO_BOOKING_URL}?`)).toBe(true);
+    expect(json.bookingUrl.startsWith(`${BOOKING_PAGE()}?`)).toBe(true);
     expect(json).not.toHaveProperty("route");
     expect(stored()).toMatchObject({ status: "INVITED", booking_status: "not_booked", ai_route: null, ai_confidence: null });
     expect(invitations()).toHaveLength(1);
@@ -103,8 +105,12 @@ describe("1-2. every valid applicant reaches the booking screen, with no screeni
   it("the booking link carries the application's opaque booking_ref, and the email carries the SAME link", async () => {
     const json = await (await apply(base)).json();
     const url = new URL(json.bookingUrl);
-    expect(`${url.origin}${url.pathname}`).toBe(INTRO_BOOKING_URL);
-    expect(url.searchParams.get("utm_content")).toBe(stored().booking_ref);
+    expect(`${url.origin}${url.pathname}`).toBe(BOOKING_PAGE());
+    expect(url.pathname).toBe("/book/complementary-session");
+    expect(url.origin).toBe("https://modernbusinessarchitect.com");
+    expect(url.searchParams.get("ref")).toBe(stored().booking_ref);
+    expect(url.searchParams.get("source")).toBe("transition");                       // where it was offered, in the fixed vocabulary only
+    expect([...url.searchParams.keys()].sort()).toEqual(["ref", "source"]);          // nothing else rides in the URL
     expect(stored().booking_ref).not.toBe(stored().receipt_token);
     expect(stored().booking_ref).toMatch(/^[A-Za-z0-9_-]{20,}$/);
     expect(json.bookingUrl).not.toMatch(/elena|example\.com|name=|email=/i);
@@ -118,7 +124,7 @@ describe("3. booking never depends on email delivery", () => {
     const res = await apply(base);
     const json = await res.json();
     expect(res.status).toBe(200);
-    expect(json.bookingUrl).toContain(INTRO_BOOKING_URL);
+    expect(json.bookingUrl).toContain(BOOKING_PAGE());
     expect(json.invitationEmail).toBe("not_sent");
     expect(db.tables.program_applications).toHaveLength(1);
     expect(stored()).toMatchObject({ applicant_email_status: "failed" });

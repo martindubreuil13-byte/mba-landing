@@ -12,7 +12,7 @@ vi.mock("next/navigation", async () => ({ notFound: () => { throw Object.assign(
 const admin = vi.hoisted(() => ({ user: null as null | { email: string }, calls: 0 }));
 vi.mock("@/app/lib/supabase/admin-session", () => ({ getAdminUser: vi.fn(async () => { admin.calls++; return admin.user; }) }));
 const publicType = { slug: "complementary-session", name: "Complementary Session", description: "", durationMinutes: 45, priceLabel: null, format: "zoom" };
-const svc = vi.hoisted(() => ({ publicMeetingType: vi.fn(), publicSlots: vi.fn(async () => [{ startUtc: "2031-03-03T02:00:00.000Z", endUtc: "2031-03-03T02:45:00.000Z" }]), createBooking: vi.fn(), recordCommunity: vi.fn(), answerCommunity: vi.fn(), nudge: vi.fn(async () => null) }));
+const svc = vi.hoisted(() => ({ prefillFor: vi.fn(async () => null), publicMeetingType: vi.fn(), publicSlots: vi.fn(async () => [{ startUtc: "2031-03-03T02:00:00.000Z", endUtc: "2031-03-03T02:45:00.000Z" }]), createBooking: vi.fn(), recordCommunity: vi.fn(), answerCommunity: vi.fn(), nudge: vi.fn(async () => null) }));
 vi.mock("@/app/lib/scheduling/instance", () => ({ getScheduling: () => svc }));
 vi.mock("@/app/lib/scheduling/rate-limit", async (orig) => ({ ...(await orig<object>()), allowRequest: async () => true, allowGlobal: async () => true, admitBooking: async () => "ok" }));
 

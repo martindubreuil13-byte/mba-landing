@@ -11,13 +11,16 @@ import { formatDateLong, formatTime, isValidTimeZone, zoneOffsetLabel } from "@/
 
 const newKey = () => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `k-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
-export default function BookingExperience({ type, invite, source, preview = false }: { type: PublicMeetingType; invite?: string; source?: string; /** Administrator preview while public intake is closed: everything works except the final booking. */ preview?: boolean }) {
+/** The form's starting values. A visitor who arrives from a known inquiry gets their own name and email filled in (still editable); everything else starts empty. */
+export const initialBookingForm = (prefill?: { name: string; email: string } | null) => ({ name: prefill?.name ?? "", email: prefill?.email ?? "", message: "", contactUrl: "" });
+
+export default function BookingExperience({ type, invite, source, preview = false, prefill = null }: { type: PublicMeetingType; invite?: string; source?: string; /** Administrator preview while public intake is closed: everything works except the final booking. */ preview?: boolean; /** The visitor's own name and email, when they arrive from a known inquiry. The fields are only filled in; they stay editable. */ prefill?: { name: string; email: string } | null }) {
   const router = useRouter();
   const [tz, setTz] = useState<string | null>(null);
   const [hour12, setHour12] = useState(true);
   const [step, setStep] = useState<"pick" | "details">("pick");
   const [selected, setSelected] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", email: "", message: "", contactUrl: "" });
+  const [form, setForm] = useState(() => initialBookingForm(prefill));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
@@ -32,6 +35,11 @@ export default function BookingExperience({ type, invite, source, preview = fals
     setTz(detected);
   }, []);
   useEffect(() => { if (step === "details") heading.current?.focus(); }, [step]);
+  // Once the details are in the form, the inquiry reference is no longer needed: take it out of the address bar (best effort) so it is not copied, shared or logged along with the page.
+  useEffect(() => {
+    if (!prefill) return;
+    try { const u = new URL(window.location.href); if (u.searchParams.has("ref")) { u.searchParams.delete("ref"); window.history.replaceState(window.history.state, "", `${u.pathname}${u.search}${u.hash}`); } } catch { /* the address bar is cosmetic */ }
+  }, [prefill]);
 
   const load = useCallback(async (from: string, to: string): Promise<PickerSlot[]> => {
     const q = new URLSearchParams({ type: type.slug, from, to });

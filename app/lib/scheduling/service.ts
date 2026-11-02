@@ -59,6 +59,8 @@ export type SchedulingDeps = {
   ownerEmail?: string | null; adminUrl?: string | null;
   /** Abuse budget for a new booking (production wiring only). Asked once per genuinely new request, never for a repeat of an earlier key. */
   bookingBudget?: (guestEmail: string) => Promise<Admission>;
+  /** Finds the name and email of a known inquiry by its opaque reference (production wiring only), to prefill the booking form. */
+  inquiryPrefill?: (ref: string) => Promise<BookingPrefill | null>;
   /** Where an explicit "yes" to the community invitation is recorded as consent (the site's Leads and consent records). Absent in the local prototype. */
   communityConsent?: CommunityConsentPort;
   /**
@@ -80,6 +82,8 @@ export type PublicBooking = {
   notice: string | null;
 };
 
+/** The only things the booking page may prefill from a known inquiry: the visitor's own name and email. */
+export type BookingPrefill = { name: string; email: string };
 export type BookingInput = { slug: string; invite?: string; startUtc: string; guestName: string; guestEmail: string; guestMessage?: string; guestTimeZone: string; idempotencyKey: string; source?: string | null };
 
 const bookingSchema = z.object({
@@ -127,6 +131,7 @@ export class SchedulingService {
   private email: EmailProvider;
   private adminUrl: string | null;
   private bookingBudget: ((guestEmail: string) => Promise<Admission>) | null;
+  private inquiryPrefill: ((ref: string) => Promise<BookingPrefill | null>) | null;
   private communityConsent: CommunityConsentPort | null;
   private clock: () => number;
   private defer?: (task: () => Promise<unknown>) => void;
@@ -139,6 +144,7 @@ export class SchedulingService {
     this.email = deps.email ?? createSimulatedEmail();
     this.adminUrl = deps.adminUrl ?? null;
     this.bookingBudget = deps.bookingBudget ?? null;
+    this.inquiryPrefill = deps.inquiryPrefill ?? null;
     this.communityConsent = deps.communityConsent ?? null;
     this.clock = deps.now ?? (() => Date.now());
     this.defer = deps.defer;
@@ -269,6 +275,15 @@ export class SchedulingService {
 
   /** Evaluates health and tells the owner by email when it changes (see alerts.ts). Called by the scheduled alert job. */
   async checkAlerts() { return runAlertCheck({ repo: this.repo, email: this.email, now: this.clock, adminUrl: this.adminUrl }); }
+
+  /**
+   * The name and email to prefill for a visitor who arrived with an inquiry reference, or null. Never throws and never reveals why it found nothing:
+   * a malformed, unknown or unreadable reference simply means an empty form. The reference is an unguessable random token (144 bits).
+   */
+  async prefillFor(ref: unknown): Promise<BookingPrefill | null> {
+    if (!this.inquiryPrefill || typeof ref !== "string" || !/^[A-Za-z0-9_-]{16,64}$/.test(ref)) return null;
+    try { return await this.inquiryPrefill(ref); } catch { return null; }
+  }
 
   async createBooking(raw: BookingInput): Promise<{ booking: PublicBooking; replay: boolean }> {
     const parsed = bookingSchema.safeParse(raw);

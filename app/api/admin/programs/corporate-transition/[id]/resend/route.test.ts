@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
@@ -19,7 +19,10 @@ const ID = "aaaaaaaa-0000-0000-0000-000000000001";
 const resend = () => POST(new Request("http://localhost/x", { method: "POST" }), { params: Promise.resolve({ id: ID }) });
 const app = (over: Record<string, unknown> = {}) => ({ id: ID, program_key: "corporate-transition", status: "INVITED", booking_status: "not_booked", booking_ref: "ref-0123456789abcdefghij", answers: { firstName: "Elena", lastName: "T", email: "elena@example.com" }, ...over });
 
+afterEach(() => vi.unstubAllEnvs());
+
 beforeEach(() => {
+  vi.stubEnv("VERCEL_ENV", "production"); vi.stubEnv("VERCEL", "1"); vi.stubEnv("APP_BASE_URL", "");   // production: the booking link is the canonical https page
   for (const k of Object.keys(db.tables)) db.tables[k] = [];
   sent.length = 0; mode.fail = false; admin.ok = true;
 });
@@ -37,7 +40,7 @@ describe("Resend invitation (admin)", () => {
     expect(await res.json()).toEqual({ success: true, kind: "resend" });
     expect(sent).toHaveLength(1);
     expect(sent[0].to).toBe("elena@example.com");
-    expect(sent[0].text).toContain("utm_content=ref-0123456789abcdefghij");
+    expect(sent[0].text).toContain("ref=ref-0123456789abcdefghij");
     expect(db.tables.program_invitation_sends.map((s) => s.kind)).toEqual(["initial", "resend"]);
   });
   it("when the first send had failed, the manual send is the first successful one ('initial')", async () => {

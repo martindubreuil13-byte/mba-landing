@@ -1,4 +1,5 @@
 import "server-only";
+import { INTRO_BOOKING_MINUTES, introBookingUrl } from "@/app/lib/booking";
 import { schedulingUrl } from "@/app/lib/programs/email";
 import { renderEmail, type Block } from "@/app/lib/programs/email-shell";
 import { formatPrice, type ServiceProgram } from "./catalog";
@@ -19,10 +20,11 @@ export function firstNameOf(full: string): string {
   return first || "there";
 }
 
-const BOOK_LABEL = "Book our first conversation →";
+const BOOK_LABEL = "Book Your Complimentary Session →";
 
 export function prospectConfirmation(input: { name: string; program?: ServiceProgram; booking?: string | null }): InquiryEmail {
-  const booking = input.booking === undefined ? schedulingUrl() : input.booking;
+  // The central booking link (null if it is not a valid https URL), tagged with where it was offered so the booking shows its origin.
+  const booking = input.booking === undefined ? (schedulingUrl() ? introBookingUrl(null, input.program ? `inquiry-${input.program.slug}` : "inquiry") : null) : input.booking;
   const first = firstNameOf(input.name);
   const about: Block = input.program
     ? { type: "strong", before: "I've received your message about ", strong: input.program.name, after: "." }
@@ -34,7 +36,7 @@ export function prospectConfirmation(input: { name: string; program?: ServicePro
     { type: "p", text: "Before we discuss next steps, I want to understand where you are, what you're trying to achieve, and whether I'm the right person to help." },
     { type: "p", text: "No sales pitch. No obligation. Just an initial conversation to see if there's a fit." },
     ...(booking
-      ? ([{ type: "cta", label: BOOK_LABEL, url: booking, fallbackLink: false, compact: true }, { type: "note", text: "Or simply reply to this email if you'd rather start there." }] as Block[])
+      ? ([{ type: "p", text: `You can choose a time for a free ${INTRO_BOOKING_MINUTES}-minute Zoom conversation below.` }, { type: "cta", label: BOOK_LABEL, url: booking, fallbackLink: false, compact: true }, { type: "note", text: "Or simply reply to this email if you'd rather start there." }] as Block[])
       : ([{ type: "p", text: "Just reply to this email and we'll find a time." }] as Block[])),
   ];
   const preview = input.program ? `I've received your message about ${input.program.name}. Here's what happens next.` : "I've received your message. Here's what happens next.";

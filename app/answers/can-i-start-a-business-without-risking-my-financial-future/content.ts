@@ -1,4 +1,4 @@
-import { INTRO_BOOKING_URL } from "@/app/lib/booking";
+import { introBookingPath } from "@/app/lib/booking";
 /**
  * Single source of truth for the visible copy of this Answer. The page renders it and the layout derives its
  * structured data from the same strings. Inline markup: **bold**, *italic*, [text](href). Blank line = new paragraph.
@@ -649,7 +649,7 @@ It's a short assessment designed to help you examine your idea, challenge some o
 
 You can also explore my [free guides and resources](/resources).
 
-Or [book a conversation](${INTRO_BOOKING_URL}) if you'd like to discuss your situation.
+Or [book a conversation](${introBookingPath(null, "answers")}) if you'd like to discuss your situation.
 
 ### About the author
 

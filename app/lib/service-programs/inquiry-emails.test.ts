@@ -1,10 +1,14 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterAll, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 vi.mock("@/app/lib/email-client", () => ({ createResend: () => ({ emails: { send: vi.fn() } }) }));
 
-import { CALENDLY_URL } from "@/app/lib/programs/corporate-transition";
+import { INTRO_BOOKING_MINUTES, introBookingUrl } from "@/app/lib/booking";
 import { PROGRAMS } from "./catalog";
 import { firstNameOf, inquiryNotification, prospectConfirmation } from "./inquiry-emails";
+
+// Production: the booking link is the canonical https page (a button is only ever drawn for a valid https URL, never faked).
+vi.stubEnv("VERCEL_ENV", "production"); vi.stubEnv("VERCEL", "1"); vi.stubEnv("APP_BASE_URL", "");
+afterAll(() => vi.unstubAllEnvs());
 
 const p03 = PROGRAMS[2];
 const p06 = PROGRAMS[5];
@@ -28,12 +32,24 @@ describe("prospect confirmation", () => {
     expect(m.html).toMatch(/I've received your message about <strong[^>]*>Pre-Architecture<\/strong>\./);
     expect(m.text).toContain("I've received your message about Pre-Architecture.");
   });
-  it("has one oxblood button to the existing Calendly link, no raw-URL fallback line, plus the plain-text link", () => {
-    expect(m.html).toContain(`href="${CALENDLY_URL}"`);
+  it("has one oxblood button, Book Your Complimentary Session, to the website's own booking page tagged with this program, no raw-URL fallback line, plus the plain-text link", () => {
+    const link = introBookingUrl(null, `inquiry-${p03.slug}`);
+    expect(link).toBe(`${introBookingUrl()}?source=inquiry-${p03.slug}`);
+    expect(m.html).toContain(`href="${link}"`);
     expect(m.html.match(/bgcolor="#6b1f1f"/g)).toHaveLength(1);
-    expect(m.html).toContain("Book our first conversation →");
+    expect(m.html).toContain("Book Your Complimentary Session →");
+    expect(m.html).not.toContain("Book our first conversation");
     expect(m.html).not.toContain("Button not working");
-    expect(m.text).toContain(`Book our first conversation →\n${CALENDLY_URL}`);
+    expect(m.text).toContain(`Book Your Complimentary Session →\n${link}`);
+    expect(m.text).toContain(`You can choose a time for a free ${INTRO_BOOKING_MINUTES}-minute Zoom conversation below.`);
+    expect(m.html).not.toMatch(/calendly/i);
+    expect(new URL(link).searchParams.has("ref")).toBe(false);                     // an inquiry has no stored record, so there is nothing to prefill from
+  });
+  it("tags a general inquiry (no program) as plain 'inquiry', and still acknowledges receipt", () => {
+    const g = prospectConfirmation({ name: "Ada Lovelace" });
+    expect(g.html).toContain(`href="${introBookingUrl(null, "inquiry")}"`);
+    expect(g.text).toContain("I've received your message.");
+    expect(g.text).toContain("free 45-minute Zoom conversation");
     expect(m.text.indexOf("I've received your message about")).toBe(m.text.lastIndexOf("I've received your message about")); // not duplicated by a preheader line
   });
   it("shows the website link in the signature and no marketing footer", () => {

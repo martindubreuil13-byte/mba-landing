@@ -2,9 +2,9 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import TransitionConfirmation, { type ReceiptView } from "./TransitionConfirmation";
-import { INTRO_BOOKING_URL } from "@/app/lib/booking";
+import { INTRO_BOOKING_MINUTES, INTRO_BOOKING_PATH, introBookingUrl } from "@/app/lib/booking";
 
-const receipt = (over: Partial<ReceiptView> = {}): ReceiptView => ({ receiptToken: "tok-abcdefghijklmnop", bookingUrl: `${INTRO_BOOKING_URL}?utm_source=mba_transition&utm_content=ref`, invitationEmail: "sent", community: null, ...over });
+const receipt = (over: Partial<ReceiptView> = {}): ReceiptView => ({ receiptToken: "tok-abcdefghijklmnop", bookingUrl: introBookingUrl("ref", "transition"), invitationEmail: "sent", community: null, ...over });
 const html = (r: ReceiptView) => renderToStaticMarkup(<TransitionConfirmation receipt={r} />);
 const text = (s: string) => s.replace(/<[^>]+>/g, " ").replace(/&#x27;/g, "’").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
 
@@ -16,8 +16,8 @@ describe("1. confirmation screen: the approved experience", () => {
       "Application received", "Good. Let’s talk.",
       "Thanks for sharing a little about where you are and what you’re trying to build.",
       "The next step is simple. Let’s have a conversation.",
-      "I’ve sent you an email with a link to book our conversation. You can also book directly below.",
-      "Book your conversation",
+      "I’ve sent you an email with a link to book your free 45-minute Zoom conversation. You can also book directly below.",
+      "Book Your Complimentary Session",
       "Can’t find a suitable time? Time-zone differences sometimes make availability tricky. Just reply to my email and we’ll find another option.",
       "One more thing before you go.",
       "I’m building a community of people who want to create something of their own.",
@@ -28,9 +28,13 @@ describe("1. confirmation screen: the approved experience", () => {
     let at = 0;
     for (const l of lines) { const i = t.indexOf(l, at); expect(i, l).toBeGreaterThan(-1); at = i; }
   });
-  it("the primary button is the shared Calendly event, opens safely, and appears immediately", () => {
-    const m = out.match(/<a [^>]*href="([^"]+)"[^>]*>Book your conversation<\/a>/)!;
-    expect(m[1].replace(/&amp;/g, "&").startsWith(INTRO_BOOKING_URL)).toBe(true);
+  it("the primary button is 'Book Your Complimentary Session', to the website's own booking page (the one the email links to), opens safely, and appears immediately", () => {
+    const m = out.match(/<a [^>]*href="([^"]+)"[^>]*>Book Your Complimentary Session<\/a>/)!;
+    expect(m[1].replace(/&amp;/g, "&").startsWith(introBookingUrl())).toBe(true);
+    expect(new URL(m[1].replace(/&amp;/g, "&")).pathname).toBe(INTRO_BOOKING_PATH);
+    expect(INTRO_BOOKING_PATH).toBe("/book/complementary-session");
+    expect(INTRO_BOOKING_MINUTES).toBe(45);
+    expect(out).not.toMatch(/calendly/i);
     expect(out).toMatch(/rel="noopener noreferrer"/);
   });
   it("the brand: ivory background, oxblood primary button, no screening language", () => {
@@ -59,7 +63,7 @@ describe("the email message is truthful", () => {
     expect(t).not.toContain("I’ve sent you an email");
     expect(t).not.toContain("reply to my email");
     expect(t).toContain("I wasn’t able to confirm the booking email just now, but you don’t need it. You can book directly below.");
-    expect(t).toContain("Book your conversation");
+    expect(t).toContain("Book Your Complimentary Session");
     expect(html(receipt({ invitationEmail: "not_sent" }))).toContain('href="/lets-talk"');
   });
 });
@@ -74,7 +78,7 @@ describe("restoring after a refresh shows the recorded choice", () => {
     const out = html(receipt({ community }));
     expect(text(out)).toContain(message);
     expect(out).not.toMatch(/<button /); // a settled choice is not asked again
-    expect(text(out)).toContain("Book your conversation");
+    expect(text(out)).toContain("Book Your Complimentary Session");
   });
   it("a failed confirmation email keeps the buttons so the visitor can try again", () => {
     const out = html(receipt({ community: "confirmation_failed" }));

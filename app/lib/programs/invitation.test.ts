@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
@@ -19,7 +19,10 @@ const APP = "aaaaaaaa-0000-0000-0000-000000000001";
 const send = (over: Partial<InvitationSend>): InvitationSend => ({ id: Math.random().toString(), application_id: APP, kind: "initial", status: "accepted", provider_message_id: "m", error: null, delivery_status: null, delivery_updated_at: null, attempted_at: "2026-10-30T10:00:00.000Z", ...over });
 const app = () => ({ id: APP, answers: { firstName: "Elena", email: "elena@example.com" }, booking_ref: "ref-0123456789abcdefghij" });
 
+afterEach(() => vi.unstubAllEnvs());
+
 beforeEach(() => {
+  vi.stubEnv("VERCEL_ENV", "production"); vi.stubEnv("VERCEL", "1"); vi.stubEnv("APP_BASE_URL", "");   // production: the booking link is the canonical https page
   for (const k of Object.keys(db.tables)) db.tables[k] = [];
   sent.length = 0; keys.length = 0; mode.fail = false; mode.uncertain = false;
   db.tables.program_applications.push({ id: APP, booking_ref: "ref-0123456789abcdefghij" });
@@ -56,7 +59,7 @@ describe("deliverInvitation", () => {
     const r = await deliverInvitation(app());
     expect(r).toMatchObject({ ok: true, kind: "initial", messageId: "msg_1" });
     expect(db.tables.program_invitation_sends).toMatchObject([{ application_id: APP, kind: "initial", status: "accepted", provider_message_id: "msg_1" }]);
-    expect(sent[0].text).toContain("utm_content=ref-0123456789abcdefghij");
+    expect(sent[0].text).toContain("ref=ref-0123456789abcdefghij");
     expect(keys[0]).toBe(`transition-invite/${APP}/0`);
   });
 
@@ -92,7 +95,7 @@ describe("deliverInvitation", () => {
     expect(r.ok).toBe(true);
     const ref = db.tables.program_applications[0].booking_ref;
     expect(ref).toMatch(/^[A-Za-z0-9_-]{20,}$/);
-    expect(sent[0].text).toContain(`utm_content=${ref}`);
+    expect(sent[0].text).toContain(`ref=${ref}`);
   });
 });
 

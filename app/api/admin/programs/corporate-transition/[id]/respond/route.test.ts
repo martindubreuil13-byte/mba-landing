@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
@@ -13,14 +13,21 @@ const sent: Array<Record<string, any>> = [];
 vi.mock("@/app/lib/email-client", () => ({ createResend: () => ({ emails: { send: async (m: Record<string, any>) => { sent.push(m); return { data: { id: "e1" }, error: null }; } } }) }));
 process.env.RESEND_API_KEY = "k";
 
-import { CALENDLY_URL, CONVERSATION_INVITE_CALENDLY_URL, CONVERSATION_INVITE_SUBJECT, conversationInviteDraft } from "@/app/lib/programs/corporate-transition";
+import { CONVERSATION_INVITE_SUBJECT, conversationInviteDraft } from "@/app/lib/programs/corporate-transition";
+import { introBookingUrl } from "@/app/lib/booking";
 import { POST } from "./route";
 
 const ID = "aaaaaaaa-0000-0000-0000-000000000001";
 const respond = (body: Record<string, unknown>) =>
   POST(new Request("http://localhost/x", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }), { params: Promise.resolve({ id: ID }) });
 
+// Production, so the booking link is the canonical https page (the button is omitted, never faked, for any other URL).
+const INVITE_URL = () => introBookingUrl(null, "transition");
+const PLAIN_URL = () => introBookingUrl();
+afterEach(() => vi.unstubAllEnvs());
+
 beforeEach(() => {
+  vi.stubEnv("VERCEL_ENV", "production"); vi.stubEnv("VERCEL", "1"); vi.stubEnv("APP_BASE_URL", "");
   for (const k of Object.keys(db.tables)) db.tables[k] = [];
   sent.length = 0;
   db.tables.program_applications.push({ id: ID, program_key: "corporate-transition", status: "UNDER_REVIEW", ai_route: "NOT_FIT", answers: { firstName: "Elena", lastName: "T", email: "elena@example.com" }, submitted_at: "2026-10-08T00:00:00Z" });
@@ -33,10 +40,10 @@ describe("conversation invitation template (manual only)", () => {
     for (const line of [
       "This program was originally designed for professionals transitioning from corporate employment into entrepreneurship, so your circumstances may not fit the original criteria.",
       "However, I’ve reviewed your application, and I believe a conversation could still be worthwhile.",
-      "I’d be happy to offer you 30 minutes of my time to explore your situation, discuss your options, and see whether I can offer some useful guidance.",
+      "I’d be happy to offer you 45 minutes of my time to explore your situation, discuss your options, and see whether I can offer some useful guidance.",
       "No fees, no obligations, and no sales pitch. Just an honest conversation.",
       "You can book a time here:",
-      "https://calendly.com/martindubreuil13/30min",
+      INVITE_URL(),
       "Looking forward to speaking with you.",
     ]) expect(t).toContain(line);
     expect(t.endsWith("Martin")).toBe(true);
@@ -52,10 +59,10 @@ describe("conversation invitation template (manual only)", () => {
     expect(mail.to).toBe("elena@example.com");
     expect(mail.subject).toBe("Let’s have a conversation");
     expect(mail.html).toContain("Hi Elena,");
-    expect(mail.html).toContain(`href="${CONVERSATION_INVITE_CALENDLY_URL}"`);
-    expect(mail.html.split(CONVERSATION_INVITE_CALENDLY_URL).length - 1).toBe(2); // link text + href of the one link
+    expect(mail.html).toContain(`href="${INVITE_URL()}"`);
+    expect(mail.html.split(INVITE_URL()).length - 1).toBe(2); // link text + href of the one link
     expect(mail.html).not.toContain('bgcolor="#6b1f1f"'); // no second scheduling button is added on top of the message's own link
-    expect(mail.text).toContain(CONVERSATION_INVITE_CALENDLY_URL);
+    expect(mail.text).toContain(INVITE_URL());
     expect(db.tables.program_applications[0]).toMatchObject({ status: "INVITED", manual_decision: "INVITE", response_email_status: "queued" });
     expect(db.tables.program_applications[0].response_sent).toContain("I’ve reviewed your application");
   });
@@ -63,6 +70,6 @@ describe("conversation invitation template (manual only)", () => {
   it("existing behavior is unchanged: a normal invite still gets the configured scheduling button", async () => {
     await respond({ kind: "INVITE", message: "Hi Elena,\n\nLet’s talk.\n\n— Martin" });
     expect(sent[0].subject).toBe("A conversation about what comes next");
-    expect(sent[0].html).toContain(`href="${CALENDLY_URL}"`);
+    expect(sent[0].html).toContain(`href="${PLAIN_URL()}"`);
   });
 });

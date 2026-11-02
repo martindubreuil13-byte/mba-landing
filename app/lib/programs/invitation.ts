@@ -71,7 +71,7 @@ export async function deliverInvitation(application: { id: string; answers: { fi
     const { error: claimError } = await db.from("program_invitation_sends").insert({ id, application_id: application.id, kind, status: "pending" });
     if (claimError) throw new Error("Could not reserve the invitation attempt. Refresh Admin before retrying.");
     attemptId = id;
-    const msg = invitationMessage(application.answers.firstName, introBookingUrl(ref));
+    const msg = invitationMessage(application.answers.firstName, introBookingUrl(ref, "transition"));
     messageId = await sendInvitation(application.answers.email, msg, `transition-invite/${application.id}/${earlier.length}`, id);
     const { error } = await db.from("program_invitation_sends").update({ status: "accepted", provider_message_id: messageId, error: null }).eq("id", id);
     if (error) throw new Error("The provider accepted the invitation but its outcome could not be saved. Check the provider before retrying.");

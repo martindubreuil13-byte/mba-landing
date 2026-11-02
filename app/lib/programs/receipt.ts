@@ -18,5 +18,5 @@ export async function buildReceipt(application: ReceiptApplication, invitationSe
     const state = summarizeInvitation(await listInvitationSends([application.id]).catch(() => [])).state;
     sent = state === "sent" || state === "resent";
   }
-  return { receiptToken: application.receipt_token, bookingUrl: introBookingUrl(application.booking_ref), invitationEmail: sent ? "sent" : "not_sent", community: (application.community_choice as CommunityState | null) ?? null };
+  return { receiptToken: application.receipt_token, bookingUrl: introBookingUrl(application.booking_ref, "transition"), invitationEmail: sent ? "sent" : "not_sent", community: (application.community_choice as CommunityState | null) ?? null };
 }

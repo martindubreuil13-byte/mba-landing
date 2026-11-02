@@ -1,7 +1,5 @@
 export const PROGRAM_KEY = "corporate-transition";
-import { INTRO_BOOKING_URL } from "@/app/lib/booking";
-/** Alias of the central introductory-booking link (app/lib/booking.ts). Do not put a Calendly URL here. */
-export const CALENDLY_URL = INTRO_BOOKING_URL;
+import { INTRO_BOOKING_MINUTES, introBookingUrl } from "@/app/lib/booking";
 // The optional community invitation shown AFTER the application is submitted (never inside the questionnaire).
 // COMMUNITY_WORDING and COMMUNITY_FOOTNOTE are exactly what the visitor sees beside the two buttons; both are stored,
 // with this version, as the consent evidence. Change either and the version MUST change (a new entry, never an edit).
@@ -77,7 +75,7 @@ export function validateApplication(value: unknown): { data?: TransitionAnswers;
  * automatically: it goes out only when Martin chooses it and presses Send after reviewing the application.
  */
 export const CONVERSATION_INVITE_SUBJECT = "Let’s have a conversation";
-export const CONVERSATION_INVITE_CALENDLY_URL = INTRO_BOOKING_URL;
+export const conversationInviteUrl = () => introBookingUrl(null, "transition");
 
 export function conversationInviteDraft(firstName: string): string {
   return `Hi ${firstName},
@@ -88,13 +86,13 @@ This program was originally designed for professionals transitioning from corpor
 
 However, I’ve reviewed your application, and I believe a conversation could still be worthwhile.
 
-I’d be happy to offer you 30 minutes of my time to explore your situation, discuss your options, and see whether I can offer some useful guidance.
+I’d be happy to offer you ${INTRO_BOOKING_MINUTES} minutes of my time to explore your situation, discuss your options, and see whether I can offer some useful guidance.
 
 No fees, no obligations, and no sales pitch. Just an honest conversation.
 
 You can book a time here:
 
-${CONVERSATION_INVITE_CALENDLY_URL}
+${conversationInviteUrl()}
 
 Looking forward to speaking with you.
 

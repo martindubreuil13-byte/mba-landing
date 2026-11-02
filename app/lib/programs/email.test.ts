@@ -7,8 +7,7 @@ vi.mock("@/app/lib/email-client", () => ({ createResend: () => ({ emails: { send
 
 import { adminMessage, invitationMessage, manualResponseMessage, schedulingUrl, sendInternalNotification, sendInvitation, sendManualResponse } from "./email";
 import { programAdminTo, programFrom, programReplyTo } from "./routing";
-import { CALENDLY_URL } from "./corporate-transition";
-import { INTRO_BOOKING_URL, introBookingUrl } from "@/app/lib/booking";
+import { introBookingUrl } from "@/app/lib/booking";
 
 const FROM = "Martin Dubreuil <martin@mindrasolutions.com>";
 const MARTIN = "martin@mindrasolutions.com";
@@ -25,6 +24,8 @@ beforeEach(() => {
   vi.stubEnv("PROGRAM_EMAIL_FROM", "");
   vi.stubEnv("ADMIN_EMAIL", "admin-login@example.test");
   vi.stubEnv("MAILING_ADDRESS", "");
+  BOOKING = introBookingUrl("ref_abc-123", "transition");
+  PLAIN = introBookingUrl();
 });
 afterEach(() => vi.unstubAllEnvs());
 
@@ -35,7 +36,9 @@ const parity = (m: { html: string; text: string }) => {
   }
 };
 
-const BOOKING = introBookingUrl("ref_abc-123");
+// Built inside beforeEach, under production: the link is only ever a button when it is a valid https URL.
+let BOOKING = "";
+let PLAIN = "";
 
 describe("booking invitation: subject, copy, button and link", () => {
   it("has the approved subject and wording, in order", () => {
@@ -43,9 +46,9 @@ describe("booking invitation: subject, copy, button and link", () => {
     expect(m.subject).toBe("Let’s have a conversation");
     const lines = [
       "Hi Alex,",
-      "Thanks for taking the time to tell me a little about yourself and what you’re thinking of doing.",
+      "I’ve received your application. Thanks for taking the time to tell me a little about yourself and what you’re thinking of doing.",
       "The next step is simple. Let’s have a conversation.",
-      "You can book a Zoom call with me using the button below.",
+      "You can book your free 45-minute Zoom conversation with me using the button below.",
       "Pick whatever works best for you.",
       "If you’ve already booked directly from the confirmation page, there’s nothing else you need to do. This is the same booking link, not a second appointment.",
       "One small thing: depending on where you are in the world, available slots can sometimes be limited because of time-zone differences.",
@@ -55,15 +58,17 @@ describe("booking invitation: subject, copy, button and link", () => {
     let at = 0;
     for (const line of lines) { const i = m.html.indexOf(line.replace(/’/g, "’"), at); expect(i, line).toBeGreaterThan(-1); at = i; }
     let t = 0;
-    for (const line of [...lines.slice(0, 4), "BOOK YOUR CONVERSATION", ...lines.slice(4)]) { const i = m.text.indexOf(line, t); expect(i, line).toBeGreaterThan(-1); t = i; }
+    for (const line of [...lines.slice(0, 4), "BOOK YOUR COMPLIMENTARY SESSION", ...lines.slice(4)]) { const i = m.text.indexOf(line, t); expect(i, line).toBeGreaterThan(-1); t = i; }
   });
-  it("one oxblood button, BOOK YOUR CONVERSATION, to the SAME Calendly event as the confirmation screen, carrying the opaque ref", () => {
+  it("one oxblood button, BOOK YOUR COMPLIMENTARY SESSION, to the SAME booking page as the confirmation screen, carrying the opaque ref and nothing personal", () => {
     const m = invitationMessage("Alex", BOOKING);
     expect(m.html.match(/bgcolor="#6b1f1f"/g)?.length).toBe(1);
-    expect(m.html).toMatch(/bgcolor="#6b1f1f"[^>]*><a href="[^"]+"[^>]*>BOOK YOUR CONVERSATION<\/a>/);
-    expect(BOOKING.startsWith(`${INTRO_BOOKING_URL}?`)).toBe(true);
-    expect(new URL(BOOKING).searchParams.get("utm_content")).toBe("ref_abc-123");
-    expect(m.text).toContain(`BOOK YOUR CONVERSATION: ${BOOKING}`);
+    expect(m.html).toMatch(/bgcolor="#6b1f1f"[^>]*><a href="[^"]+"[^>]*>BOOK YOUR COMPLIMENTARY SESSION<\/a>/);
+    expect(BOOKING.startsWith(`${PLAIN}?`)).toBe(true);
+    expect(new URL(BOOKING).searchParams.get("ref")).toBe("ref_abc-123");
+    expect(new URL(BOOKING).searchParams.get("source")).toBe("transition");
+    expect([...new URL(BOOKING).searchParams.keys()].sort()).toEqual(["ref", "source"]);
+    expect(m.text).toContain(`BOOK YOUR COMPLIMENTARY SESSION: ${BOOKING}`);
     expect(m.links).toContain(BOOKING);
     // The `&` between query parameters is escaped in the HTML attribute, and parity with the plain text still holds.
     expect(m.html).toContain(BOOKING.replace(/&/g, "&amp;"));
@@ -95,8 +100,8 @@ describe("booking invitation: subject, copy, button and link", () => {
     }
   });
   it("the configured scheduling link is a valid https URL", () => {
-    expect(schedulingUrl()).toBe(CALENDLY_URL);
-    expect(introBookingUrl()).toBe(INTRO_BOOKING_URL);
+    expect(schedulingUrl()).toBe(PLAIN);
+    expect(PLAIN).toBe("https://modernbusinessarchitect.com/book/complementary-session");
   });
   it("escapes the applicant's first name", () => {
     const m = invitationMessage("<img src=x onerror=alert(1)>", BOOKING);
@@ -106,7 +111,7 @@ describe("booking invitation: subject, copy, button and link", () => {
 });
 
 describe("shared visual shell (customer emails)", () => {
-  const all = () => [invitationMessage("A", BOOKING), manualResponseMessage({ subject: "S", message: "Hello", schedulingUrl: CALENDLY_URL })];
+  const all = () => [invitationMessage("A", BOOKING), manualResponseMessage({ subject: "S", message: "Hello", schedulingUrl: PLAIN })];
   it("is table-based, 600px, Georgia + Arial, with the eyebrow, hidden preview text and no external resources", () => {
     for (const m of all()) {
       expect(m.html).toContain("max-width:600px");
@@ -148,13 +153,13 @@ describe("manual response from Admin", () => {
     expect(manualResponseMessage({ subject: "S", message: "Hi" }).html).not.toContain("Choose a time to talk");
     expect(manualResponseMessage({ subject: "S", message: "Hi", schedulingUrl: "nope" }).html).not.toContain("Choose a time to talk");
     expect(manualResponseMessage({ subject: "S", message: "Hi", schedulingUrl: "http://x.example" }).html).not.toContain("Choose a time to talk");
-    const ok = manualResponseMessage({ subject: "S", message: "Hi", schedulingUrl: CALENDLY_URL });
+    const ok = manualResponseMessage({ subject: "S", message: "Hi", schedulingUrl: PLAIN });
     expect(ok.html.match(/Choose a time to talk/g)?.length).toBe(1);
-    expect(ok.text).toContain(`Choose a time to talk: ${CALENDLY_URL}`);
+    expect(ok.text).toContain(`Choose a time to talk: ${PLAIN}`);
     // The message already contains the link as text: no duplicate button, and the message itself is untouched.
-    const dup = manualResponseMessage({ subject: "S", message: `Pick a slot: ${CALENDLY_URL}`, schedulingUrl: CALENDLY_URL });
+    const dup = manualResponseMessage({ subject: "S", message: `Pick a slot: ${PLAIN}`, schedulingUrl: PLAIN });
     expect(dup.html).not.toContain("Choose a time to talk");
-    expect(dup.text).toContain(`Pick a slot: ${CALENDLY_URL}`);
+    expect(dup.text).toContain(`Pick a slot: ${PLAIN}`);
   });
 });
 

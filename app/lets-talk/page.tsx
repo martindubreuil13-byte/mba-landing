@@ -9,6 +9,7 @@ import { readFirstTouch } from "@/app/lib/first-touch";
 import { PROGRAMS, bespokeFollowUp, ctaExplainer, formatPrice, type ServiceProgram } from "@/app/lib/service-programs/catalog";
 import Navigation from "@/app/components/Navigation";
 import { intelligenceHeaders } from "@/app/lib/intelligence/client";
+import InquiryBookingCta from "@/app/components/programs/InquiryBookingCta";
 
 const SITUATIONS = [
   {
@@ -50,6 +51,8 @@ export default function LetsTalkPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  // Whether the visitor's confirmation email (which also carries the booking link) was accepted, so the page never claims an email that was not sent.
+  const [autoReplySent, setAutoReplySent] = useState(false);
   const conversationRef = useRef<HTMLDivElement>(null);
   const successRef = useRef<HTMLDivElement>(null);
 
@@ -140,6 +143,7 @@ export default function LetsTalkPage() {
       });
 
       if (response.ok) {
+        setAutoReplySent(await response.json().then((d: { autoReply?: boolean }) => d?.autoReply === true).catch(() => false));
         setSubmitStatus("success");
         // Keep the selection so the success state below (gated on it) actually renders.
         setFormData({ name: "", email: "", message: "" });
@@ -510,6 +514,8 @@ export default function LetsTalkPage() {
                 <p className="text-lg md:text-xl leading-relaxed text-[#1a1816]/70">
                   I'll read what you sent and get back to you personally within 48 hours.
                 </p>
+
+                <InquiryBookingCta programSlug={program?.slug ?? null} autoReplySent={autoReplySent} />
 
                 <div className="border-t border-[#1a1816]/8 pt-8 mt-8">
                   <p className="text-lg md:text-xl font-light leading-relaxed text-[#1a1816]">

@@ -24,6 +24,7 @@ describe("/api/qualify", () => {
     send.mockReset();
     recordConversion.mockClear();
     vi.stubEnv("RESEND_API_KEY", "re_test");
+    vi.stubEnv("VERCEL_ENV", "production"); vi.stubEnv("VERCEL", "1"); vi.stubEnv("APP_BASE_URL", "");   // production: the booking link is the canonical https page
     vi.stubEnv("INQUIRY_NOTIFY_EMAIL", "");
   });
 
@@ -45,7 +46,9 @@ describe("/api/qualify", () => {
     expect(confirmation.to).toBe("ada@example.com");
     expect(confirmation.subject).toBe("Your next move — Modern Business Architect");
     expect(confirmation.html).toContain("Pre-Architecture");
-    expect(confirmation.text).toContain("Book our first conversation");
+    expect(confirmation.text).toContain("Book Your Complimentary Session");
+    expect(confirmation.text).toContain("https://modernbusinessarchitect.com/book/complementary-session?source=inquiry-");   // the booking page, tagged with where it was offered
+    expect(confirmation.text).not.toMatch(/calendly/i);
     // the confirmation is not a receipt: none of the submitted fields are echoed back
     for (const echoed of ["ada@example.com", "Hello", "Program 03", "linkedin"]) {
       expect(confirmation.html).not.toContain(echoed);

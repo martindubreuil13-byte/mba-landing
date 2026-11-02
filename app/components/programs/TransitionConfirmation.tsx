@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { INTRO_BOOKING_MINUTES } from "@/app/lib/booking";
 import Link from "next/link";
 import { trackEvent } from "@/app/lib/analytics";
 import { COMMUNITY_DECLINE_LABEL, COMMUNITY_FOOTNOTE, COMMUNITY_JOIN_LABEL, COMMUNITY_QUESTION } from "@/app/lib/programs/corporate-transition";
@@ -51,9 +52,9 @@ export default function TransitionConfirmation({ receipt }: { receipt: ReceiptVi
     <h1 className="mt-6 text-5xl font-light md:text-6xl">Good. Let’s talk.</h1>
     <p className="mt-8 text-lg leading-relaxed text-[#1a1816]/70">Thanks for sharing a little about where you are and what you’re trying to build.</p>
     <p className="mt-4 text-lg leading-relaxed text-[#1a1816]/70">The next step is simple. Let’s have a conversation.</p>
-    <p className="mt-4 text-lg leading-relaxed text-[#1a1816]/70">{emailSent ? "I’ve sent you an email with a link to book our conversation. You can also book directly below." : "I wasn’t able to confirm the booking email just now, but you don’t need it. You can book directly below."}</p>
+    <p className="mt-4 text-lg leading-relaxed text-[#1a1816]/70">{emailSent ? `I’ve sent you an email with a link to book your free ${INTRO_BOOKING_MINUTES}-minute Zoom conversation. You can also book directly below.` : "I wasn’t able to confirm the booking email just now, but you don’t need it. You can book directly below."}</p>
 
-    <a href={receipt.bookingUrl} target="_blank" rel="noopener noreferrer" onClick={() => trackEvent("transition_calendly_clicked")} className="mt-10 inline-block bg-[#6b1f1f] px-8 py-4 text-xs uppercase tracking-[.2em] text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b1f1f]">Book your conversation</a>
+    <a href={receipt.bookingUrl} target="_blank" rel="noopener noreferrer" onClick={() => trackEvent("transition_calendly_clicked")} className="mt-10 inline-block bg-[#6b1f1f] px-8 py-4 text-center text-xs uppercase tracking-[.2em] text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6b1f1f]">Book Your Complimentary Session</a>
     <p className="mt-5 max-w-xl text-sm italic leading-relaxed text-[#1a1816]/55">
       {emailSent
         ? "Can’t find a suitable time? Time-zone differences sometimes make availability tricky. Just reply to my email and we’ll find another option."
