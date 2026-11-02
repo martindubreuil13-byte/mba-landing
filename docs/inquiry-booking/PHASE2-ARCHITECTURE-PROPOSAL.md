@@ -1,134 +1,176 @@
-# Phase 2 architecture proposal: inquiries, bookings and one admin view
+# Phase 2 architecture proposal (v2): inquiries, booking links and one admin view
 
-2 November 2026. **Proposal only. Nothing in this document is implemented, migrated or deployed.** It is written against production commit `0e2ac5c`. Every change below needs Martin's review first; each numbered stage needs its own approval, and every database migration needs a separate explicit approval.
+Version 2, 2 November 2026. v1 is preserved in git history (`dde2a45`). **Proposal only. Nothing here is implemented, migrated or deployed.** Written against production commit `0e2ac5c`. Each stage (2a, 2b, 2c) needs its own approval; every database migration needs a further explicit approval after the target project and backup are verified, as in Stage G.
 
-## 1. Where things stand today
+## 1. Decisions recorded (Martin, 2 November 2026)
 
-| Area | What exists | The gap |
+| | Decision | How it is applied |
 |---|---|---|
-| Transition application | Saved in `program_applications` (answers, attribution, opaque `booking_ref` and `receipt_token`, idempotency key), person upserted into `leads`, invitation emails tracked in `program_invitation_sends` with signed delivery outcomes. | None for storage. |
-| Program inquiry (`/lets-talk`, `/api/qualify`) | Validates, emails the owner, emails the visitor an auto-reply. **Stores nothing.** Success means the owner email was accepted. | The inquiry exists only in Martin's mailbox. No lead, no history, no reference, no way to see it in admin, no abuse limiter on the endpoint. |
-| Booking | `sched_bookings` (+ `sched_attendees`, `sched_booking_events`). Has a `source` text (e.g. `transition`, `inquiry-<slug>`, `answers`) and the attendee email. | No foreign key or record of which application or inquiry produced the booking. The booking page can prefill name and email from an application `ref`, but the ref is not saved with the booking. |
-| Legacy Calendly tables | `program_bookings`, `program_applications.booking_status / booked_at / meeting_at`. The webhook is dormant. | The Transition admin table has a "Calendly" column that always reads "Not connected". |
-| Admin | `/admin/leads`, `/admin/programs/corporate-transition`, `/admin/scheduling/bookings` are three separate views. | Nobody can see "this person applied, was invited, booked Tuesday" in one place. |
+| A | Keep the existing owner-email failure and safe-retry behaviour | Visitor sees an error when the owner email is not accepted; retry is safe and never duplicates (see 4.2). |
+| B | Separate `program_inquiries` table | Section 4.1. |
+| C | Configurable retention, 24-month maximum, with a deletion mechanism and privacy requirements considered | Section 4.5. |
+| D | Booking-reference prefill expires after 60 days; expiry must never block ordinary booking | Section 5.3. |
+| E | Legacy Calendly columns stay dormant | Never written, never read by new code. |
+| F | Probable email matches are read-only hints, never automatic links | Section 6. |
+| G | Calendar forward-navigation fixed separately | **Removed from this proposal.** Gets its own small change request. |
+| H | Order 2a, then 2b, then 2c, each separately approved | Section 7. |
 
-Constraints that shape every option: the scheduling module may touch the database only through adapters in `app/lib/scheduling/adapters/` (enforced by isolation tests); no personal data in URLs; consent is recorded separately from the form that collected the data; the site is cookieless and stores no IP or IP hash; public booking intake stays ON throughout.
+Additional requirements and where they are met: accepted inquiry durably persisted (4.2), no duplicate rows or emails on retry (4.2), abuse protection (4.3), reference protection against analytics, lookup and logging (5.2), status derived from authoritative booking records (6.2), flags default off with rollback compatibility (7, 8).
 
-## 2. Principles
+## 2. Verified starting point
 
-1. **Additive only.** New table(s) and columns; nothing dropped or rewritten. Old Calendly-era tables stay as they are.
-2. **One person, one lead.** People remain canonical in `leads` (unique on email). Inquiries, applications and bookings hang off the lead.
-3. **Opaque references, never personal data in a link.** The existing `ref` pattern (16–64 random URL-safe characters) is reused.
-4. **Never lose an inquiry.** Persistence must not make the existing email path less reliable.
-5. **Derive, don't duplicate, status.** One timeline computed from the source records; no second copy that can drift.
-6. **Feature-flagged, independently reversible stages.**
+- **Inquiry:** `/api/qualify` validates, emails the owner (`martin@mindrasolutions.com` unless `INQUIRY_NOTIFY_EMAIL` is set), emails the visitor, stores nothing, and has no limiter or idempotency.
+- **Transition application:** `program_applications` with `booking_ref` and `receipt_token` (18 random bytes each, base64url, 24 characters), person in `leads`, invitation sends in `program_invitation_sends`.
+- **Booking:** `sched_bookings.status` is only `confirmed` or `canceled`. **A reschedule updates the same row** (`sched_reschedule_booking` bumps `version` and writes a `rescheduled` event). A link to the booking id therefore survives rescheduling and cancellation. There is no stored "completed" state.
+- **Prefill today:** `inquiryPrefill` reads `program_applications.answers` by `booking_ref` with **no age limit** and returns `{name, email}`. The page strips `ref` from the address bar in a client effect (`BookingExperience.tsx:41`).
+- **Limiter today:** the site's `checkRateLimit` (Postgres upsert, keyed on client IP from `x-forwarded-for`), **fails open**, and its own comment calls it "a cost-control guard, not a security boundary". The booking endpoints use it with `RATES` (book 10/hour, per-recipient 5/hour, global 30/hour).
+- **Analytics:** GA4 is consent-gated, page views are manual, and `ga.ts:118` sends `page_location` **including `window.location.search`**. The first-party analytics and attribution read only named `utm_*` parameters.
+- **Headers:** no `Referrer-Policy` is configured, so the browser default applies (cross-site requests receive the origin only).
+- **Crons:** `vercel.json` has one cron (`intelligence-maintenance`, daily).
 
-## 3. Part 1: persist program inquiries as leads
+## 3. Contradictions found, and how each is resolved
 
-### Options
-
-| | A. Reuse `program_applications` | B. New `program_inquiries` table (recommended) |
+| # | Conflict | Resolution |
 |---|---|---|
-| Fit | Applications have Transition-specific constraints (`ai_route`, `status` in INVITED/UNDER_REVIEW/…, invitation ledger). An inquiry is a free-text message with an optional program. | Matches the real shape: person, optional program, situation, message, attribution. |
-| Side effects | Inquiries would appear in the Transition admin table and need its statuses. Constraints would need loosening. | Transition code and admin untouched. |
-| Cost | Fewer tables. | One table plus a read path in admin (needed anyway for Part 3). |
+| C1 | v1 said persistence "fails open" (send the email even if the database write fails). Your requirement says a successfully accepted inquiry must be durably persisted. | **Fail closed when the flag is on.** Success is returned only after the row is committed **and** the owner email is accepted. If the write fails, send nothing, return a retryable error (503). Trade-off: a database outage now blocks inquiries, where today it would not. Turning the flag off restores the old behaviour. |
+| C2 | v1 put ref expiry in 2b, but prefill from inquiries ships in 2a. | Expiry moves to **2a**, and applies to the existing application prefill too (code only, no migration). |
+| C3 | v1 put erasure tooling in the 2c admin UI, but data starts accumulating in 2a. | 2a ships the purge job and an admin-authenticated erase endpoint plus runbook (no UI). The admin button comes in 2c. |
+| C4 | v1 said "best-effort" for the `ref` in the URL. That does not meet the analytics and logging requirement: GA sends `search` in `page_location`, the strip runs in a later client effect with no ordering guarantee, and the platform's request log normally records the full URL (to confirm in the log viewer). | New links carry the reference in the **URL fragment**, which browsers never send to servers (section 5.2). Legacy `?ref=` links already in inboxes keep working. |
+| C5 | A cookie would be the other way to hide the reference, but the site is deliberately cookieless. | No cookie. Fragment plus a one-time exchange request instead. |
+| C6 | "Prevent duplicate emails on retry" versus decision A (retry re-sends when the owner email failed). | A per-inquiry state machine: retry re-sends **only** if the owner email was not accepted. See 4.2. |
+| C7 | The existing limiter fails open and keys on IP. Failing open is acceptable for cost control but weak as "abuse protection"; a hard global cap would let an attacker block real inquiries. | Layered, no single point of denial. See 4.3. IP use is the site's existing limiter practice; confirm it is acceptable for this endpoint (decision J). |
+| C8 | v1's `booking_origins` required exactly one of `application_id` / `inquiry_id`, but erasing an inquiry or lead must not delete the booking. | Foreign keys are `on delete set null` and the check is "at most one", with `origin_type` kept. A booking whose origin was erased shows "origin removed". |
+| C9 | Decision D versus linking: should a stale reference still link a booking to its origin? | Expiry removes **prefill (disclosure)** only. A stale but valid reference may still **link** (it discloses nothing). This is my interpretation; a stricter reading is decision K. |
+| C10 | Failed inquiries (owner email not accepted) are told "not sent" yet would be stored. | Keep the row for safe retry, mark `undelivered`, show it in admin, and blank its message after 30 days unless it was later accepted (decision L). |
+| C11 | Clients with cached JavaScript send no idempotency key. | The server accepts a missing key and derives one from email, message and a 10-minute window. |
+| C12 | 60-day expiry measured from the first send would break a Transition invitation re-sent from admin on day 90. | Applications: measured from the latest accepted `program_invitation_sends` row. Inquiries: from `created_at`. No new column on `program_applications`. |
+| C13 | The shared `upsertLeadPreservingOptIn` overwrites an existing lead's `first_name` with whatever a form supplies. With public inquiries, anyone could rename a lead by typing its email. | Inquiries use a create-or-touch path that **never overwrites** an existing lead's name or country. |
 
-**Recommendation: B.**
+## 4. Stage 2a: persist inquiries, protect references
 
-### Proposed `public.program_inquiries` (additive migration, needs approval)
+### 4.1 Table (additive migration, needs approval)
 
-- `id uuid pk`, `lead_id uuid not null → leads(id)`, `program_slug text null` (resolved from the catalog server-side, as today), `situation text`, `message text`, `full_name text`, `attribution jsonb`.
-- `booking_ref text unique` (opaque, generated server-side, used in the booking link), `idempotency_key text unique`.
-- `owner_notification_status`, `auto_reply_status` (`pending | accepted | failed | blocked`), provider message ids, error text. Same vocabulary as the Transition ledger so the admin can show both alike.
-- `created_at`, `updated_at`. RLS enabled, no browser policies (service role only), like `program_applications`.
+`public.program_inquiries`: `id`, `lead_id → leads(id)`, `program_slug`, `full_name`, `situation`, `message`, `attribution jsonb`, `booking_ref` (unique, same generator as applications), `idempotency_key` (unique), `content_hash`, `owner_status` (`pending | accepted | failed`), `auto_reply_status` (`pending | accepted | failed | blocked`), provider message ids, error text, `delivered_at`, `message_purged_at`, `created_at`, `updated_at`. RLS enabled, no browser policies, service role only. No columns added to any existing table.
 
-### Behaviour
+### 4.2 Behaviour (flag `PROGRAM_INQUIRY_STORE_ENABLED`, default off)
 
-- `/api/qualify` order: validate → upsert lead (`ongoing_content_opt_in: false`; an inquiry is **not** marketing consent) → insert inquiry (idempotent) → owner email → auto-reply → update statuses. `leads.first_name` is the first token of the name; the full name stays on the inquiry.
-- **Persistence fails open.** If the database write fails, the owner email is still sent and the failure is logged. The owner notification stays the delivery that decides success, exactly as now.
-- **Retry safety.** The client sends a per-submit idempotency key; a retry after an email failure reuses the stored row instead of duplicating it. (Decision A below: keep today's "show failure when the owner email fails".)
-- **Booking link.** The auto-reply and success screen link carries `ref=<inquiry booking_ref>` plus `source=inquiry-<slug>`. The existing prefill adapter gains a second lookup (`program_inquiries`) and still returns only `{name, email}`.
-- **Abuse.** Once the endpoint writes rows it needs a limiter and honeypot (it has neither today). Must fit the no-IP, cookieless constraint, so likely a global/short-window cap plus honeypot rather than per-IP. To be designed in the implementation stage and tested with mutation checks.
-- **Privacy.** Update the privacy notice (inquiry text is now stored). Propose a retention period for message text (Decision C). Admin-only visibility.
-- **Backfill.** Past inquiries were never stored, so they cannot be reconstructed. Martin may add the few that matter by hand later; not part of this work.
+1. Validate and apply the limiter (4.3).
+2. Create-or-touch the lead (`ongoing_content_opt_in` stays false; an inquiry is not marketing consent; C13).
+3. Insert or fetch the inquiry by `idempotency_key`. If the write fails: return 503, send nothing (C1).
+4. **Claim the owner send** with a conditional update (`pending/failed → sending`) so two simultaneous retries cannot both send. Send with a provider idempotency key derived from the inquiry id and attempt kind. Record the outcome.
+5. Owner not accepted: return the existing error (A); row stays `failed`. A retry with the same key re-sends. Owner accepted: send the auto-reply once; its failure never fails the request.
+6. A retry whose first attempt already succeeded (lost response) returns success and sends **nothing**. Auto-reply is likewise sent at most once.
+7. The booking link in the auto-reply and success screen uses the inquiry's reference (5.2) with `source=inquiry-<slug>`.
 
-## 4. Part 2: link completed bookings to their origin
+`/api/qualify` response shape stays unchanged for the flag-off path and for clients. The lets-talk form adds a per-submit key; double-clicks and back/forward resubmits reuse it.
 
-### Options
+### 4.3 Abuse protection (layered)
 
-| | A. Columns on `sched_bookings` | B. Link table `booking_origins` (recommended) | C. Match by email at read time only |
+1. **Honeypot field** and a **signed form-age token** (rejects submissions faster than a human, or older than a day). Silent success-look-alike rejection.
+2. **Per-client** limit (suggest 5/hour) and **per-recipient email** limit (suggest 3/day, protects third parties from auto-reply spam), on the existing limiter.
+3. **Global soft ceiling** (suggest 60/hour) that returns "please try again shortly" plus the direct contact address, and raises the existing alert path. It rejects rather than silently drops, and is set high enough that the limiter, not an attacker, is not the likeliest cause of lost inquiries.
+4. Strict validation already present; message capped at 5,000 characters; body size cap like the booking routes; same-site check like `assertSameSite`.
+5. Optional edge layer: a Vercel Firewall rate rule on the endpoint (dashboard action, not code).
+
+The limiter's fail-open behaviour is kept so that a limiter outage never blocks a real inquiry; the persistence requirement (C1) still holds. Every layer gets a mutation check (section 9).
+
+### 4.4 Privacy
+
+Inquiry text becomes stored personal data: update the privacy notice and the legal-assumptions list before activation. The owner notification email remains in the mailbox and Resend logs, which this retention does not cover (state this in the notice review). Admin-only visibility. Existing Transition `answers` have no retention rule today; out of scope, noted as a gap.
+
+### 4.5 Retention and deletion (decision C)
+
+- `INQUIRY_RETENTION_MONTHS`: default 24, **clamped to 1–24** in code so it cannot be raised past the maximum by mistake. Applied at purge time from `created_at`, so changing it applies to existing rows.
+- Daily job (a second Vercel cron entry, bearer-authenticated like the existing one; flag `PROGRAM_INQUIRY_PURGE_ENABLED`, supports dry-run): blanks `message` and `situation`, sets `message_purged_at`; keeps the lead, program, timestamps and statuses. Batch-limited and idempotent. Never touches `consent_records` (append-only by design).
+- Erasure on request: admin-authenticated `POST` endpoint plus runbook SQL, available from 2a, deleting the inquiry row (and the lead only when nothing else references it). Booking links survive as "origin removed" (C8).
+- The purge flag must be enabled in the same step that enables storage, or the activation checklist records a dated exception.
+
+## 5. Stage 2b: link bookings to their origin
+
+### 5.1 Table (additive migration, depends on 2a)
+
+`public.booking_origins`: `booking_id` (pk, → `sched_bookings`), `origin_type` (`application | inquiry`), `application_id` / `inquiry_id` (`on delete set null`, at most one set), `lead_id` (`on delete set null`), `linked_at`, `matched_by` (`context`). **No reference is stored.** Written by a new scheduling port `bookingOrigin` (adapter in `app/lib/scheduling/adapters/`), after the booking commits; a failure is logged (without personal data) and never fails or delays the booking. Flag `BOOKING_ORIGIN_LINKING_ENABLED`.
+
+### 5.2 Protecting references (flag `BOOKING_REF_EXCHANGE_ENABLED`, ships in 2a)
+
+- **New links** use `…/book/complementary-session?source=…#r=<ref>`. Fragments are not sent to the server, not in request logs, not in `Referer`. A tiny inline script removes the fragment before hydration, and therefore before any consented GA page view is sent.
+- The page POSTs the reference **in the body** to a new `booking-context` endpoint. The response is `{ prefill: {name, email} | null, context }`, where `context` is a signed, two-hour token holding only the origin id and expiry (no personal data). The booking request carries `context`; the server verifies it and (2b) writes the link. The raw reference is never kept in page state, URL, storage or later requests.
+- **Unauthorized lookup:** references are 144 bits of randomness, the endpoint is rate-limited, `no-store`, and returns the same shape for unknown, expired and malformed references (no existence oracle).
+- **Logging:** references and contexts never appear in logs or events; a test scans captured log output. The audit tables store origin ids only.
+- **Analytics:** a browser test with analytics consent granted checks every outbound request URL and the GA `page_location` for the reference.
+- **Legacy `?ref=` links** (emails already sent by `0e2ac5c`) keep working: handled server-side as today with expiry, then redirected (303) to the clean URL. This leaves their reference in request logs for the life of those emails; accepted, since the number is tiny.
+- The signing secret is a new production secret (`BOOKING_CONTEXT_SECRET`); if not set the code derives one from the existing server key as other site tokens do. Setting it is a production change and needs approval.
+
+### 5.3 Expiry (decision D)
+
+Prefill is offered only while the reference is under 60 days old (C12). An expired, unknown or malformed reference gives a normal, empty booking form with no error and no notice that a reference existed. Linking behaviour for a stale-but-valid reference: C9 / decision K.
+
+## 6. Stage 2c: one view in admin
+
+### 6.1 Shape
+
+Lead detail (`/admin/leads/[id]`) becomes the timeline: inquiry or application received, auto-reply / invitation with delivery outcome, booking, community choice. The Transition table's "Calendly: Not connected" column becomes a live Booking column. New Inquiries list (filters by program and status). The booking drawer gets a "Came from" line. Erase action (calls the 2a endpoint).
+
+### 6.2 Status is derived, never stored
+
+A single pure mapping reads the authoritative records:
+
+| Shown | Source |
+|---|---|
+| Received / Undelivered | inquiry or application row and `owner_status` |
+| Invited | `program_invitation_sends` (and auto-reply status for inquiries) |
+| Booked: date | `sched_bookings.status = 'confirmed'` and its **current** `start_at` (so a reschedule shows the new time automatically) |
+| Canceled | `sched_bookings.status = 'canceled'` |
+| Time passed | confirmed and `end_at` in the past. There is no stored "completed" or "attended" state, so the label does not claim one. |
+| Rescheduled / sync problems | `sched_booking_events` and `sync_status`, shown as annotations |
+
+If a booking has several links over time (a person books, cancels and books again), the timeline shows each booking; the headline status uses the latest non-canceled booking. Legacy Calendly columns are not read (E). Read-only queries go through a scheduling read adapter so the isolation tests still hold.
+
+### 6.3 Probable matches (decision F)
+
+Bookings with no origin link whose attendee email equals a lead's email are shown as "Probable: same email" on the lead and the booking. Read-only, never written, never used for status headlines; admin only.
+
+## 7. Staged rollout
+
+| Stage | Contents | Migration | Flags (all default off) |
 |---|---|---|---|
-| Scheduling schema | Modified | Untouched | Untouched |
-| Accuracy | Exact | Exact (when a ref is present) | Guess: wrong when someone books with a different email |
-| Isolation rule | Needs scheduling-internal change | New port + adapter, same pattern as `inquiryPrefill` | None needed |
-| Risk | Larger blast radius in the booking transaction | Small, can fail without blocking a booking | None, but weak |
+| 2a | `program_inquiries`; storage, retry safety, limiter, honeypot; create-or-touch lead; reference exchange and fragment links; prefill from inquiries; prefill expiry; purge cron; erase endpoint | 1 table | `PROGRAM_INQUIRY_STORE_ENABLED`, `PROGRAM_INQUIRY_PURGE_ENABLED`, `BOOKING_REF_EXCHANGE_ENABLED` |
+| 2b | `booking_origins`, `bookingOrigin` port, context verified at booking | 1 table (needs 2a's table) | `BOOKING_ORIGIN_LINKING_ENABLED` |
+| 2c | Journey module, timeline, Booking column, Inquiries list, drawer line, erase button | none | none (admin-only) |
 
-**Recommendation: B for exact links, plus C as a read-only "probable match" hint in admin** (never written, shown as a suggestion).
+Each deployment repeats the standing overrides with intake ON and uses the verified release-checkout process. After 2a the stored inquiries have no admin screen until 2c; the erase endpoint and the owner email cover the gap (option: pull the read-only Inquiries list into 2a).
 
-### Proposed `public.booking_origins`
+## 8. Migration and rollout risks
 
-- `booking_id uuid pk → sched_bookings(id)` (one origin per booking), `origin_type` (`application | inquiry`), `application_id` / `inquiry_id` (exactly one set, enforced by a check constraint), `lead_id`, `linked_at`, `matched_by` (`ref`).
+1. **Ordering:** the 2b migration has a foreign key to the 2a table, so 2b can never be applied first, and the 2a table must never be dropped once 2b exists. Rollback is by flag, not by dropping.
+2. **Code rollback with tables present** is safe: both tables are additive and `0e2ac5c` ignores them. Links already emailed with `#r=` simply give an empty form on the old build; booking is unaffected.
+3. **Purge job and rollback:** the cron route disappears with an older build, so a rollback pauses purging. The activation checklist records when it was last verified to run.
+4. **Row-level security:** both tables must ship with RLS enabled and no policies; the migration test asserts anon and authenticated roles cannot read them.
+5. **Lead side effects:** inquirers become rows in `leads` with no source marker. They appear in `/admin/leads` and in lead counts and dashboards (a metric shift). Marketing exports and consent flows already require `ongoing_content_opt_in`, and Transition already creates leads this way, but a pre-activation check must confirm no sender mails every non-suppressed lead and that the member-access layer never treats an unconfirmed lead as a member.
+6. **Idempotency scope:** provider idempotency keys expire after a day; the database state machine is the real guard, so a retry later than that still cannot double-send.
+7. **Limiter coupling:** the limiter's table is shared with the booking endpoints; inquiry limits use their own key names so inquiry traffic cannot consume booking budget.
+8. **Production migration:** applied only on approval, after verifying project `sbntzyivfhvogxiiysuh` and a recent backup, with `schema_migrations` rows, as in Stage G. Both migrations are rehearsed on the local Supabase stack first.
+9. **Cron addition** changes `vercel.json`; the cron count and plan limits must be checked before 2a.
+10. **Secrets:** `BOOKING_CONTEXT_SECRET` (optional) and the existing cron bearer are the only configuration touching production.
+11. **Existing data:** no backfill. Past inquiries were never stored; existing bookings have no origin. A one-time read-only email-match report may be produced on request.
+12. **Metrics:** the Phase 2 "inquiry" conversion event is already recorded on owner-email acceptance; storage must not add a second event.
 
-### Behaviour
+## 9. Testing (no live providers)
 
-- The booking page already receives `ref`; today the client strips it from the address bar. Phase 2 keeps it in page state and submits it with the booking request **in the body, not the URL**.
-- A new injected port `bookingOrigin` (adapter in `app/lib/scheduling/adapters/`) validates the ref by lookup in `program_applications` / `program_inquiries` and writes the link **after** the booking commits. If the lookup or insert fails the booking still succeeds (logged, flagged for admin); a link is never a reason to refuse a customer.
-- A ref that matches nothing is ignored silently (no oracle for guessing).
-- **Ref lifetime.** Today a ref works for prefill indefinitely. Propose an expiry window (Decision D) so an old forwarded email cannot prefill or attach later.
-- A ref attaches a booking to someone else's record only if the ref leaked; refs are random and only ever sent to the person concerned. Worst case is a wrong row in the admin timeline, never a data disclosure.
-- **Legacy columns.** Do **not** write `program_applications.booking_status / booked_at / meeting_at` in Phase 2 (that would create a second source of truth). The admin reads the live link instead. Those columns stay dormant. (Decision E.)
-- **Backfill.** Existing bookings have no ref and are not linked. Any pre-existing bookings can be matched once by email in a read-only report for Martin to confirm; no automatic backfill.
-- **Reschedule / cancel.** The link is to the booking, so status changes flow through automatically via the derived view.
+- Retry matrix: same key twice; owner failure then success; success with lost response; concurrent duplicate; missing key; double-click. Assert row count and send count each time.
+- Persistence failure returns 503 and sends nothing; flag off reproduces `0e2ac5c` behaviour exactly (response shapes included).
+- Limiter and honeypot rejections; third-party protection via the per-recipient cap.
+- Reference: fragment links; legacy query links with redirect; expiry at 59/60/61 days; expired reference still allows booking; unknown vs expired give identical responses; no reference in captured logs, events or audit rows; browser test of every outbound URL with analytics consent granted.
+- Linking: valid context links, tampered or expired context is ignored, failed link never fails the booking, reschedule and cancel keep one link and the derived status follows.
+- Retention: clamp, dry-run, idempotent batches, consent records untouched, erase endpoint requires admin.
+- Mutation checks removing each protection (key, claim, state check, honeypot, limiter, RLS, clamp, signature check, at-most-one constraint) and confirming a test fails.
+- Migration rehearsal and RLS probe on the local stack; whole suite and build before every deploy.
 
-## 5. Part 3: inquiry and booking status together in admin
+## 10. Open items for Martin
 
-### Shape
-
-- **Lead detail (`/admin/leads/[id]`) becomes the timeline**: inquiry or application received → auto-reply / invitation (accepted, delivered, bounced) → booking (scheduled for …, canceled, rescheduled, completed) → community choice. Each row links to its own admin page.
-- **Transition table**: the "Calendly: Not connected" column is replaced by a live **Booking** column (date and status, or "Not booked").
-- **New "Inquiries" list** beside Transition (same layout, filter by program, status chips for notification/auto-reply/booking).
-- **Booking drawer** (`/admin/scheduling/bookings`) gets a "Came from" line linking to the originating inquiry or application.
-- **One vocabulary**: Received → Invited → Booked → Canceled/Rescheduled → Completed, mapped from the real source statuses in a single pure function with tests, so the three screens cannot disagree.
-
-### Data access
-
-Read-only queries behind a small `app/lib/lead-journey/` module that joins `leads`, inquiries, applications, invitation sends, `booking_origins` and bookings. Scheduling tables are read only through a scheduling read adapter, preserving the isolation tests. No denormalized status column. Admin pages are already authenticated; nothing new is public.
-
-## 6. Staged rollout (each stage separately approved)
-
-| Stage | Content | Migration | Flag | Rollback |
-|---|---|---|---|---|
-| 2a | `program_inquiries`, `/api/qualify` persistence, abuse limiter, ref in inquiry links, prefill from inquiries | Yes (1 table) | `PROGRAM_INQUIRY_STORE_ENABLED`, default off | Flag off; email path unchanged; table stays |
-| 2b | `booking_origins`, `bookingOrigin` port, ref submitted in body, ref expiry | Yes (1 table) | `BOOKING_ORIGIN_LINKING_ENABLED`, default off | Flag off; bookings unaffected |
-| 2c | Journey module, lead timeline, Transition Booking column, Inquiries list, booking drawer line | None | none (admin-only) | Redeploy previous commit |
-
-Every deployment repeats the standing overrides with public intake ON and uses the verified release-checkout process. Migrations are applied only on Martin's explicit approval, after verifying the target project and taking a backup, as in Stage G.
-
-## 7. Testing plan (no live providers)
-
-- Unit and route tests with the fake database: idempotent retry, persistence failure still sends the owner email, duplicate lead handling, suppressed leads never re-opted-in, response shapes unchanged when the flag is off.
-- Mutation checks: remove the idempotency key, the fail-open path, the ref validation, the exactly-one-origin constraint, and the limiter, and confirm a test fails each time.
-- Booking: a booking with a valid ref is linked; a wrong or expired ref is ignored and the booking still succeeds; a failing link insert never fails the booking; the ref is never in a URL or log line.
-- Isolation tests extended so the new adapter is the only scheduling-side database access.
-- Admin: status-mapping table tests; rendered-markup checks on mobile width.
-- Migrations rehearsed on the local Supabase stack only. No real inquiry, email, Zoom or Google event is created at any point without separate approval.
-
-## 8. Risks and open points
-
-- Inquiry text is now stored: needs the privacy notice and a retention decision before 2a ships.
-- `/api/qualify` currently has no abuse protection; persistence raises the stakes, so the limiter is part of 2a, not optional.
-- The ref is briefly visible in the address bar until the page strips it (analytics could capture the page URL). Best-effort today; 2b can reduce it by exchanging the ref for server-held state on first load.
-- Calendar paging beyond about 13 months returns a 400 ("Choose dates in the coming months. Try again."). Separate small fix (limit forward navigation to the booking window); not part of Phase 2 unless Martin wants it bundled.
-- The monitoring alert job only detects problems while the app is up; the independent dead-man check (Layer 2) is still not active.
-- The encryption key has no separate backup (accepted risk, unchanged).
-
-## 9. Decisions needed from Martin
-
-- **A. Inquiry failure behaviour.** Keep today's rule (show an error when the owner email fails, keep the stored row, safe retry) or accept the inquiry as received and retry the email in the background? *Recommended: keep today's rule.*
-- **B. Table choice.** New `program_inquiries` (recommended) vs reuse `program_applications`.
-- **C. Retention.** How long to keep inquiry message text (suggest 24 months, then blank the message and keep the lead and the fact of contact).
-- **D. Ref lifetime.** Suggest 60 days for prefill and linking.
-- **E. Legacy Calendly columns.** Leave dormant (recommended) or keep them in sync.
-- **F. Email-match hint.** Show "probable match" for bookings without a ref (recommended) or show nothing.
-- **G. Bundle the calendar-paging fix** into 2c, or ship it on its own.
-- **H. Order.** 2a → 2b → 2c as above, or deliver the admin view first on top of what already exists (Transition applications only).
+- **J.** Confirm the inquiry endpoint may use the existing IP-keyed limiter (the site already stores these transient keys), and the suggested numbers (5/hour per client, 3/day per email, 60/hour global).
+- **K.** Should a stale (over 60 days) but valid reference still link the booking to its origin (recommended), or be ignored entirely?
+- **L.** For inquiries whose owner email never succeeded: keep visible in admin and blank the message after 30 days (recommended), or blank immediately?
+- **M.** Add the read-only Inquiries list to 2a so stored inquiries are visible straight away, or wait for 2c?
+- **N.** Approve fragment-based links and the exchange request (C4/C5), including the extra request on page load.
+- **O.** Approve the fail-closed behaviour in C1 (an outage of the database blocks new inquiries while the flag is on).
