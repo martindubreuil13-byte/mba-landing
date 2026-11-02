@@ -20,6 +20,8 @@ const daysIn = (ym: string) => { const [y, m] = ym.split("-").map(Number); retur
  */
 export default function SlotPicker({ load, timeZone, value, onChange, hour12 = true }: { load: SlotLoader; timeZone: string; value: string | null; onChange: (startUtc: string) => void; hour12?: boolean }) {
   const today = useMemo(() => localDate(Date.now(), timeZone), [timeZone]);
+  // The server only answers for dates up to a little over a year ahead (400 days); the last month wholly inside that is as far forward as the picker goes.
+  const lastYm = useMemo(() => monthShift(localDate(Date.now() + 399 * 86_400_000, timeZone).slice(0, 7), -1), [timeZone]);
   const [ym, setYm] = useState(() => (value ? localDate(Date.parse(value), timeZone) : today).slice(0, 7));
   const [date, setDate] = useState<string | null>(() => (value ? localDate(Date.parse(value), timeZone) : null));
   const [slots, setSlots] = useState<PickerSlot[]>([]);
@@ -36,7 +38,7 @@ export default function SlotPicker({ load, timeZone, value, onChange, hour12 = t
     const to = new Date(localToInstant(addDays(`${ym}-${String(daysIn(ym)).padStart(2, "0")}`, 1), "00:00", timeZone)).toISOString();
     load(from, to).then((s) => {
       if (!live) return;
-      if (s.length === 0 && !value && date === null && hops < 3) { setHops((h) => h + 1); setYm(monthShift(ym, 1)); return; }
+      if (s.length === 0 && !value && date === null && hops < 3 && ym < lastYm) { setHops((h) => h + 1); setYm(monthShift(ym, 1)); return; }
       setSlots(s); setState("ready");
     }).catch((e: unknown) => { if (live) { setProblem(e instanceof Error ? e.message : "Availability could not be loaded."); setState("error"); } });
     return () => { live = false; };
@@ -64,7 +66,7 @@ export default function SlotPicker({ load, timeZone, value, onChange, hour12 = t
           <h2 className="whitespace-nowrap text-3xl font-light tracking-tight md:text-4xl" aria-live="polite">{MONTH_NAMES[m - 1]} <span className="text-[#1a1816]/30">{y}</span></h2>
           <div className="-mr-3 flex">
             <button type="button" aria-label="Previous month" disabled={!canGoBack} onClick={() => setYm(monthShift(ym, -1))} className={arrow}><ChevronLeft aria-hidden className="h-5 w-5" strokeWidth={1.25} /></button>
-            <button type="button" aria-label="Next month" onClick={() => setYm(monthShift(ym, 1))} className={arrow}><ChevronRight aria-hidden className="h-5 w-5" strokeWidth={1.25} /></button>
+            <button type="button" aria-label="Next month" disabled={ym >= lastYm} onClick={() => setYm(monthShift(ym, 1))} className={arrow}><ChevronRight aria-hidden className="h-5 w-5" strokeWidth={1.25} /></button>
           </div>
         </div>
         <div className="grid grid-cols-7 border-b border-[#1a1816]/[.12] pb-3 text-center text-[10px] uppercase tracking-[.26em] text-[#1a1816]/40">{WEEKDAYS.map((d) => <div key={d}>{d}</div>)}</div>

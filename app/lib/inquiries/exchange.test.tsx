@@ -11,32 +11,36 @@ vi.mock("@/app/lib/supabase/service", () => ({ getServiceClient: () => db.curren
 const limiter = vi.hoisted(() => ({ deny: false }));
 vi.mock("@/app/lib/rateLimit", () => ({ checkRateLimit: async () => !limiter.deny, getClientIp: () => "unknown" }));
 vi.mock("@/app/lib/supabase/admin-session", () => ({ getAdminUser: async () => null, requireAdmin: async () => ({ email: "owner@example.test" }) }));
+vi.mock("@/app/components/admin/EraseInquiryButton", () => ({ default: ({ id }: any) => <button data-erase={id}>Delete</button> }));
 vi.mock("@/app/components/admin/AdminShell", () => ({ default: ({ children }: any) => <div data-shell>{children}</div> }));
 
-import { inquiryPrefill } from "@/app/lib/scheduling/adapters/inquiry-prefill";
+import { inquiryPrefill, refOrigin } from "@/app/lib/scheduling/adapters/inquiry-prefill";
 import { SchedulingService } from "@/app/lib/scheduling/service";
+import { verifyContext } from "./context";
 import { INTRO_BOOKING_PATH, introBookingPath, introBookingPathWithFragmentRef, introBookingUrl } from "@/app/lib/booking";
 import InquiryBookingCta from "@/app/components/programs/InquiryBookingCta";
 
 const NOW = Date.parse("2026-11-02T12:00:00Z");
 const DAY = 86_400_000;
 const iso = (daysAgo: number) => new Date(NOW - daysAgo * DAY).toISOString();
+const INQ_ID = "11111111-1111-4111-8111-111111111111", APP_ID = "22222222-2222-4222-8222-222222222222";
 const REF_I = "InquiryRef0123456789abcd", REF_A = "AppRef0123456789abcdefg";
 
 // The real prefillFor logic (shape check, error swallowing) around the real adapter.
 const service = { inquiryPrefill: (ref: string) => inquiryPrefill(ref, NOW) };
-vi.mock("@/app/lib/scheduling/instance", () => ({ getScheduling: () => ({ prefillFor: (ref: unknown) => (SchedulingService.prototype as any).prefillFor.call(service, ref) }) }));
+const realService = { inquiryPrefill: service.inquiryPrefill, refOriginOf: (ref: string) => refOrigin(ref, NOW) };
+vi.mock("@/app/lib/scheduling/instance", () => ({ getScheduling: () => ({ prefillFor: (ref: unknown) => (SchedulingService.prototype as any).prefillFor.call(realService, ref), originFor: (ref: unknown) => (SchedulingService.prototype as any).originFor.call(realService, ref) }) }));
 
 function seedInquiry(daysAgo: number, over: Record<string, unknown> = {}) {
   db.current.tables.leads.push({ id: "lead-1", email: "ada@example.test", first_name: "Ada" });
-  db.current.tables.program_inquiries.push({ id: "inq-1", lead_id: "lead-1", full_name: "Ada Lovelace", message: "TOP SECRET message", situation: "x", booking_ref: REF_I, created_at: iso(daysAgo), ...over });
+  db.current.tables.program_inquiries.push({ id: INQ_ID, lead_id: "lead-1", full_name: "Ada Lovelace", message: "TOP SECRET message", situation: "x", booking_ref: REF_I, created_at: iso(daysAgo), ...over });
 }
 function seedApplication(submittedDaysAgo: number, sendDaysAgo?: number) {
-  db.current.tables.program_applications.push({ id: "app-1", booking_ref: REF_A, submitted_at: iso(submittedDaysAgo), answers: { firstName: "Elena", lastName: "Test", email: "elena@example.com", motivation: "private" } });
-  if (sendDaysAgo !== undefined) db.current.tables.program_invitation_sends.push({ id: "s1", application_id: "app-1", status: "accepted", attempted_at: iso(sendDaysAgo) });
+  db.current.tables.program_applications.push({ id: APP_ID, booking_ref: REF_A, submitted_at: iso(submittedDaysAgo), answers: { firstName: "Elena", lastName: "Test", email: "elena@example.com", motivation: "private" } });
+  if (sendDaysAgo !== undefined) db.current.tables.program_invitation_sends.push({ id: "s1", application_id: APP_ID, status: "accepted", attempted_at: iso(sendDaysAgo) });
 }
 
-beforeEach(() => { db.current = new FakeDb(); limiter.deny = false; vi.stubEnv("PROGRAM_INQUIRY_STORE_ENABLED", "true"); vi.stubEnv("BOOKING_REF_EXCHANGE_ENABLED", "true"); vi.stubEnv("VERCEL_ENV", "production"); vi.stubEnv("VERCEL", "1"); vi.stubEnv("APP_BASE_URL", ""); });
+beforeEach(() => { db.current = new FakeDb(); limiter.deny = false; vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "service-role-for-tests"); vi.stubEnv("INQUIRY_FORM_SECRET", ""); vi.stubEnv("NAPKIN_UNSUBSCRIBE_SECRET", ""); vi.stubEnv("PROGRAM_INQUIRY_STORE_ENABLED", "true"); vi.stubEnv("PROGRAM_INQUIRY_STORE_ENABLED", "true"); vi.stubEnv("VERCEL_ENV", "production"); vi.stubEnv("VERCEL", "1"); vi.stubEnv("APP_BASE_URL", ""); });
 
 describe("the pre-fill lookup", () => {
   it("returns an inquiry's own name and e-mail and nothing else", async () => {
@@ -55,7 +59,7 @@ describe("the pre-fill lookup", () => {
     // an invitation re-sent from admin 5 days ago starts a new window
     db.current = new FakeDb(); seedApplication(90, 5); expect(await inquiryPrefill(REF_A, NOW)).toEqual({ name: "Elena Test", email: "elena@example.com" });
     // a failed (not accepted) re-send does not
-    db.current = new FakeDb(); seedApplication(90); db.current.tables.program_invitation_sends.push({ id: "s2", application_id: "app-1", status: "failed", attempted_at: iso(1) });
+    db.current = new FakeDb(); seedApplication(90); db.current.tables.program_invitation_sends.push({ id: "s2", application_id: APP_ID, status: "failed", attempted_at: iso(1) });
     expect(await inquiryPrefill(REF_A, NOW)).toBeNull();
   });
 
@@ -80,21 +84,30 @@ describe("POST /api/scheduling/booking-context", () => {
     seedInquiry(2);
     const res = await call({ ref: REF_I });
     expect(res.status).toBe(200); expect(res.headers.get("cache-control")).toBe("no-store");
-    expect(await res.json()).toEqual({ prefill: { name: "Ada Lovelace", email: "ada@example.test" } });
+    const body = await res.json();
+    expect(body.prefill).toEqual({ name: "Ada Lovelace", email: "ada@example.test" });
+    expect(verifyContext(body.context)).toEqual({ kind: "inquiry", id: INQ_ID });
   });
 
-  it("answers unknown, expired and malformed references identically (no way to tell which)", async () => {
+  it("an unknown or malformed reference answers nothing at all; an EXPIRED one gives no details but still says where it came from", async () => {
     seedInquiry(200);
-    const answers = [];
-    for (const ref of [REF_I /* expired */, "Unknown0123456789abcdefg", "bad", "", 5, null, undefined]) { const r = await call({ ref }); answers.push([r.status, await r.text()]); }
-    expect(new Set(answers.map((a) => JSON.stringify(a))).size).toBe(1);
-    expect(answers[0]).toEqual([200, JSON.stringify({ prefill: null })]);
+    for (const ref of ["Unknown0123456789abcdefg", "bad", "", 5, null, undefined]) { const r = await call({ ref }); expect([r.status, await r.json()]).toEqual([200, { prefill: null, context: null }]); }
+    const expired = await (await call({ ref: REF_I })).json();
+    expect(expired.prefill).toBeNull();
+    expect(verifyContext(expired.context)).toEqual({ kind: "inquiry", id: INQ_ID });
+  });
+
+  it("a Transition reference gives an application context", async () => {
+    seedApplication(3);
+    const body = await (await call({ ref: REF_A })).json();
+    expect(body.prefill).toEqual({ name: "Elena Test", email: "elena@example.com" });
+    expect(verifyContext(body.context)).toEqual({ kind: "application", id: APP_ID });
   });
 
   it("is off (404) until the switch is on, rate limited, JSON-only, same-site only and size capped", async () => {
     seedInquiry(2);
-    vi.stubEnv("BOOKING_REF_EXCHANGE_ENABLED", ""); expect((await call({ ref: REF_I })).status).toBe(404);
-    vi.stubEnv("BOOKING_REF_EXCHANGE_ENABLED", "true");
+    vi.stubEnv("PROGRAM_INQUIRY_STORE_ENABLED", ""); expect((await call({ ref: REF_I })).status).toBe(404);
+    vi.stubEnv("PROGRAM_INQUIRY_STORE_ENABLED", "true");
     limiter.deny = true; const limited = await call({ ref: REF_I }); expect(limited.status).toBe(429); limiter.deny = false;
     expect((await call({ ref: REF_I }, { origin: "https://evil.example" })).status).toBe(403);
     expect((await call({ ref: REF_I }, { "content-type": "text/plain" })).status).toBe(415);
@@ -121,7 +134,7 @@ describe("booking links", () => {
   });
 
   it("with exchange links off, the existing ?ref= form is produced unchanged", () => {
-    vi.stubEnv("BOOKING_REF_EXCHANGE_ENABLED", "");
+    vi.stubEnv("PROGRAM_INQUIRY_STORE_ENABLED", "");
     expect(introBookingUrl(REF_A, "transition")).toBe(`https://modernbusinessarchitect.com${INTRO_BOOKING_PATH}?source=transition&ref=${REF_A}`);
   });
 
@@ -150,33 +163,37 @@ describe("analytics and error reporting cannot see a reference", () => {
   });
 });
 
-describe("the admin Inquiries page", () => {
-  vi.mock("@/app/lib/inquiries/store", async (orig) => ({ ...(await orig<object>()), listInquiries: vi.fn() }));
-  it("shows a failed notification plainly, a removed message as removed, and says so when nothing is stored yet", async () => {
-    const store = await import("@/app/lib/inquiries/store");
+describe("the admin Inquiries & applications page", () => {
+  vi.mock("@/app/lib/inquiries/journey", async (orig) => ({ ...(await orig<object>()), listJourney: vi.fn() }));
+  it("shows a failed notification plainly, booking states, a removed message as removed, and the empty state", async () => {
+    const journey = await import("@/app/lib/inquiries/journey");
     const { default: Page } = await import("@/app/admin/inquiries/page");
-    const base = { lead_id: "l", program_slug: null, situation: null, attribution: {}, booking_ref: "r", idempotency_key: "k", content_hash: "h", owner_claimed_at: null, owner_attempts: 0, owner_message_id: null, owner_accepted_at: null, auto_reply_message_id: null, auto_reply_error: null, updated_at: iso(0) };
-    (store.listInquiries as any).mockResolvedValue([
-      { ...base, id: "1", email: "a@example.test", full_name: "Failed Person", message: "please call me", owner_status: "failed", owner_error: "provider_rejected: no", auto_reply_status: "pending", message_purged_at: null, created_at: iso(1) },
-      { ...base, id: "2", email: "b@example.test", full_name: "Old Person", message: "", owner_status: "accepted", auto_reply_status: "accepted", message_purged_at: iso(5), created_at: iso(800) },
-    ]);
+    const row = { id: "1", kind: "inquiry" as const, href: null, messageRemoved: false };
+    (journey.listJourney as any).mockResolvedValue({ notes: [], rows: [
+      { ...row, key: "inquiry:1", receivedAt: iso(1), name: "Failed Person", email: "a@example.test", interest: "Pre-Architecture", contact: { text: "Delivery failed", bad: true, detail: "provider_rejected: no" }, message: "please call me", booking: { text: "Not booked", tone: "none" } },
+      { ...row, id: "2", key: "inquiry:2", receivedAt: iso(800), name: "Old Person", email: "b@example.test", interest: "No program chosen", contact: { text: "You were notified", bad: false, detail: null }, message: null, messageRemoved: true, booking: { text: "Canceled (was Tue, Nov 3, 1:00 p.m. GMT+7)", tone: "bad" } },
+      { ...row, id: "3", key: "application:3", kind: "application" as const, href: "/admin/programs/corporate-transition/3", receivedAt: iso(3), name: "Elena Test", email: "elena@example.com", interest: "Corporate Transition", contact: { text: "Invitation: Sent", bad: false, detail: null }, message: null, booking: { text: "Booked: Thu, Nov 5, 9:00 a.m. GMT+7 (rescheduled)", tone: "ok" } },
+    ] });
     const html = renderToStaticMarkup(await Page());
     expect(html).toContain("Delivery failed"); expect(html).toContain("provider_rejected: no"); expect(html).toContain("please call me");
-    expect(html).toContain("1 inquiry without a delivered notification");
-    expect(html).toContain("Removed under the retention policy");
-    expect(html).toContain("mailto:a@example.test");
-    (store.listInquiries as any).mockResolvedValue([]); expect(renderToStaticMarkup(await Page())).toContain("No inquiries have been saved yet.");
-    (store.listInquiries as any).mockRejectedValue(new Error("relation does not exist")); const err = vi.spyOn(console, "error").mockImplementation(() => undefined);
-    expect(renderToStaticMarkup(await Page())).toContain("not available yet"); err.mockRestore();
+    expect(html).toContain("1 needs attention"); expect(html).toContain("3 in total, 1 with a booking");
+    expect(html).toContain("Message removed under the retention policy"); expect(html).toContain("Canceled (was"); expect(html).toContain("(rescheduled)");
+    expect(html).toContain("Open application"); expect(html).toContain("mailto:a@example.test");
+    (journey.listJourney as any).mockResolvedValue({ notes: ["Saved inquiries are not available yet."], rows: [] });
+    const empty = renderToStaticMarkup(await Page());
+    expect(empty).toContain("Nothing here yet."); expect(empty).toContain("not available yet");
   });
 });
 
 describe("the migration is additive and server-only", () => {
   const sql = readFileSync("supabase/migrations/20261106090000_program_inquiries.sql", "utf8").replace(/--.*$/gm, "");
-  it("creates one table, with row-level security and no browser policy, and changes nothing that exists", () => {
-    expect(sql.match(/create table/gi)).toHaveLength(1);
+  it("creates two new tables, each with row-level security and no browser policy, and changes nothing that exists", () => {
+    expect(sql.match(/create table/gi)).toHaveLength(2);
     expect(sql).toMatch(/alter table public\.program_inquiries enable row level security/i);
-    expect(sql).not.toMatch(/create policy|grant |alter table public\.(?!program_inquiries)|drop table|drop column|delete from|truncate|update public\./i);
+    expect(sql).toMatch(/alter table public\.booking_origins enable row level security/i);
+    expect(sql).not.toMatch(/create policy|grant |alter table public\.(?!program_inquiries|booking_origins)|drop table|drop column|delete from|truncate|update public\./i);
+    expect(sql).toMatch(/booking_id uuid primary key references public\.sched_bookings\(id\) on delete cascade/i);
+    expect(sql).toMatch(/inquiry_id uuid references public\.program_inquiries\(id\) on delete set null/i);
     expect(sql).toMatch(/unique index if not exists program_inquiries_idempotency_key_key/i);
     expect(sql).toMatch(/unique index if not exists program_inquiries_booking_ref_key/i);
     expect(sql).toMatch(/references public\.leads\(id\)/i);

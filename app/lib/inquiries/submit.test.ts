@@ -39,7 +39,7 @@ const rows = () => db.current.tables.program_inquiries as any[];
 beforeEach(() => {
   db.current = new FakeDb(); sent = []; behaviour = []; limiter.allow = true; limiter.calls = [];
   vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "service-role-for-tests"); vi.stubEnv("INQUIRY_FORM_SECRET", ""); vi.stubEnv("NAPKIN_UNSUBSCRIBE_SECRET", "");
-  vi.stubEnv("VERCEL_ENV", "production"); vi.stubEnv("VERCEL", "1"); vi.stubEnv("APP_BASE_URL", ""); vi.stubEnv("BOOKING_REF_EXCHANGE_ENABLED", "");
+  vi.stubEnv("VERCEL_ENV", "production"); vi.stubEnv("VERCEL", "1"); vi.stubEnv("APP_BASE_URL", ""); vi.stubEnv("PROGRAM_INQUIRY_STORE_ENABLED", "");
 });
 
 describe("a stored inquiry", () => {
@@ -174,7 +174,7 @@ describe("the visitor's reply", () => {
     expect(plain).toContain(`https://modernbusinessarchitect.com/book/complementary-session?source=inquiry-${program.slug}`);
     expect(plain).not.toContain(rows()[0].booking_ref);
 
-    db.current = new FakeDb(); sent = []; vi.stubEnv("BOOKING_REF_EXCHANGE_ENABLED", "true");
+    db.current = new FakeDb(); sent = []; vi.stubEnv("PROGRAM_INQUIRY_STORE_ENABLED", "true");
     await submitInquiry(input(), deps());
     const text = replies()[0].payload.text as string;
     expect(text).toContain(`/book/complementary-session?source=inquiry-${program.slug}#r=${rows()[0].booking_ref}`);
@@ -210,7 +210,7 @@ describe("the conversion and the logs", () => {
   it("never writes the reference, the message or the e-mail address to the logs", async () => {
     const out: string[] = [];
     const spies = (["log", "warn", "error", "info"] as const).map((m) => vi.spyOn(console, m).mockImplementation((...a: unknown[]) => { out.push(a.map(String).join(" ")); }));
-    vi.stubEnv("BOOKING_REF_EXCHANGE_ENABLED", "true");
+    vi.stubEnv("PROGRAM_INQUIRY_STORE_ENABLED", "true");
     behaviour = ["reject"]; await submitInquiry(input({ message: "SECRET-WORDS" }), deps());
     await submitInquiry(input({ message: "SECRET-WORDS" }), deps());
     db.current.failNextInsertInto = "program_inquiries"; await submitInquiry(input({ clientKey: "other-key-0123456789abcdef" }), deps());

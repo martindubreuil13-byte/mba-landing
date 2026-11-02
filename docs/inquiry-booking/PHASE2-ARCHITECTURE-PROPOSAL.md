@@ -1,3 +1,5 @@
+> **Superseded for implementation detail by [RELEASE-REPORT.md](RELEASE-REPORT.md)** (one switch instead of three; one release instead of three stages; no purge switch).
+
 # Phase 2 architecture proposal (v2): inquiries, booking links and one admin view
 
 Version 2, 2 November 2026. v1 is preserved in git history (`dde2a45`). **Proposal only. Nothing here is implemented, migrated or deployed.** Written against production commit `0e2ac5c`. Each stage (2a, 2b, 2c) needs its own approval; every database migration needs a further explicit approval after the target project and backup are verified, as in Stage G.

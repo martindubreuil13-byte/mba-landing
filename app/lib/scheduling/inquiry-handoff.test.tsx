@@ -30,7 +30,7 @@ vi.mock("@/app/lib/email-client", () => ({ createResend: () => ({ emails: { send
   sent.push(m); return { data: { id: `msg_${sent.length}` }, error: null };
 } } }) }));
 
-const svc = vi.hoisted(() => ({ publicMeetingType: vi.fn(), prefillFor: vi.fn(), createBooking: vi.fn() }));
+const svc = vi.hoisted(() => ({ publicMeetingType: vi.fn(), prefillFor: vi.fn(), originFor: vi.fn(async () => null), createBooking: vi.fn() }));
 vi.mock("@/app/lib/scheduling/instance", () => ({ getScheduling: () => svc }));
 
 process.env.EVIDENCE_HASH_SECRET = "s"; process.env.NAPKIN_UNSUBSCRIBE_SECRET = "s"; process.env.RESEND_API_KEY = "k"; process.env.PROGRAM_ADMIN_EMAIL = "martin@example.com";

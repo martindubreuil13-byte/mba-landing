@@ -22,6 +22,11 @@ export class FakeDb {
     program_invitation_sends: [],
     program_bookings: [],
     program_inquiries: [],
+    booking_origins: [],
+    sched_settings: [],
+    sched_bookings: [],
+    sched_attendees: [],
+    sched_booking_events: [],
   };
 
   insertCount: Record<string, number> = {};
@@ -70,6 +75,12 @@ class Query implements PromiseLike<Result> {
   insert(payload: Row | Row[]) { this.action = "insert"; this.payload = payload; return this; }
   update(payload: Row) { this.action = "update"; this.payload = payload; return this; }
   delete() { this.action = "delete"; return this; }
+  // Only what the code uses: insert, but a row whose conflict column already exists is skipped (ignoreDuplicates) instead of failing.
+  upsert(payload: Row | Row[], opts: { onConflict: string; ignoreDuplicates?: boolean }) {
+    const col = opts.onConflict;
+    const fresh = (Array.isArray(payload) ? payload : [payload]).filter((item) => !this.db.tables[this.table]?.some((r) => r[col] === item[col]));
+    return this.insert(fresh);
+  }
   lt(col: string, value: unknown) { this.filters.push((r) => r[col] != null && (r[col] as any) < (value as any)); return this; }
   eq(col: string, value: unknown) { this.filters.push((r) => r[col] === value); return this; }
   in(col: string, values: unknown[]) { this.filters.push((r) => values.includes(r[col])); return this; }
@@ -117,7 +128,7 @@ class Query implements PromiseLike<Result> {
           Object.assign(row, { country: null, ongoing_content_opt_in_at: null, ongoing_content_opt_out_at: null, suppressed_at: null, consent_requested_at: null, updated_at: now }, item, { id: row.id, created_at: now });
         }
         if (rows.some((r) => r.id === row.id) || (this.table === "program_invitation_sends" && row.status === "pending" && rows.some((r) => r.application_id === row.application_id && r.status === "pending"))) return { data: null, error: { message: "duplicate key", code: "23505" } };
-        const UNIQUE: Record<string, string[]> = { program_applications: ["idempotency_key", "booking_ref", "receipt_token"], program_bookings: ["calendly_invitee_uri"], program_inquiries: ["idempotency_key", "booking_ref"] };
+        const UNIQUE: Record<string, string[]> = { program_applications: ["idempotency_key", "booking_ref", "receipt_token"], program_bookings: ["calendly_invitee_uri"], program_inquiries: ["idempotency_key", "booking_ref"], booking_origins: ["booking_id"] };
         for (const col of UNIQUE[this.table] ?? []) {
           if (row[col] != null && rows.some((r) => r[col] === row[col])) return { data: null, error: { message: `duplicate key value violates unique constraint ${this.table}_${col}_key`, code: "23505" } };
         }

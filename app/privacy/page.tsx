@@ -228,11 +228,9 @@ export default function PrivacyPage() {
               <p>
                 Submitting the application sends you one email with your booking link, and notifies Martin
                 internally. These are transactional messages about your application and do not subscribe you to
-                marketing. Bookings are made on Calendly, which handles the details you give it under its own
-                privacy policy. Your booking link contains a random reference, with no personal information in it,
-                so that a booking can be associated with your application if booking integration is enabled. Automatic
-                booking tracking is currently disconnected: this site does not receive booking, rescheduling or
-                cancellation updates from Calendly. A click on the link alone is never treated as a booking.
+                marketing. Bookings are made on this website (see "Booking a conversation" below). Your booking link
+                contains a random reference, with no personal information in it: the booking page uses it only to fill in
+                your own name and email address (for 60 days) and so that your booking can be connected to your application.
               </p>
               <p>
                 After you submit, the confirmation page offers a separate, optional invitation to join Martin's
@@ -249,6 +247,31 @@ export default function PrivacyPage() {
                 Application details are kept until you ask for them to be corrected or deleted (see "Getting in
                 touch" below). As evidence of what you were shown and chose, the site also stores a one-way
                 scrambled form of your IP address and browser details, not the raw values.
+              </p>
+
+              <h2 className="text-xl font-light pt-4">Booking a conversation</h2>
+              <p>
+                When you book a Complementary Session on this website, the site saves your name, email address, the
+                time you chose, your time zone and any note you add. It creates a Zoom meeting and an entry in Martin&apos;s
+                calendar for that time, and sends you a confirmation email. To change or cancel a booking, contact
+                Martin (see &quot;Getting in touch&quot; below). Zoom, Google Calendar and the email provider handle the details they need under their own
+                privacy policies. If you arrived from a link in an email about your inquiry or application, the booking
+                is linked to it so Martin can see the history in one place. After you book, the page may offer an
+                optional invitation to join Martin&apos;s community; nothing is chosen for you, and your choice is recorded
+                with a timestamp and the exact wording you saw. Booking details are kept until you ask for them to be
+                corrected or deleted (see &quot;Getting in touch&quot; below).
+              </p>
+
+              <h2 className="text-xl font-light pt-4">Sending a message</h2>
+              <p>
+                When you send a message through the inquiry form, the site saves your name, email address, the program
+                you chose, your message and the page you came from, so that Martin can reply and keep a record, and
+                sends you a confirmation email. Sending a message does not subscribe you to anything. Your message is
+                kept for up to 24 months and then removed; your name, email address and the fact that you wrote stay on
+                record until you ask for them to be deleted. The booking link in the confirmation email contains a
+                random reference with no personal information: the booking page uses it only to fill in your own name
+                and email address for 60 days and to connect a later booking to your message. You can ask for your
+                messages to be deleted at any time (see &quot;Getting in touch&quot; below).
               </p>
 
               <h2 className="text-xl font-light pt-4">The Napkin Principle</h2>

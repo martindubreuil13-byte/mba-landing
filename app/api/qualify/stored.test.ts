@@ -29,25 +29,20 @@ beforeEach(() => {
   vi.stubEnv("RESEND_API_KEY", "re_test"); vi.stubEnv("INQUIRY_NOTIFY_EMAIL", "");
   vi.stubEnv("VERCEL_ENV", "production"); vi.stubEnv("VERCEL", "1"); vi.stubEnv("APP_BASE_URL", "");
   vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "service-role-for-tests"); vi.stubEnv("INQUIRY_FORM_SECRET", ""); vi.stubEnv("NAPKIN_UNSUBSCRIBE_SECRET", "");
-  vi.stubEnv("PROGRAM_INQUIRY_STORE_ENABLED", "true"); vi.stubEnv("BOOKING_REF_EXCHANGE_ENABLED", "");
+  vi.stubEnv("PROGRAM_INQUIRY_STORE_ENABLED", "true");
 });
 
 describe("/api/qualify with stored inquiries on", () => {
   const good = () => ({ ...valid, formToken: tokenAged(5_000), idempotencyKey: KEY, contactUrl: "" });
 
-  it("saves, notifies, replies and answers success; the response carries no reference until exchange links are on", async () => {
+  it("saves, notifies, replies and answers success, handing the visitor their own booking reference", async () => {
     const res = await post(good(), { "x-vercel-forwarded-for": "203.0.113.5" });
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ success: true, autoReply: true });
+    expect(await res.json()).toEqual({ success: true, autoReply: true, bookingRef: stored()[0].booking_ref });
     expect(stored()).toHaveLength(1); expect(send).toHaveBeenCalledTimes(2);
     expect(recordConversion).toHaveBeenCalledTimes(1);
     expect(recordConversion).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ kind: "inquiry", props: { program: "pre-architecture" } }));
-  });
-
-  it("hands the visitor their own reference only when exchange links are on", async () => {
-    vi.stubEnv("BOOKING_REF_EXCHANGE_ENABLED", "true");
-    const body = await (await post(good())).json();
-    expect(body).toMatchObject({ success: true, autoReply: true, bookingRef: stored()[0].booking_ref });
+    expect(send.mock.calls[1][0].text).toContain(`#r=${stored()[0].booking_ref}`);
   });
 
   it("a retry (same key) after success does not save or send again", async () => {

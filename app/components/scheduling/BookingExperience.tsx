@@ -22,7 +22,7 @@ function takeHeldRef(): string | null {
   return heldRef;
 }
 
-export default function BookingExperience({ type, invite, source, preview = false, prefill = null }: { type: PublicMeetingType; invite?: string; source?: string; /** Administrator preview while public intake is closed: everything works except the final booking. */ preview?: boolean; /** The visitor's own name and email, when they arrive from a known inquiry. The fields are only filled in; they stay editable. */ prefill?: { name: string; email: string } | null }) {
+export default function BookingExperience({ type, invite, source, preview = false, prefill = null, context: initialContext = null }: { type: PublicMeetingType; invite?: string; source?: string; /** Administrator preview while public intake is closed: everything works except the final booking. */ preview?: boolean; /** The visitor's own name and email, when they arrive from a known inquiry. The fields are only filled in; they stay editable. */ prefill?: { name: string; email: string } | null; /** A signed note of which inquiry or application the visitor came from (older links only; newer ones get it from the exchange below). Sent with the booking. */ context?: string | null }) {
   const router = useRouter();
   const [tz, setTz] = useState<string | null>(null);
   const [hour12, setHour12] = useState(true);
@@ -33,6 +33,7 @@ export default function BookingExperience({ type, invite, source, preview = fals
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [pickerKey, setPickerKey] = useState(0);
+  const [context, setContext] = useState<string | null>(initialContext);
   const key = useRef<string | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
 
@@ -56,8 +57,9 @@ export default function BookingExperience({ type, invite, source, preview = fals
     const controller = new AbortController();
     fetch("/api/scheduling/booking-context", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ref }), cache: "no-store", signal: controller.signal })
       .then((r) => (r.ok ? r.json() : null))
-      .then((j: { prefill?: { name?: unknown; email?: unknown } | null } | null) => {
+      .then((j: { prefill?: { name?: unknown; email?: unknown } | null; context?: unknown } | null) => {
         heldRef = null;
+        if (typeof j?.context === "string") setContext(j.context);
         const p = j?.prefill;
         if (p && typeof p.name === "string" && typeof p.email === "string") setForm((f) => ({ ...f, name: f.name || (p.name as string), email: f.email || (p.email as string) }));
       })
@@ -84,7 +86,7 @@ export default function BookingExperience({ type, invite, source, preview = fals
     setBusy(true); setNotice("");
     key.current ??= newKey();
     try {
-      const r = await fetch("/api/scheduling/book", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ slug: type.slug, invite, startUtc: selected, name: form.name, email: form.email, message: form.message, contactUrl: form.contactUrl, timeZone: tz, idempotencyKey: key.current, source }) });
+      const r = await fetch("/api/scheduling/book", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ slug: type.slug, invite, startUtc: selected, name: form.name, email: form.email, message: form.message, contactUrl: form.contactUrl, timeZone: tz, idempotencyKey: key.current, source, context: context ?? undefined }) });
       const j = await r.json().catch(() => ({}));
       if (r.ok) { router.push(`/book/confirmed/${j.booking.reference}`); return; }
       if (r.status === 409) { setNotice(j.error || "That time is no longer available. Please choose another."); setSelected(null); setStep("pick"); setPickerKey((k) => k + 1); key.current = null; }

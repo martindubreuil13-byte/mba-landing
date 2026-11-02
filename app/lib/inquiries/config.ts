@@ -1,17 +1,18 @@
 /**
- * Phase 2a switches and limits. Every switch is OFF unless the variable is exactly "true", so a release that contains this code behaves like the
- * previous one until someone turns a switch on deliberately (and turning it off again restores the previous behaviour).
+ * Inquiry storage settings and limits. The switch is OFF unless the variable is exactly "true", so a release that contains this code behaves like the
+ * previous one until someone turns it on deliberately (and turning it off again restores the previous behaviour).
  */
 const on = (name: string) => process.env[name] === "true";
 
-/** Accepted inquiries are stored (program_inquiries) before the owner is notified; no stored row means no notification. */
+/**
+ * The ONE switch for the whole feature: accepted inquiries are stored before the owner is notified, new booking links carry the visitor's reference
+ * in the URL fragment, the booking page exchanges it for their own details, and a booking made from such a link is linked to its inquiry or
+ * application. Off (the default), the site behaves exactly as it did before.
+ */
 export const inquiryStoreEnabled = () => on("PROGRAM_INQUIRY_STORE_ENABLED");
 
-/** The daily retention job actually blanks expired inquiry messages (it reports what it would do when this is off). */
-export const inquiryPurgeEnabled = () => on("PROGRAM_INQUIRY_PURGE_ENABLED");
-
-/** New booking links carry the reference in the URL fragment and the booking page exchanges it for the visitor's own details. */
-export const refExchangeEnabled = () => on("BOOKING_REF_EXCHANGE_ENABLED");
+/** Fragment links and the reference exchange are part of the same switch. */
+export const refExchangeEnabled = inquiryStoreEnabled;
 
 /** The longest an inquiry message is kept. Configurable downwards only. */
 export const MAX_RETENTION_MONTHS = 24;

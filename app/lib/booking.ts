@@ -24,7 +24,7 @@ export type Origin = BookingOrigin | `inquiry-${string}`;
 /**
  * The part of the link after the path: an origin tag and, for someone who came from an application or inquiry, their opaque reference. Nothing personal is ever added.
  *
- * With BOOKING_REF_EXCHANGE_ENABLED the reference travels in the URL FRAGMENT (`#r=...`). Browsers never send a fragment to a server, so it is absent from
+ * With PROGRAM_INQUIRY_STORE_ENABLED the reference travels in the URL FRAGMENT (`#r=...`). Browsers never send a fragment to a server, so it is absent from
  * request logs and Referer headers, and the booking page removes it from the address bar before any script can report the page. Without the switch it is the
  * original `&ref=` query parameter, which the booking page still understands in both cases (links already sent keep working).
  */

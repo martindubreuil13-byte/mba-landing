@@ -39,10 +39,10 @@ export default async function IntelligenceConversionsPage({ searchParams }: { se
         <Stat label="Total leads" value={String(c.total_leads)} current={c.total_leads} previous={p.total_leads} definition="Server-confirmed inquiries, guide requests, assessment leads, napkin joins and program applications." />
         <Stat label="Linked to a visit" value={`${c.attributed_leads}`} definition={`${formatRate(c.attributed_leads, c.total_leads)} of leads carried a session id. The rest (analytics off, blocked, or GPC/DNT) have no source or page journey.`} />
         <Stat label="Lead conversion rate" value={formatRate(c.converting_sessions, c.sessions)} current={c.sessions ? (c.converting_sessions / c.sessions) * 100 : 0} previous={p.sessions ? (p.converting_sessions / p.sessions) * 100 : undefined} definition="Sessions with a confirmed lead ÷ all sessions." />
-        <Stat label="Booking-link clicks" value={String(c.booking_clicks)} current={c.booking_clicks} previous={p.booking_clicks} definition={`${c.sessions_with_booking_click} ${c.sessions_with_booking_click === 1 ? "session" : "sessions"} clicked a Calendly link. A click is not a booking.`} />
+        <Stat label="Booking-link clicks" value={String(c.booking_clicks)} current={c.booking_clicks} previous={p.booking_clicks} definition={`${c.sessions_with_booking_click} ${c.sessions_with_booking_click === 1 ? "session" : "sessions"} clicked a booking link. A click is not a booking.`} />
         <Stat label="Assessment starts" value={String(c.sessions_with_start)} current={c.sessions_with_start} previous={p.sessions_with_start} definition="Sessions that began the assessment, napkin or program questionnaire (browser-reported)." />
         <Stat label="Assessment completion" value={formatRate(c.sessions_with_complete, c.sessions_with_start)} definition={`${c.sessions_with_complete} of ${c.sessions_with_start} sessions that started also finished (browser-reported; “—” if none started).`} />
-        <NotMeasured label="Confirmed bookings" reason="Calendly does not report completed bookings back to this site. Counting them needs a Calendly webhook (typically a paid Calendly feature) that has not been set up, so no number is shown." />
+        <NotMeasured label="Confirmed bookings" reason="Confirmed bookings are not counted in this report. They are listed with their inquiry or application under Inquiries, and in full under Scheduling." />
       </div>
 
       {c.sessions === 0 && c.total_leads === 0 ? <Empty>No sessions or leads were recorded in this range.</Empty> : (

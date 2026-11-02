@@ -1,4 +1,4 @@
--- Phase 2a: program inquiries are stored (additive, nothing is altered or dropped).
+-- Stored program inquiries and booking origins (additive, nothing existing is altered or dropped).
 --
 -- Until now /api/qualify only e-mailed the owner and kept nothing. With PROGRAM_INQUIRY_STORE_ENABLED on, each accepted inquiry is a durable row
 -- here, the person is a row in `leads` (unchanged table, no marketing consent implied), and the owner / visitor e-mails are tracked so a retry
@@ -55,4 +55,22 @@ create trigger program_inquiries_set_updated_at before update on public.program_
 for each row execute function set_updated_at();
 
 alter table public.program_inquiries enable row level security;
+-- Intentionally no browser policies. Access is server-only through service_role.
+
+-- Phase 2b: which inquiry or Transition application a booking came from. One row per booking (the booking id is the key), written after the booking
+-- is committed and only when the booking page presented a valid, signed context (never a raw reference, which is not stored anywhere here).
+-- A reschedule or cancellation changes the booking row itself, so this link keeps pointing at the right booking. Deleting an inquiry or application
+-- leaves the booking and its link row, with the origin cleared.
+create table if not exists public.booking_origins (
+  booking_id uuid primary key references public.sched_bookings(id) on delete cascade,
+  origin_type text not null check (origin_type in ('application', 'inquiry')),
+  application_id uuid references public.program_applications(id) on delete set null,
+  inquiry_id uuid references public.program_inquiries(id) on delete set null,
+  lead_id uuid references public.leads(id) on delete set null,
+  linked_at timestamptz not null default now(),
+  check (application_id is null or inquiry_id is null)
+);
+create index if not exists booking_origins_inquiry_idx on public.booking_origins(inquiry_id) where inquiry_id is not null;
+create index if not exists booking_origins_application_idx on public.booking_origins(application_id) where application_id is not null;
+alter table public.booking_origins enable row level security;
 -- Intentionally no browser policies. Access is server-only through service_role.

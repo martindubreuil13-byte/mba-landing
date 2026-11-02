@@ -62,6 +62,10 @@ export type SchedulingDeps = {
   bookingBudget?: (guestEmail: string) => Promise<Admission>;
   /** Finds the name and email of a known inquiry by its opaque reference (production wiring only), to prefill the booking form. */
   inquiryPrefill?: (ref: string) => Promise<BookingPrefill | null>;
+  /** Which inquiry or application a booking reference belongs to (any age). Absent in the local prototype. */
+  refOrigin?: (ref: string) => Promise<{ kind: "inquiry" | "application"; id: string } | null>;
+  /** Records that a new booking came from an inquiry or application, given the signed context the booking page held. Never allowed to fail a booking. */
+  bookingOrigin?: (bookingId: string, context: string) => Promise<void>;
   /** Where an explicit "yes" to the community invitation is recorded as consent (the site's Leads and consent records). Absent in the local prototype. */
   communityConsent?: CommunityConsentPort;
   /**
@@ -85,7 +89,7 @@ export type PublicBooking = {
 
 /** The only things the booking page may prefill from a known inquiry: the visitor's own name and email. */
 export type BookingPrefill = { name: string; email: string };
-export type BookingInput = { slug: string; invite?: string; startUtc: string; guestName: string; guestEmail: string; guestMessage?: string; guestTimeZone: string; idempotencyKey: string; source?: string | null };
+export type BookingInput = { slug: string; invite?: string; startUtc: string; guestName: string; guestEmail: string; guestMessage?: string; guestTimeZone: string; idempotencyKey: string; source?: string | null; /** The signed note of where the visitor came from, if they came from an inquiry or application link. */ originContext?: string };
 
 const bookingSchema = z.object({
   slug: z.string().min(1).max(80),
@@ -97,6 +101,7 @@ const bookingSchema = z.object({
   guestTimeZone: z.string().refine(isValidTimeZone, "Choose a valid time zone."),
   idempotencyKey: z.string().min(8).max(100),
   source: z.string().trim().max(60).nullish(),
+  originContext: z.string().max(400).optional(),
 });
 
 export const RESERVED_SLUGS = ["confirmed", "admin", "api"];
@@ -133,6 +138,8 @@ export class SchedulingService {
   private adminUrl: string | null;
   private bookingBudget: ((guestEmail: string) => Promise<Admission>) | null;
   private inquiryPrefill: ((ref: string) => Promise<BookingPrefill | null>) | null;
+  private refOriginOf: SchedulingDeps["refOrigin"] | null;
+  private linkOrigin: SchedulingDeps["bookingOrigin"] | null;
   private communityConsent: CommunityConsentPort | null;
   private clock: () => number;
   private defer?: (task: () => Promise<unknown>) => void;
@@ -146,6 +153,8 @@ export class SchedulingService {
     this.adminUrl = deps.adminUrl ?? null;
     this.bookingBudget = deps.bookingBudget ?? null;
     this.inquiryPrefill = deps.inquiryPrefill ?? null;
+    this.refOriginOf = deps.refOrigin ?? null;
+    this.linkOrigin = deps.bookingOrigin ?? null;
     this.communityConsent = deps.communityConsent ?? null;
     this.clock = deps.now ?? (() => Date.now());
     this.defer = deps.defer;
@@ -286,6 +295,12 @@ export class SchedulingService {
     try { return await this.inquiryPrefill(ref); } catch { return null; }
   }
 
+  /** Where a booking reference came from (inquiry or application), whatever its age; null for anything unknown or malformed. */
+  async originFor(ref: unknown): Promise<{ kind: "inquiry" | "application"; id: string } | null> {
+    if (!this.refOriginOf || !isRefShaped(ref)) return null;
+    try { return await this.refOriginOf(ref); } catch { return null; }
+  }
+
   async createBooking(raw: BookingInput): Promise<{ booking: PublicBooking; replay: boolean }> {
     const parsed = bookingSchema.safeParse(raw);
     if (!parsed.success) throw new SchedulingError("invalid_input", firstIssue(parsed.error), 400, { field: String(parsed.error.issues[0]?.path[0] ?? "") });
@@ -329,6 +344,8 @@ export class SchedulingService {
       });
     } catch (e) { this.mapRepo(e); }
     if (!created.replay) await this.log("booking_created", `${created.booking.guestName} booked ${type.name}`, created.booking.id);
+    // Remember where the visitor came from (inquiry or application). Best effort: it never delays or fails a booking that is already committed.
+    if (!created.replay && input.originContext && this.linkOrigin) await this.linkOrigin(created.booking.id, input.originContext).catch((e) => console.error("booking origin not recorded:", e instanceof Error ? e.message : e));
     // 5. Zoom, Google event, email: started in the background, retried on failure; the booking stands either way.
     await this.kick(created.booking.id);
     return { booking: (await this.toPublic((await this.repo.getBooking(created.booking.id)) ?? created.booking))!, replay: created.replay };

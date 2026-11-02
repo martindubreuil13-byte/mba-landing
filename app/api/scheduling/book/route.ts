@@ -14,7 +14,7 @@ export const POST = publicRoute(async (req) => {
   if (typeof b.contactUrl === "string" && b.contactUrl.trim() !== "") throw new SchedulingError("invalid_input", "We couldn’t complete the booking. Please try again.", 400);
   const { booking, replay } = await getScheduling().createBooking({
     slug: str(b.slug, 80), invite: str(b.invite, 80) || undefined, startUtc: str(b.startUtc, 40), guestName: str(b.name, 200), guestEmail: str(b.email, 250),
-    guestMessage: str(b.message, 2000), guestTimeZone: str(b.timeZone, 80), idempotencyKey: str(b.idempotencyKey, 120), source: str(b.source, 80) || null,
+    guestMessage: str(b.message, 2000), guestTimeZone: str(b.timeZone, 80), idempotencyKey: str(b.idempotencyKey, 120), source: str(b.source, 80) || null, originContext: str(b.context, 400) || undefined,
   });
   return json({ booking, replay }, replay ? 200 : 201);
 }, { rate: RATES.book });

@@ -155,13 +155,16 @@ function listen() {
       touchSession();
     }
   });
-  // Any click on a Calendly link is a booking-link click. It is a click only: bookings are not confirmable (no webhook).
+  // Any click on a link to the booking page (or to the retired Calendly event) is a booking-link click. It is a click only, not a booking.
   document.addEventListener(
     "click",
     (event) => {
       try {
         const a = (event.target as Element | null)?.closest?.("a[href]") as HTMLAnchorElement | null;
-        if (a && /(^|\.)calendly\.com$/i.test(new URL(a.href, window.location.href).hostname)) recordIntelligenceEvent("booking_link_click");
+        if (a) {
+          const u = new URL(a.href, window.location.href);
+          if (/(^|\.)calendly\.com$/i.test(u.hostname) || (u.origin === window.location.origin && u.pathname.startsWith("/book/"))) recordIntelligenceEvent("booking_link_click");
+        }
       } catch {
         /* never affect the click */
       }

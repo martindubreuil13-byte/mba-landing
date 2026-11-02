@@ -10,7 +10,8 @@ import { getApplication } from "@/app/lib/programs/queries";
 import { CONVERSATION_INVITE_SUBJECT, conversationInviteDraft } from "@/app/lib/programs/corporate-transition";
 import { CONSENT_STATUS_LABELS, consentStatusOf } from "@/app/lib/leads/consent";
 import { INVITATION_LABELS, listInvitationSends, summarizeInvitation } from "@/app/lib/programs/invitation";
-import { calendlyTrackingConfigured, listBookings } from "@/app/lib/programs/calendly";
+import { originStates } from "@/app/lib/scheduling/adapters/booking-origin";
+import { describeBooking } from "@/app/lib/inquiries/journey";
 import { formatDateTimeUtc } from "@/app/lib/programs/format";
 export const metadata: Metadata = { robots: { index: false, follow: false } }; export const dynamic = "force-dynamic";
 
@@ -23,9 +24,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const a: any = await getApplication(id);
   if (!a) notFound();
   const x = a.answers;
-  const sends = await listInvitationSends([id]), inv = summarizeInvitation(sends), bookings = await listBookings(id);
-  const connected = calendlyTrackingConfigured(), legacy = !a.booking_ref, canResend = a.status === "INVITED" && a.booking_status !== "booked";
-  const calendly = a.booking_status === "booked" ? "Booked" : a.booking_status === "not_booked" ? (connected ? "Pending" : "Not connected") : "—";
+  const sends = await listInvitationSends([id]), inv = summarizeInvitation(sends);
+  const states = await originStates({ inquiryIds: [], applicationIds: [id], emails: [String(a.answers?.email ?? "")] }).catch(() => null);
+  const mine = states?.linked.get(`application:${id}`) ?? [];
+  const booking = states ? describeBooking(mine, states.byEmail.get(String(a.answers?.email ?? "").trim().toLowerCase()) ?? [], states.timeZone) : { text: "—", tone: "none" as const };
+  const legacy = !a.booking_ref, canResend = a.status === "INVITED" && booking.tone !== "ok";
   const leadStatus = a.lead ? CONSENT_STATUS_LABELS[consentStatusOf({ ongoing_content_opt_in: a.lead.ongoing_content_opt_in, ongoing_content_opt_in_at: a.lead.ongoing_content_opt_in_at, ongoing_content_opt_out_at: a.lead.ongoing_content_opt_out_at, suppressed_at: a.lead.suppressed_at, consent_requested_at: a.lead.consent_requested_at })] : "Unknown";
 
   // Templates for applications that were held for a personal reply under the earlier review flow.
@@ -62,13 +65,10 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           <ul className="mt-2 space-y-2 text-sm">{[...sends].reverse().map((s) => <li key={s.id}><b>{s.kind === "resend" ? "Resend" : s.status === "accepted" ? "First send" : "Attempt"}</b> · {s.status === "accepted" ? (s.delivery_status === "bounced" || s.delivery_status === "failed" ? `accepted, then ${s.delivery_status}` : s.delivery_status === "delivered" ? "delivered" : "accepted by the email provider") : s.status === "pending" ? "in progress / outcome unconfirmed — check provider before retrying" : "failed"} · {formatDateTimeUtc(s.attempted_at)}{s.provider_message_id ? <span className="block break-all text-xs text-[#1a1816]/50">Resend message ID {s.provider_message_id}</span> : null}{s.error ? <span className="block text-xs text-[#8b2525]">{s.error}</span> : null}</li>)}</ul></div>}
         {canResend && <ResendInvitationButton id={id} label={legacy ? "Send booking invitation" : "Resend invitation"} />}
 
-        <h2 className="mt-10 text-sm font-semibold uppercase tracking-widest">Calendly</h2>
-        {row("Status", calendly)}
-        {a.booking_status === "booked" && row("Meeting date", formatDateTimeUtc(a.meeting_at))}
-        {a.booking_status === "booked" && row("Booked", formatDateTimeUtc(a.booked_at))}
-        {!connected && row("Tracking", "Not connected. Bookings cannot be confirmed automatically until the Calendly webhook is set up (see docs/transition-booking-flow/README.md).")}
-        {bookings.length > 0 && <div className="border-b border-[#1a1816]/10 py-4"><p className="text-xs uppercase tracking-widest text-[#1a1816]/45">Booking history</p>
-          <ul className="mt-2 space-y-2 text-sm">{bookings.map((b) => <li key={b.id}><b>{b.status === "active" ? "Booked" : b.rescheduled ? "Rescheduled (moved to a new time)" : "Cancelled"}</b> · meeting {formatDateTimeUtc(b.start_time)}{b.canceled_at ? ` · cancelled ${formatDateTimeUtc(b.canceled_at)}` : ""}</li>)}</ul></div>}
+        <h2 className="mt-10 text-sm font-semibold uppercase tracking-widest">Booking</h2>
+        {row("Status", booking.text)}
+        {mine.length > 1 && <div className="border-b border-[#1a1816]/10 py-4"><p className="text-xs uppercase tracking-widest text-[#1a1816]/45">All bookings from this application</p>
+          <ul className="mt-2 space-y-2 text-sm">{mine.map((b) => <li key={b.id}><b>{b.status === "confirmed" ? "Booked" : "Canceled"}</b> · {formatDateTimeUtc(b.startAt)}{b.rescheduled ? " · rescheduled" : ""}</li>)}</ul></div>}
 
         <h2 className="mt-10 text-sm font-semibold uppercase tracking-widest">Notifications</h2>
         {row("Booking invitation email (latest state)", `${a.applicant_email_status}${a.applicant_email_error ? `: ${a.applicant_email_error}` : ""}`)}

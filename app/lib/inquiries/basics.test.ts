@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 
 vi.mock("server-only", () => ({}));
 
-import { INQUIRY_LIMITS, MAX_RETENTION_MONTHS, REF_PREFILL_DAYS, inquiryPurgeEnabled, inquiryStoreEnabled, refExchangeEnabled, retentionCutoff, retentionMonths } from "./config";
+import { INQUIRY_LIMITS, MAX_RETENTION_MONTHS, REF_PREFILL_DAYS, inquiryStoreEnabled, refExchangeEnabled, retentionCutoff, retentionMonths } from "./config";
 import { isRefShaped, prefillExpired } from "./refs";
 import { trustedClientIp } from "./client-ip";
 import { issueFormToken, verifyFormToken } from "./form-token";
@@ -14,13 +14,12 @@ const req = (headers: Record<string, string>) => new Request("https://example.te
 const DAY = 86_400_000;
 
 describe("switches and retention", () => {
-  it("every switch is off unless it is exactly the text true", () => {
-    for (const name of ["PROGRAM_INQUIRY_STORE_ENABLED", "PROGRAM_INQUIRY_PURGE_ENABLED", "BOOKING_REF_EXCHANGE_ENABLED"]) {
-      for (const v of [undefined, "", "1", "TRUE", "yes", "on", " true"]) { if (v === undefined) vi.stubEnv(name, ""); else vi.stubEnv(name, v); }
-    }
-    expect([inquiryStoreEnabled(), inquiryPurgeEnabled(), refExchangeEnabled()]).toEqual([false, false, false]);
-    vi.stubEnv("PROGRAM_INQUIRY_STORE_ENABLED", "1"); expect(inquiryStoreEnabled()).toBe(false);
-    vi.stubEnv("PROGRAM_INQUIRY_STORE_ENABLED", "true"); expect(inquiryStoreEnabled()).toBe(true);
+  it("the one switch is off unless it is exactly the text true, and fragment links/exchange follow it", () => {
+    vi.stubEnv("PROGRAM_INQUIRY_STORE_ENABLED", "");
+    expect([inquiryStoreEnabled(), refExchangeEnabled()]).toEqual([false, false]);
+    for (const v of ["1", "TRUE", "yes", "on", " true"]) { vi.stubEnv("PROGRAM_INQUIRY_STORE_ENABLED", v); expect(inquiryStoreEnabled()).toBe(false); }
+    vi.stubEnv("PROGRAM_INQUIRY_STORE_ENABLED", "true");
+    expect([inquiryStoreEnabled(), refExchangeEnabled()]).toEqual([true, true]);
     vi.unstubAllEnvs();
   });
 

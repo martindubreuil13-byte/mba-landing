@@ -96,6 +96,50 @@ const email = (n: string) => `${RUN}-${n}@example.test`;
     expect(await store.eraseInquiries({ email: email("fresh") })).toEqual({ deleted: 0 });
   });
 
+  it("a booking is linked to its origin once, the link follows the booking through reschedule and cancellation, and an unlinked booking is only a hint", async () => {
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "service-role-for-local-tests"); vi.stubEnv("INQUIRY_FORM_SECRET", ""); vi.stubEnv("NAPKIN_UNSUBSCRIBE_SECRET", "");
+    const { signContext } = await import("./context");
+    const { linkBookingOrigin, originStates } = await import("@/app/lib/scheduling/adapters/booking-origin");
+    const db = holder.client;
+    const inquiry = await make("origin");
+    const other = await make("origin2");
+    const type = await db.from("sched_meeting_types").insert({ slug: `${RUN}-type`, name: "Local origin test", duration_minutes: 30, visibility: "public", availability: {} }).select("id").single();
+    expect(type.error).toBeNull();
+    const makeBooking = async (n: string, mail: string) => {
+      const start = Date.now() + 40 * 86_400_000 + Number(n) * 3_600_000 * 3;
+      const b = await db.from("sched_bookings").insert({ reference: `${RUN}-ref-${n}`.padEnd(16, "x"), meeting_type_id: type.data.id, start_at: new Date(start).toISOString(), end_at: new Date(start + 1_800_000).toISOString(), idempotency_key: `${RUN}-idem-${n}`.padEnd(16, "x"), demo: true }).select("id").single();
+      expect(b.error).toBeNull();
+      await db.from("sched_attendees").insert({ booking_id: b.data.id, name: "Real Person", email: mail, time_zone: "UTC" });
+      return b.data.id as string;
+    };
+    try {
+      const linked = await makeBooking("1", email("origin")), unlinked = await makeBooking("2", email("origin"));
+      await linkBookingOrigin(linked, signContext({ kind: "inquiry", id: inquiry.id }));
+      // a second, different origin for the same booking changes nothing (real upsert semantics)
+      await linkBookingOrigin(linked, signContext({ kind: "inquiry", id: other.id }));
+      const rows = await db.from("booking_origins").select("*").eq("booking_id", linked);
+      expect(rows.data).toHaveLength(1); expect(rows.data[0]).toMatchObject({ origin_type: "inquiry", inquiry_id: inquiry.id, lead_id: inquiry.lead_id });
+
+      let s = await originStates({ inquiryIds: [inquiry.id, other.id], applicationIds: [], emails: [email("origin")] });
+      expect(s.linked.get(`inquiry:${inquiry.id}`)?.map((b) => b.id)).toEqual([linked]);
+      expect(s.linked.has(`inquiry:${other.id}`)).toBe(false);
+      expect(s.byEmail.get(email("origin"))?.map((b) => b.id)).toEqual([unlinked]);   // the unlinked booking is a hint only
+
+      await db.from("sched_booking_events").insert({ booking_id: linked, kind: "rescheduled", detail: "test" });
+      await db.from("sched_bookings").update({ status: "canceled" }).eq("id", linked);
+      s = await originStates({ inquiryIds: [inquiry.id], applicationIds: [], emails: [] });
+      expect(s.linked.get(`inquiry:${inquiry.id}`)?.[0]).toMatchObject({ id: linked, status: "canceled", rescheduled: true });
+
+      // erasing the inquiry keeps the booking and its link row, with the origin cleared
+      await store.eraseInquiries({ id: inquiry.id });
+      const after = await db.from("booking_origins").select("booking_id, inquiry_id").eq("booking_id", linked);
+      expect(after.data).toEqual([{ booking_id: linked, inquiry_id: null }]);
+    } finally {
+      await db.from("sched_bookings").delete().like("reference", `${RUN}-ref-%`);
+      await db.from("sched_meeting_types").delete().eq("id", type.data.id);
+    }
+  });
+
   it("the browser roles cannot read or write the table", async () => {
     const anon = (await import("@supabase/supabase-js")).createClient(local!.url, local!.anonKey, { auth: { persistSession: false } });
     const read = await anon.from("program_inquiries").select("id").limit(1);

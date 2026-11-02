@@ -90,24 +90,21 @@ describe("the admin list", () => {
 
 describe("the retention cron route", () => {
   const call = async (auth?: string, query = "") => { const { GET } = await import("@/app/api/cron/inquiry-retention/route"); return GET(new Request(`https://example.test/api/cron/inquiry-retention${query}`, { headers: auth ? { authorization: auth } : {} })); };
-  beforeEach(() => { vi.stubEnv("CRON_SECRET", "cron-secret-for-tests"); vi.stubEnv("PROGRAM_INQUIRY_PURGE_ENABLED", ""); vi.stubEnv("INQUIRY_RETENTION_MONTHS", ""); });
+  beforeEach(() => { vi.stubEnv("CRON_SECRET", "cron-secret-for-tests"); vi.stubEnv("INQUIRY_RETENTION_MONTHS", ""); });
 
   it("refuses everything without the cron secret", async () => {
     expect((await call()).status).toBe(401); expect((await call("Bearer nope")).status).toBe(401);
     vi.stubEnv("CRON_SECRET", ""); expect((await call("Bearer ")).status).toBe(401);
   });
 
-  it("only REPORTS while the purge switch is off, and purges once it is on (24-month maximum applies)", async () => {
-    const old = seed(60);
-    let res = await call("Bearer cron-secret-for-tests");
+  it("reports on ?dryRun=1, otherwise blanks what is past the 24-month maximum", async () => {
+    const old = seed(60), recent = seed(2);
+    let res = await call("Bearer cron-secret-for-tests", "?dryRun=1");
     expect(await res.json()).toMatchObject({ ok: true, retentionMonths: 24, due: 1, purged: 0, dryRun: true });
     expect(old.message).toBe("private words");
-    vi.stubEnv("PROGRAM_INQUIRY_PURGE_ENABLED", "true");
-    res = await call("Bearer cron-secret-for-tests", "?dryRun=1");
-    expect(await res.json()).toMatchObject({ purged: 0, dryRun: true });
     res = await call("Bearer cron-secret-for-tests");
     expect(await res.json()).toMatchObject({ purged: 1, dryRun: false });
-    expect(old.message).toBe("");
+    expect(old.message).toBe(""); expect(recent.message).toBe("private words");
   });
 
   it("is registered as a daily cron, after the existing one", async () => {
