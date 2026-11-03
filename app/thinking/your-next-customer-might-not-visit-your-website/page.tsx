@@ -420,6 +420,19 @@ export default function ArticlePage() {
               viewport={{ once: true, margin: "-50px" }}
               className="space-y-12"
             >
+              {/* Related reading */}
+              <nav aria-label="Related reading" className="space-y-4">
+                <p className="text-sm text-[#1a1816]/60 tracking-widest uppercase">Related reading</p>
+                <ul className="space-y-3 text-lg font-light">
+                  <li>
+                    <Link href="/thinking/your-next-customer-might-not-be-human" className="text-[#6b1f1f] border-b border-[#6b1f1f] hover:text-[#6b1f1f]/80 hover:border-[#6b1f1f]/80 transition-colors">Your Next Customer Might Not Be Human</Link>
+                  </li>
+                  <li>
+                    <Link href="/thinking/architecting-intelligence" className="text-[#6b1f1f] border-b border-[#6b1f1f] hover:text-[#6b1f1f]/80 hover:border-[#6b1f1f]/80 transition-colors">Architecting Intelligence</Link>
+                  </li>
+                </ul>
+              </nav>
+
               {/* Share Section */}
               <div className="space-y-4">
                 <p className="text-sm text-[#1a1816]/60 tracking-widest uppercase">Share</p>
