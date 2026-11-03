@@ -93,21 +93,15 @@ export default function ArticlePage() {
               style={{ fontSize: "1.125rem", lineHeight: "1.8", color: "#1a1816" }}
             >
 
-              <P tight>For more than 20 years, I've been involved in retail and distribution, directly or indirectly, across different markets and business models.</P>
+              <P>For more than 20 years, I've been involved in retail and distribution, directly or indirectly, across different markets and business models. I've seen retailers reinvent themselves, distribution channels evolve, and technology change the way businesses reach their customers.</P>
 
-              <P>I've seen retailers reinvent themselves, distribution channels evolve, and technology change the way businesses reach their customers.</P>
-
-              <P>But something particularly interesting is happening now.</P>
+              <P tight>But something particularly interesting is happening now.</P>
 
               <P>
                 <strong>For the first time, the person buying your product might not be the one shopping for it.</strong>
               </P>
 
-              <P tight>And I'm not talking about someone asking their spouse to pick up a few things at the supermarket.</P>
-
-              <P tight>I'm talking about artificial intelligence.</P>
-
-              <P>More specifically, AI agents acting on behalf of consumers and businesses.</P>
+              <P>And I'm not talking about someone asking their spouse to pick up a few things at the supermarket. I'm talking about artificial intelligence. More specifically, AI agents acting on behalf of consumers and businesses.</P>
 
               <P>I believe this will become one of the most important developments in retail and e-commerce over the next few years. And by 2027, businesses should be seriously considering what it means for their commercial architecture.</P>
 
@@ -121,9 +115,7 @@ export default function ArticlePage() {
 
               <P>B2B2C: Business to Business to Consumer.</P>
 
-              <P>These models describe how businesses connect with their markets, who they sell to, and how products and services reach the end customer.</P>
-
-              <P tight>But there's another model beginning to emerge.</P>
+              <P>These models describe how businesses connect with their markets, who they sell to, and how products and services reach the end customer. But there's another model beginning to emerge.</P>
 
               <P>
                 <strong>B2A: Business to Agent.</strong>
@@ -131,17 +123,13 @@ export default function ArticlePage() {
 
               <P>The term already exists in discussions about agentic commerce, but I suspect we'll be hearing considerably more about it.</P>
 
-              <P tight>The principle is simple.</P>
-
-              <P>Instead of a person visiting your website, browsing products, comparing options, and completing a purchase, an AI agent performs some or all of those activities on their behalf.</P>
+              <P>The principle is simple. Instead of a person visiting your website, browsing products, comparing options, and completing a purchase, an AI agent performs some or all of those activities on their behalf.</P>
 
               <P>And that seemingly small change could have enormous consequences.</P>
 
               <H2>When Your Customer Sends an Agent Shopping</H2>
 
-              <P tight>Imagine you need a new washing machine.</P>
-
-              <P>Today, you might search Google, visit several retailers, read reviews, compare prices, check delivery conditions, and eventually make a decision.</P>
+              <P>Imagine you need a new washing machine. Today, you might search Google, visit several retailers, read reviews, compare prices, check delivery conditions, and eventually make a decision.</P>
 
               <P>Perhaps an advertisement catches your attention. Maybe a promotion influences your choice. Or perhaps one retailer simply has a better website.</P>
 
@@ -159,13 +147,11 @@ export default function ArticlePage() {
                 "Find me the best washing machine under $800. I want something reliable, energy-efficient, and available for delivery before Friday. Compare the options and recommend the best choice."
               </blockquote>
 
-              <P>The agent searches, evaluates the available products, compares specifications and prices, checks delivery conditions, and returns with a recommendation.</P>
+              <P>The agent searches, evaluates the available products, compares specifications and prices, checks delivery conditions, and returns with a recommendation. Eventually, with the appropriate permissions and safeguards, it may also complete the transaction.</P>
 
-              <P>Eventually, with the appropriate permissions and safeguards, it may also complete the transaction.</P>
+              <P tight>The consumer still makes the decision about what matters. But the process of discovering and evaluating products is increasingly delegated.</P>
 
-              <P>The consumer still makes the decision about what matters. But the process of discovering and evaluating products is increasingly delegated.</P>
-
-              <P>
+              <P tight>
                 <strong>The customer hasn't disappeared. The buying process has changed.</strong>
               </P>
 
@@ -173,7 +159,7 @@ export default function ArticlePage() {
 
               <H2>We've Spent Decades Building Websites for Humans</H2>
 
-              <P>Retailers invest enormous amounts of money designing digital experiences around human behaviour.</P>
+              <P tight>Retailers invest enormous amounts of money designing digital experiences around human behaviour.</P>
 
               <P tight>Beautiful product photography.</P>
 
@@ -187,23 +173,13 @@ export default function ArticlePage() {
 
               <P>Customer journeys designed to move visitors from curiosity to purchase.</P>
 
-              <P>And there's nothing wrong with that. These approaches have helped businesses grow for decades.</P>
+              <P>And there's nothing wrong with that. These approaches have helped businesses grow for decades. But an AI agent doesn't necessarily respond to those same influences.</P>
 
-              <P>But an AI agent doesn't necessarily respond to those same influences.</P>
+              <P>It doesn't admire your homepage. It doesn't get emotionally attached to your carefully selected brand ambassador. And it probably doesn't appreciate being interrupted by a pop-up asking it to subscribe to your newsletter.</P>
 
-              <P tight>It doesn't admire your homepage.</P>
+              <P>It needs something different. Accurate product specifications. Structured information. Reliable pricing. Real-time availability. Delivery conditions. Return policies. Compatibility information.</P>
 
-              <P tight>It doesn't get emotionally attached to your carefully selected brand ambassador.</P>
-
-              <P>And it probably doesn't appreciate being interrupted by a pop-up asking it to subscribe to your newsletter.</P>
-
-              <P>It needs something different.</P>
-
-              <P>Accurate product specifications. Structured information. Reliable pricing. Real-time availability. Delivery conditions. Return policies. Compatibility information.</P>
-
-              <P>It also needs to determine whether that information is trustworthy.</P>
-
-              <P>And, when authorized to purchase, it needs a reliable way to complete the transaction.</P>
+              <P>It also needs to determine whether that information is trustworthy. And, when authorized to purchase, it needs a reliable way to complete the transaction.</P>
 
               <P tight>Here's the challenge.</P>
 
@@ -213,13 +189,14 @@ export default function ArticlePage() {
 
               <P>That creates a new kind of commercial vulnerability.</P>
 
+              <P>
+                I've previously explored how{" "}
+                <Link href="/thinking/your-next-customer-might-not-visit-your-website" className={linkClass}>AI agents could change the way customers discover businesses</Link>. But discovery is only the beginning. The bigger question is what happens when those agents begin evaluating, selecting, and purchasing products on our behalf.
+              </P>
+
               <H2>This Is a Business Architecture Problem</H2>
 
-              <P>When people discuss AI in retail, the conversation often revolves around chatbots, automated customer service, personalized recommendations, or marketing content.</P>
-
-              <P tight>Those are applications of AI.</P>
-
-              <P>B2A raises a much more fundamental question.</P>
+              <P>When people discuss AI in retail, the conversation often revolves around chatbots, automated customer service, personalized recommendations, or marketing content. Those are applications of AI. B2A raises a much more fundamental question.</P>
 
               <P>
                 <strong>How should a business be designed when some of its commercial interactions are conducted by intelligent software rather than directly by people?</strong>
@@ -230,23 +207,13 @@ export default function ArticlePage() {
                 <Link href="/answers/what-is-business-architecture" className={linkClass}>Business Architecture</Link>.
               </P>
 
-              <P>Consider a retailer with thousands of products.</P>
+              <P>Consider a retailer with thousands of products. Its website might display attractive descriptions and photographs, but its underlying product information could be inconsistent, incomplete, or scattered across multiple systems.</P>
 
-              <P>Its website might display attractive descriptions and photographs, but its underlying product information could be inconsistent, incomplete, or scattered across multiple systems.</P>
+              <P>Its inventory might update only periodically. Its delivery estimates might depend on manual processes. Its promotional pricing might not be accessible outside the website. Its checkout process might require interactions that only a human can reasonably complete.</P>
 
-              <P>Its inventory might update only periodically.</P>
+              <P>None of these problems necessarily prevents a person from buying. But together, they could make the business difficult for an AI agent to evaluate, recommend, or purchase from.</P>
 
-              <P>Its delivery estimates might depend on manual processes.</P>
-
-              <P>Its promotional pricing might not be accessible outside the website.</P>
-
-              <P>Its checkout process might require interactions that only a human can reasonably complete.</P>
-
-              <P>None of these problems necessarily prevents a person from buying.</P>
-
-              <P>But together, they could make the business difficult for an AI agent to evaluate, recommend, or purchase from.</P>
-
-              <P>Preparing for B2A means examining how the different parts of the business work together.</P>
+              <P tight>Preparing for B2A means examining how the different parts of the business work together.</P>
 
               <P tight>
                 <strong>Product and information architecture.</strong> Is product information complete, consistent, structured, and accessible? Can an agent reliably distinguish between similar products and understand their specifications?
@@ -268,91 +235,55 @@ export default function ArticlePage() {
                 <strong>Trust and governance.</strong> How does the business verify authorization, protect customer information, prevent fraudulent transactions, and establish accountability when an agent acts on someone's behalf?
               </P>
 
-              <P tight>These aren't five separate technology projects.</P>
+              <P>These aren't five separate technology projects. They're interconnected components of the same business.</P>
 
-              <P>They're interconnected components of the same business.</P>
-
-              <P>And that's precisely why simply installing another AI tool won't solve the problem.</P>
-
-              <P>The business itself needs to be architected for the interaction.</P>
+              <P>And that's precisely why simply installing another AI tool won't solve the problem. The business itself needs to be architected for the interaction.</P>
 
               <H2>What Happens to Marketing and Brand Loyalty?</H2>
 
-              <P>There's another dimension I find fascinating.</P>
-
-              <P>For decades, retailers have competed not only through their products and prices but through their ability to influence purchasing decisions.</P>
-
-              <P>Brand recognition, advertising, emotional connections, loyalty programs, and shopping experiences all play a role.</P>
+              <P>There's another dimension I find fascinating. For decades, retailers have competed not only through their products and prices but through their ability to influence purchasing decisions. Brand recognition, advertising, emotional connections, loyalty programs, and shopping experiences all play a role.</P>
 
               <P>But what happens when consumers increasingly delegate product comparisons to AI agents?</P>
 
-              <P>Imagine two retailers offering essentially the same washing machine.</P>
+              <P>Imagine two retailers offering essentially the same washing machine. One has an exceptional website, impressive advertising, and beautiful photography. The other has reliable product information, accurate availability, competitive pricing, transparent delivery conditions, and systems that an agent can easily interact with.</P>
 
-              <P>One has an exceptional website, impressive advertising, and beautiful photography.</P>
+              <P>Which one gets recommended? Not necessarily the one with the better marketing campaign.</P>
 
-              <P>The other has reliable product information, accurate availability, competitive pricing, transparent delivery conditions, and systems that an agent can easily interact with.</P>
-
-              <P>Which one gets recommended?</P>
-
-              <P>Not necessarily the one with the better marketing campaign.</P>
-
-              <P>Of course, brand reputation, customer preferences, service quality, and trust will still matter. An intelligent agent may consider all of them.</P>
-
-              <P>But the way those advantages are discovered and evaluated could change.</P>
+              <P>Of course, brand reputation, customer preferences, service quality, and trust will still matter. An intelligent agent may consider all of them. But the way those advantages are discovered and evaluated could change.</P>
 
               <P>
                 <strong>Brand loyalty won't necessarily disappear. But businesses may need to earn the recommendation of an agent before they ever get the attention of a human.</strong>
               </P>
 
-              <P>That's a very different competitive environment.</P>
+              <P tight>That's a very different competitive environment. And it raises an uncomfortable possibility.</P>
 
-              <P>And it raises an uncomfortable possibility.</P>
-
-              <P tight>Your competitor might not have a better product.</P>
-
-              <P>Their business might simply be easier for an AI agent to understand, compare, and buy from.</P>
+              <P>Your competitor might not have a better product. Their business might simply be easier for an AI agent to understand, compare, and buy from.</P>
 
               <H2>Why I Believe 2027 Matters</H2>
 
               <P>I'm not suggesting that consumers will suddenly stop visiting websites or that every transaction will be completed by an AI agent.</P>
 
-              <P tight>Shopping is also an experience.</P>
-
-              <P>People enjoy discovering products, exploring brands, visiting stores, and making emotional decisions.</P>
-
-              <P>Those behaviours aren't disappearing.</P>
+              <P>Shopping is also an experience. People enjoy discovering products, exploring brands, visiting stores, and making emotional decisions. Those behaviours aren't disappearing.</P>
 
               <P>And agentic commerce still has important challenges to overcome, particularly around trust, payments, permissions, reliability, and consumer protection.</P>
 
-              <P>But I believe 2027 could mark an important transition.</P>
-
-              <P>Not necessarily the year B2A becomes dominant.</P>
+              <P tight>But I believe 2027 could mark an important transition. Not necessarily the year B2A becomes dominant.</P>
 
               <P>
                 <strong>The year when preparing for AI agents starts moving from an interesting technology discussion to a serious business strategy consideration.</strong>
               </P>
 
-              <P>Retailers have spent years optimizing for search engines, mobile commerce, marketplaces, and social platforms.</P>
+              <P>Retailers have spent years optimizing for search engines, mobile commerce, marketplaces, and social platforms. Each new channel required businesses to reconsider how they present products, reach customers, manage transactions, and organize operations.</P>
 
-              <P>Each new channel required businesses to reconsider how they present products, reach customers, manage transactions, and organize operations.</P>
-
-              <P>AI agents could represent another such shift, with one important difference.</P>
-
-              <P>This time, the intermediary isn't simply another platform displaying your products.</P>
-
-              <P>It's software that can evaluate alternatives, make recommendations, and potentially act on behalf of the buyer.</P>
+              <P>AI agents could represent another such shift, with one important difference. This time, the intermediary isn't simply another platform displaying your products. It's software that can evaluate alternatives, make recommendations, and potentially act on behalf of the buyer.</P>
 
               <P>That changes the relationship.</P>
 
               <H2>The Question Business Leaders Should Be Asking</H2>
 
-              <P>I wouldn't recommend that every retailer rush out tomorrow and rebuild its entire technology infrastructure.</P>
+              <P>I wouldn't recommend that every retailer rush out tomorrow and rebuild its entire technology infrastructure. That would be expensive, premature, and probably unnecessary. I would recommend something much simpler.</P>
 
-              <P>That would be expensive, premature, and probably unnecessary.</P>
-
-              <P>I would recommend something much simpler.</P>
-
-              <P>Start examining your business from the perspective of an AI agent.</P>
+              <P tight>Start examining your business from the perspective of an AI agent.</P>
 
               <P tight>Can it discover your products?</P>
 
@@ -368,9 +299,7 @@ export default function ArticlePage() {
 
               <P>If the answer to several of those questions is no, you may have identified an architectural weakness worth investigating.</P>
 
-              <P>Not because AI agents are guaranteed to become your biggest customers tomorrow.</P>
-
-              <P>But because the ability to serve them may become an important part of how your business competes.</P>
+              <P>Not because AI agents are guaranteed to become your biggest customers tomorrow. But because the ability to serve them may become an important part of how your business competes.</P>
 
               <P>
                 <strong>The next evolution of retail isn't simply about where people buy. It's about who, or what, does the shopping.</strong>
