@@ -1,6 +1,16 @@
 {
   "crons": [
-    { "path": "/api/cron/intelligence-maintenance", "schedule": "17 3 * * *" },
-    { "path": "/api/cron/inquiry-retention", "schedule": "43 3 * * *" }
-  ]
+    {
+      "path": "/api/cron/intelligence-maintenance",
+      "schedule": "17 3 * * *"
+    },
+    {
+      "path": "/api/cron/inquiry-retention",
+      "schedule": "43 3 * * *"
+    }
+  ],
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "installCommand": "npm ci",
+  "outputDirectory": ".next"
 }

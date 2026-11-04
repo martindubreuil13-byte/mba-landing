@@ -25,7 +25,7 @@ export function PageStructuredData({
     ? { "@id": `${SITE_URL}/#martin`, name: PRINCIPAL_NAME }
     : undefined;
 
-  const data: Record<string, any> = {
+  const data: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "WebPage",
     "@id": `${url}#webpage`,
