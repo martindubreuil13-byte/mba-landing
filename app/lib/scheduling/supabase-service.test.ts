@@ -22,7 +22,8 @@ let seq = 0;
 const uid = () => `${Date.now().toString(36)}${(++seq).toString(36)}`;
 
 (local ? describe : describe.skip)("MBA Scheduling on local Postgres (service + repository + migration)", () => {
-  let db: ReturnType<typeof createClient>;
+  const connectDb = () => createClient(local!.url, local!.serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  let db: ReturnType<typeof connectDb>;
   let repo: SupabaseRepository; let cal: MockCalendar; let zoom: MockZoom; let email: MockEmail; let svc: SchedulingService;
   let originalTz: string;
   const typeIds: string[] = [];
@@ -45,7 +46,7 @@ const uid = () => `${Date.now().toString(36)}${(++seq).toString(36)}`;
   const row = async (reference: string) => (await repo.getBookingByReference(reference))!;
 
   beforeAll(async () => {
-    db = createClient(local!.url, local!.serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+    db = connectDb();
     repo = new SupabaseRepository(db as never);
     originalTz = (await repo.getSettings()).homeTimeZone;
     await repo.saveSettings({ homeTimeZone: TZ });
