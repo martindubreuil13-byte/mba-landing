@@ -8,13 +8,22 @@ import Navigation from "@/app/components/Navigation";
 export default function ThinkingPage() {
   const articles = [
     {
+      href: "/thinking/your-next-customer-might-not-be-human",
+      category: "Business Architecture",
+      number: "013",
+      title: "Your Next Customer Might Not Be Human",
+      standfirst: "Why Business-to-Agent commerce could change retail, e-commerce, and the way we architect businesses.",
+      date: "November 3, 2026",
+      featured: true,
+    },
+    {
       href: "/thinking/anticipatory-business-architecture",
       category: "Business Architecture",
       number: "012",
       title: "Will Your Business Still Be Relevant Tomorrow?",
       standfirst: "Why the next evolution of Business Architecture must include anticipation, adaptability, and continuous intelligence, and what Anticipatory Business Architecture looks like in practice.",
       date: "October 26, 2026",
-      featured: true,
+      featured: false,
     },
     {
       href: "/thinking/architecting-intelligence",

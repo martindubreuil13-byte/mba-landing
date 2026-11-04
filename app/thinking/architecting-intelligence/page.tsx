@@ -646,6 +646,9 @@ export default function ArticlePage() {
                   <Link href="/thinking/your-next-customer-might-not-visit-your-website" className={linkClass}>Your Next Customer Might Not Visit Your Website</Link>
                 </li>
                 <li>
+                  <Link href="/thinking/your-next-customer-might-not-be-human" className={linkClass}>Your Next Customer Might Not Be Human</Link>
+                </li>
+                <li>
                   <Link href="/answers/how-should-i-use-ai-in-my-business" className={linkClass}>How Should I Use AI in My Business?</Link>
                 </li>
               </ul>
