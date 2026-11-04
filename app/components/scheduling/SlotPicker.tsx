@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { addDays, formatDateLong, formatTime, localDate, localToInstant, MONTH_NAMES, WEEKDAY_NAMES, weekdayOf, zonedParts } from "@/app/lib/scheduling/timezone";
 import { focusRing, label } from "./ui";
+import { pickerRangeStart } from "@/app/lib/scheduling/picker-range";
 
 export type PickerSlot = { startUtc: string; endUtc: string };
 /** Loads open slots for [from, to). Reject with an Error whose message is safe to show. */
@@ -33,8 +34,7 @@ export default function SlotPicker({ load, timeZone, value, onChange, hour12 = t
   useEffect(() => {
     let live = true;
     setState("loading");
-    const first = `${ym}-01`;
-    const from = new Date(localToInstant(first, "00:00", timeZone)).toISOString();
+    const from = pickerRangeStart(ym, timeZone);
     const to = new Date(localToInstant(addDays(`${ym}-${String(daysIn(ym)).padStart(2, "0")}`, 1), "00:00", timeZone)).toISOString();
     load(from, to).then((s) => {
       if (!live) return;

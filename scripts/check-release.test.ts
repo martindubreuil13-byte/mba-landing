@@ -15,7 +15,7 @@ function fixture() {
   writeFileSync(join(root, "app/components/admin/AdminShell.tsx"), '<a href="/admin/publications"/><a href="/admin/scheduling"/><a href="/admin/inquiries"/>');
   return root;
 }
-const run = (cwd: string, env: Record<string, string> = {}) => spawnSync(process.execPath, [script], { cwd, env: { VERCEL_ENV: "preview", ...env }, encoding: "utf8" });
+const run = (cwd: string, env: Record<string, string> = {}) => spawnSync(process.execPath, [script], { cwd, env: { NODE_ENV: "test", VERCEL_ENV: "preview", ...env }, encoding: "utf8" });
 afterEach(() => { for (const root of fixtures.splice(0)) rmSync(root, { recursive: true, force: true }); });
 describe("production capability release guard", () => {
   it("accepts the complete existing application", () => expect(run(fixture()).status).toBe(0));
