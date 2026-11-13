@@ -4,115 +4,61 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { getBrowserClient } from "@/app/lib/supabase/browser";
 
+import { CalendarDays, ChevronDown, House, LibraryBig, Mail, Users } from "lucide-react";
+
+const sections = [
+  ["Home", "/admin", House, ["/admin"]],
+  ["Contacts", "/admin/leads", Users, ["/admin/leads", "/admin/inquiries"]],
+  ["Scheduling", "/admin/scheduling", CalendarDays, ["/admin/scheduling"]],
+  ["Content", "/admin/content", LibraryBig, ["/admin/content", "/admin/resources", "/admin/guides", "/admin/publications", "/admin/programs"]],
+  ["Email Studio", "/admin/email", Mail, ["/admin/email"]],
+] as const;
+
+const tools = [
+  ["Follow-ups", "/admin/inquiries/tasks"],
+  ["Automation exceptions", "/admin/inquiries/exceptions"], ["Website Intelligence", "/admin/intelligence"],
+  ["Pick My Brain", "/admin/pick-my-brain"], ["Assessments", "/admin/assessments"],
+  ["Napkin submissions", "/admin/napkin"],
+] as const;
+
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-
-  const isResources = pathname.startsWith("/admin/resources");
-  const isGuides = pathname.startsWith("/admin/guides");
-  const isPublications = pathname.startsWith("/admin/publications");
-  const isLeads = pathname.startsWith("/admin/leads");
-  const isInquiries = pathname.startsWith("/admin/inquiries");
-  const isPickMyBrain = pathname.startsWith("/admin/pick-my-brain");
-  const isPrograms = pathname.startsWith("/admin/programs");
-  const isIntelligence = pathname.startsWith("/admin/intelligence");
-  const isScheduling = pathname.startsWith("/admin/scheduling");
-
-  const handleSignOut = async () => {
-    const supabase = getBrowserClient();
-    await supabase.auth.signOut();
+  async function signOut() {
+    await getBrowserClient().auth.signOut();
     router.push("/admin");
     router.refresh();
-  };
-
-  return (
-    <div className="min-h-screen bg-[#f5f1ed] text-[#1a1816]">
-      <header className="border-b border-[#1a1816]/10 px-6 md:px-12 py-6 flex flex-col md:flex-row md:items-center justify-between gap-5">
-        <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8 min-w-0">
-          <p className="text-sm font-semibold tracking-widest uppercase text-[#1a1816]">Admin</p>
-          <nav className="flex flex-wrap items-center gap-x-5 gap-y-3">
-            <Link
-              href="/admin/resources"
-              className={`text-sm tracking-wide ${
-                isResources ? "text-[#6b1f1f] font-semibold" : "text-[#1a1816]/60 hover:text-[#1a1816]"
-              }`}
-            >
-              Resources
-            </Link>
-            <Link
-              href="/admin/publications"
-              className={`text-sm tracking-wide ${
-                isPublications ? "text-[#6b1f1f] font-semibold" : "text-[#1a1816]/60 hover:text-[#1a1816]"
-              }`}
-            >
-              Publications
-            </Link>
-            <Link
-              href="/admin/guides"
-              className={`text-sm tracking-wide ${
-                isGuides ? "text-[#6b1f1f] font-semibold" : "text-[#1a1816]/60 hover:text-[#1a1816]"
-              }`}
-            >
-              Guides
-            </Link>
-            <Link
-              href="/admin/leads"
-              className={`text-sm tracking-wide ${
-                isLeads ? "text-[#6b1f1f] font-semibold" : "text-[#1a1816]/60 hover:text-[#1a1816]"
-              }`}
-            >
-              Leads
-            </Link>
-            <Link
-              href="/admin/inquiries"
-              className={`text-sm tracking-wide ${
-                isInquiries ? "text-[#6b1f1f] font-semibold" : "text-[#1a1816]/60 hover:text-[#1a1816]"
-              }`}
-            >
-              Inquiries
-            </Link>
-            <Link
-              href="/admin/programs/corporate-transition"
-              className={`text-sm tracking-wide ${
-                isPrograms ? "text-[#6b1f1f] font-semibold" : "text-[#1a1816]/60 hover:text-[#1a1816]"
-              }`}
-            >
-              Programs
-            </Link>
-            <Link
-              href="/admin/scheduling"
-              className={`text-sm tracking-wide ${
-                isScheduling ? "text-[#6b1f1f] font-semibold" : "text-[#1a1816]/60 hover:text-[#1a1816]"
-              }`}
-            >
-              Scheduling
-            </Link>
-            <Link
-              href="/admin/intelligence"
-              className={`text-sm tracking-wide ${
-                isIntelligence ? "text-[#6b1f1f] font-semibold" : "text-[#1a1816]/60 hover:text-[#1a1816]"
-              }`}
-            >
-              Website Intelligence
-            </Link>
-            <Link
-              href="/admin/pick-my-brain"
-              className={`text-sm tracking-wide ${
-                isPickMyBrain ? "text-[#6b1f1f] font-semibold" : "text-[#1a1816]/60 hover:text-[#1a1816]"
-              }`}
-            >
-              Pick My Brain
-            </Link>
-          </nav>
+  }
+  return <div className="min-h-screen bg-[#f3eee8] text-[#27211d]">
+    <header className="border-b border-[#ded1c7] bg-[#fffcf8]/95 backdrop-blur-sm">
+      <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 sm:px-8">
+        <Link href="/admin" className="inline-flex items-center gap-3 font-serif leading-tight">
+          <span className="grid size-10 place-items-center rounded-xl bg-[#6b1f1f] text-2xl text-white">M</span>
+          <span>The Modern<br />Business Architect</span>
+        </Link>
+        <nav aria-label="Admin workspace" className="order-3 flex w-full flex-wrap gap-1 sm:order-none sm:w-auto">
+          {sections.map(([label, href, Icon, prefixes]) => {
+            const current = prefixes.some((prefix) => pathname === prefix || (prefix !== "/admin" && pathname.startsWith(prefix + "/")));
+            return <Link key={href} href={href} aria-current={current ? "page" : undefined}
+              className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-[#f3e7e2] ${current ? "bg-[#f3e7e2] font-semibold text-[#6b1f1f]" : "text-[#655951]"}`}>
+              <Icon size={17} aria-hidden />{label}
+            </Link>;
+          })}
+        </nav>
+        <div className="flex items-center gap-3 text-sm">
+          <details className="relative">
+            <summary className="flex cursor-pointer list-none items-center gap-1 text-[#6b1f1f]">More <ChevronDown size={14} aria-hidden /></summary>
+            <div className="absolute right-0 z-20 mt-2 grid w-52 gap-1 rounded-xl border border-[#e6dcd4] bg-[#fffcf8] p-2 shadow-lg">
+              <Link href="/admin/inquiries" className="rounded-lg px-3 py-2 hover:bg-[#f3e7e2]">Inquiries &amp; applications</Link>
+              <Link href="/admin/publications" className="rounded-lg px-3 py-2 hover:bg-[#f3e7e2]">Publications</Link>
+              <Link href="/admin/scheduling" className="rounded-lg px-3 py-2 hover:bg-[#f3e7e2]">Scheduling overview</Link>
+              {tools.map(([label, href]) => <Link key={href} href={href} className="rounded-lg px-3 py-2 hover:bg-[#f3e7e2]">{label}</Link>)}
+            </div>
+          </details>
+          <button type="button" onClick={signOut} className="text-[#655951] hover:underline">Sign out</button>
         </div>
-        <button
-          onClick={handleSignOut}
-          className="text-xs tracking-widest uppercase text-[#1a1816]/50 hover:text-[#1a1816]"
-        >
-          Sign out
-        </button>
-      </header>
-      <main className="px-6 md:px-12 py-10">{children}</main>
-    </div>
-  );
+      </div>
+    </header>
+    <main className="mx-auto max-w-[1400px] px-4 py-7 sm:px-8">{children}</main>
+  </div>;
 }

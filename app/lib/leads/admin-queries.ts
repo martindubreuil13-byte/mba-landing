@@ -353,7 +353,7 @@ export function filterUnifiedLeads(rows: UnifiedLeadRow[], f: LeadFilters): Unif
 
 export type ActivityEvent = {
   at: string;
-  kind: "resource" | "napkin" | "reality_check" | "pmb" | "opt_in" | "opt_out";
+  kind: "inquiry" | "application" | "booking" | "consent" | "resource" | "napkin" | "reality_check" | "pmb" | "opt_in" | "opt_out";
   title: string;
   description: string;
   href: string | null;
@@ -451,7 +451,7 @@ export async function getLeadDetailAdmin(id: string): Promise<LeadDetail | null>
       at: r.requested_at,
       kind: "resource",
       title: `Requested resource: ${res?.title ?? "unknown"}`,
-      description: "Downloaded a free resource.",
+      description: "Requested a free resource.",
       href: res?.slug ? `/resources/${res.slug}` : null,
     });
   }

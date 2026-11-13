@@ -8,8 +8,8 @@ import { formatDateShort, formatTime, zoneOffsetLabel } from "@/app/lib/scheduli
 type Filter = "attention" | "upcoming" | "past" | "canceled" | "all";
 const FILTERS: { id: Filter; label: string }[] = [{ id: "attention", label: "Needs attention" }, { id: "upcoming", label: "Upcoming" }, { id: "past", label: "Past" }, { id: "canceled", label: "Canceled" }, { id: "all", label: "All" }];
 
-export default function BookingsTable({ rows, homeTimeZone, nowIso }: { rows: BookingRow[]; homeTimeZone: string; nowIso: string }) {
-  const [filter, setFilter] = useState<Filter>("upcoming");
+export default function BookingsTable({ rows, homeTimeZone, nowIso, booking }: { rows: BookingRow[]; homeTimeZone: string; nowIso: string; booking?: string }) {
+  const [filter, setFilter] = useState<Filter>(booking ? "all" : "upcoming");
   const [query, setQuery] = useState("");
   const { open, node } = useBookingDrawer(rows, homeTimeZone);
   const now = Date.parse(nowIso);
@@ -21,13 +21,15 @@ export default function BookingsTable({ rows, homeTimeZone, nowIso }: { rows: Bo
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
     const f = rows.filter((r) => inFilter(r, filter) && (!q || `${r.guestName} ${r.guestEmail} ${r.typeName}`.toLowerCase().includes(q)));
+    if (booking) f.sort((a, b) => Number(b.id === booking) - Number(a.id === booking));
     return filter === "past" ? [...f].reverse() : f;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, filter, query, now]);
+  }, [rows, filter, query, now, booking]);
 
   return (
     <div>
       {node}
+      {booking && !rows.some((row) => row.id === booking) && <p role="status">This appointment is unavailable.</p>}
       <div className="mb-8 flex flex-wrap items-end justify-between gap-6">
         <div role="tablist" aria-label="Filter bookings" className="flex flex-wrap gap-x-7 gap-y-2">
           {FILTERS.filter((f) => f.id !== "attention" || counts.attention > 0).map((f) => (
@@ -45,7 +47,7 @@ export default function BookingsTable({ rows, homeTimeZone, nowIso }: { rows: Bo
               const s = Date.parse(r.startUtc);
               const canceled = r.status === "canceled";
               return (
-                <tr key={r.id} onClick={() => open(r.id)} className={`group cursor-pointer border-b border-[#1a1816]/[.12] transition hover:bg-[#1a1816]/[.025] ${canceled ? "text-[#1a1816]/50" : ""}`}>
+                <tr key={r.id} id={r.id} onClick={() => open(r.id)} className={`group target:bg-[#f3e7e2] cursor-pointer border-b border-[#1a1816]/[.12] transition hover:bg-[#1a1816]/[.025] ${canceled ? "text-[#1a1816]/50" : ""}`}>
                   <td className="py-5 pr-4"><button type="button" onClick={(e) => { e.stopPropagation(); open(r.id); }} className="text-left"><span className="font-medium group-hover:text-[#6b1f1f]">{r.guestName}</span><br /><span className="text-[#1a1816]/50">{r.guestEmail}</span></button></td>
                   <td className="pr-4">{r.typeName}<br /><span className="text-[#1a1816]/45">{r.durationMinutes} min</span></td>
                   <td className="whitespace-nowrap pr-4">{formatDateShort(s, homeTimeZone)}<br /><span className="text-[#1a1816]/55">{formatTime(s, homeTimeZone)}</span> <span className="text-xs text-[#1a1816]/35">{zoneOffsetLabel(s, homeTimeZone)}</span></td>

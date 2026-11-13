@@ -26,7 +26,7 @@ export default function AdminLoginForm() {
       return;
     }
 
-    router.push("/admin/resources");
+    router.push("/admin");
     router.refresh();
   };
 

@@ -14,6 +14,8 @@ import { listInquiries } from "./store";
 export type JourneyRow = {
   key: string; kind: "inquiry" | "application"; id: string; receivedAt: string; name: string; email: string | null; interest: string;
   contact: { text: string; bad: boolean; detail: string | null };
+  leadId: string | null;
+  reviewState?: string;
   message: string | null; messageRemoved: boolean;
   href: string | null;
   booking: { text: string; tone: "none" | "ok" | "bad" | "hint" };
@@ -38,20 +40,20 @@ export function describeBooking(linked: BookingNow[], hint: BookingNow[], timeZo
   return { text: "Not booked", tone: "none" };
 }
 
-export async function listJourney(limit = 200, now: number = Date.now()): Promise<{ rows: JourneyRow[]; notes: string[] }> {
+export async function listJourney(limit = 200, now: number = Date.now(), inquiryId?: string): Promise<{ rows: JourneyRow[]; notes: string[]; timeZone: string }> {
   const notes: string[] = [];
   let inquiries: Awaited<ReturnType<typeof listInquiries>> = [];
-  try { inquiries = await listInquiries(limit); } catch (e) { notes.push("Saved inquiries are not available yet."); console.error("journey: inquiries unavailable:", e instanceof Error ? e.message : e); }
+  try { inquiries = await listInquiries(limit, inquiryId); } catch (e) { notes.push("Saved inquiries are not available yet."); console.error("journey: inquiries unavailable:", e instanceof Error ? e.message : e); }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let apps: any[] = [];
-  try { apps = (await listApplications()).slice(0, limit); } catch (e) { notes.push("Transition applications could not be read."); console.error("journey: applications unavailable:", e instanceof Error ? e.message : e); }
+  try { if (!inquiryId) apps = (await listApplications()).slice(0, limit); } catch (e) { notes.push("Transition applications could not be read."); console.error("journey: applications unavailable:", e instanceof Error ? e.message : e); }
   let sends: InvitationSend[] = [];
   if (apps.length) { try { sends = await listInvitationSends(apps.map((a) => a.id)); } catch { /* the invitation column then reads "Pending" */ } }
   const sendsOf = new Map<string, InvitationSend[]>();
   for (const s of sends) sendsOf.set(s.application_id, [...(sendsOf.get(s.application_id) ?? []), s]);
 
   const emails = [...inquiries.map((i) => i.email ?? ""), ...apps.map((a) => String(a.answers?.email ?? ""))];
-  let states: Awaited<ReturnType<typeof originStates>> = { linked: new Map(), byEmail: new Map(), timeZone: "UTC" };
+  let states: Awaited<ReturnType<typeof originStates>> = { linked: new Map(), byEmail: new Map(), timeZone: "Asia/Bangkok" };
   try { states = await originStates({ inquiryIds: inquiries.map((i) => i.id), applicationIds: apps.map((a) => a.id), emails }); }
   catch (e) { notes.push("Booking status could not be read."); console.error("journey: bookings unavailable:", e instanceof Error ? e.message : e); }
   const bookingFor = (key: string, email: string | null) => describeBooking(states.linked.get(key) ?? [], email ? states.byEmail.get(email.trim().toLowerCase()) ?? [] : [], states.timeZone, now);
@@ -59,6 +61,7 @@ export async function listJourney(limit = 200, now: number = Date.now()): Promis
   const rows: JourneyRow[] = [
     ...inquiries.map((i): JourneyRow => ({
       key: `inquiry:${i.id}`, kind: "inquiry", id: i.id, receivedAt: i.created_at, name: i.full_name, email: i.email,
+      leadId: i.lead_id, reviewState: i.review_state,
       interest: i.program_slug ? PROGRAMS.find((p) => p.slug === i.program_slug)?.name ?? i.program_slug : "No program chosen",
       contact: i.owner_status === "accepted" ? { text: "You were notified", bad: false, detail: null } : i.owner_status === "failed" ? { text: "Delivery failed", bad: true, detail: i.owner_error } : { text: "Not sent yet", bad: true, detail: null },
       message: i.message_purged_at ? null : i.message, messageRemoved: !!i.message_purged_at, href: null,
@@ -70,12 +73,12 @@ export async function listJourney(limit = 200, now: number = Date.now()): Promis
       const email = typeof a.answers?.email === "string" ? a.answers.email : null;
       return {
         key: `application:${a.id}`, kind: "application", id: a.id, receivedAt: a.submitted_at, name: `${a.answers?.firstName ?? ""} ${a.answers?.lastName ?? ""}`.trim() || "Applicant", email,
-        interest: "Corporate Transition",
+        interest: "Corporate Transition", leadId: a.lead_id ?? null,
         contact: inv ? { text: `Invitation: ${INVITATION_LABELS[inv.state]}`, bad: inv.state === "failed", detail: inv.state === "failed" ? inv.lastError : null } : { text: "Earlier flow", bad: false, detail: null },
         message: null, messageRemoved: false, href: `/admin/programs/corporate-transition/${a.id}`,
         booking: bookingFor(`application:${a.id}`, email),
       };
     }),
   ].sort((x, y) => y.receivedAt.localeCompare(x.receivedAt)).slice(0, limit);
-  return { rows, notes };
+  return { rows, notes, timeZone: states.timeZone };
 }

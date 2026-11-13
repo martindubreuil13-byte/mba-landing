@@ -174,13 +174,13 @@ describe("the admin Inquiries & applications page", () => {
       { ...row, id: "2", key: "inquiry:2", receivedAt: iso(800), name: "Old Person", email: "b@example.test", interest: "No program chosen", contact: { text: "You were notified", bad: false, detail: null }, message: null, messageRemoved: true, booking: { text: "Canceled (was Tue, Nov 3, 1:00 p.m. GMT+7)", tone: "bad" } },
       { ...row, id: "3", key: "application:3", kind: "application" as const, href: "/admin/programs/corporate-transition/3", receivedAt: iso(3), name: "Elena Test", email: "elena@example.com", interest: "Corporate Transition", contact: { text: "Invitation: Sent", bad: false, detail: null }, message: null, booking: { text: "Booked: Thu, Nov 5, 9:00 a.m. GMT+7 (rescheduled)", tone: "ok" } },
     ] });
-    const html = renderToStaticMarkup(await Page());
+    const html = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({}) }));
     expect(html).toContain("Delivery failed"); expect(html).toContain("provider_rejected: no"); expect(html).toContain("please call me");
     expect(html).toContain("1 needs attention"); expect(html).toContain("3 in total, 1 with a booking");
     expect(html).toContain("Message removed under the retention policy"); expect(html).toContain("Canceled (was"); expect(html).toContain("(rescheduled)");
     expect(html).toContain("Open application"); expect(html).toContain("mailto:a@example.test");
     (journey.listJourney as any).mockResolvedValue({ notes: ["Saved inquiries are not available yet."], rows: [] });
-    const empty = renderToStaticMarkup(await Page());
+    const empty = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({}) }));
     expect(empty).toContain("Nothing here yet."); expect(empty).toContain("not available yet");
   });
 });

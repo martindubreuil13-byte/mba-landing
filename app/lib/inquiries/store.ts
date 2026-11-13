@@ -15,6 +15,7 @@ export type InquiryRow = {
   attribution: Record<string, string>; booking_ref: string; idempotency_key: string; content_hash: string;
   owner_status: OwnerStatus; owner_claimed_at: string | null; owner_attempts: number; owner_message_id: string | null; owner_error: string | null; owner_accepted_at: string | null;
   auto_reply_status: AutoReplyStatus; auto_reply_message_id: string | null; auto_reply_error: string | null;
+  review_state?: string;
   message_purged_at: string | null; created_at: string; updated_at: string;
 };
 
@@ -84,7 +85,9 @@ export async function reviseUnsent(id: string, f: Pick<NewInquiry, "program_slug
  * in 'sending' (a request that died mid-send) is claimed only after `staleMs`. The caller reuses the same provider idempotency key for a stale
  * claim, so a notification that WAS accepted before the crash is not delivered twice.
  */
-export async function claimOwnerSend(id: string, now: number = Date.now(), staleMs = 120_000): Promise<InquiryRow | null> {
+export const OWNER_CLAIM_STALE_MS = 120_000;
+
+export async function claimOwnerSend(id: string, now: number = Date.now(), staleMs = OWNER_CLAIM_STALE_MS): Promise<InquiryRow | null> {
   const stamp = new Date(now).toISOString();
   const fresh = await db().from("program_inquiries").update({ owner_status: "sending", owner_claimed_at: stamp }).eq("id", id).in("owner_status", ["pending", "failed"]).select("*");
   if (fresh.error) throw new Error(`Could not claim the inquiry: ${fresh.error.message}`);
@@ -162,8 +165,9 @@ export async function eraseInquiries(target: { id: string } | { email: string })
 // ---------------------------------------------------------------------------------------------------------------------------------------------
 export type InquiryListItem = InquiryRow & { email: string | null };
 
-export async function listInquiries(limit = 200): Promise<InquiryListItem[]> {
-  const { data, error } = await db().from("program_inquiries").select("*").order("created_at", { ascending: false }).limit(limit);
+export async function listInquiries(limit = 200, inquiryId?: string): Promise<InquiryListItem[]> {
+  const query = db().from("program_inquiries").select("*");
+  const { data, error } = await (inquiryId ? query.eq("id", inquiryId) : query).order("created_at", { ascending: false }).limit(limit);
   if (error) throw new Error(`Could not list inquiries: ${error.message}`);
   const rows = data as InquiryRow[];
   const ids = [...new Set(rows.map((r) => r.lead_id))];
