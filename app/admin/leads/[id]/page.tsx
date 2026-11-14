@@ -1,3 +1,4 @@
+import { ArchiveContact, EditContact } from "@/app/components/admin/ContactProfileActions";
 import RelationshipForm from "@/app/components/admin/RelationshipForm";
 import { updateContactLifecycle } from "@/app/lib/contact-tags/actions";
 import { lifecycleLabel, lifecycleLabels } from "@/app/lib/contact-tags/lifecycle";
@@ -37,6 +38,8 @@ export default async function AdminLeadDetailPage({ params, searchParams }: { pa
   if (!detail) notFound();
 
   const { lead, row } = detail;
+  const profile = { id, firstName: lead.first_name, lastName: lead.last_name ?? "", email: lead.email, archived: Boolean(lead.contact_archived_at) };
+  const name = [profile.firstName, profile.lastName].filter(Boolean).join(" ") || profile.email;
   const timeZone = await businessTimeZone();
   const [{ inquiry }, linked, tasks, tagData] = await Promise.all([searchParams, relationshipEvents(id, timeZone), listTasks(id), contactTags(id).catch(() => null)]);
   const selectedInquiry = inquiry && linked.some((event) => event.href === inquiryHref(inquiry)) ? inquiry : undefined;
@@ -52,13 +55,15 @@ export default async function AdminLeadDetailPage({ params, searchParams }: { pa
 
       <div className="flex items-start justify-between gap-6 flex-wrap mt-6 mb-6 rounded-3xl border border-[#e6dcd4] bg-[#fffcf9] p-6 shadow-sm">
         <div>
-          <h1 className="break-words font-serif text-4xl">{lead.first_name || lead.email}</h1>
+          <h1 className="break-words font-serif text-4xl">{name}</h1>
           <p className="text-[#1a1816]/60 text-sm mt-1">
             <a href={`mailto:${lead.email}`} className="hover:text-[#6b1f1f]">
               {lead.email}
             </a>
             {lead.country ? ` — ${lead.country}` : ""}
           </p>
+          <EditContact contact={profile} />
+          {profile.archived && <p className="mt-2 text-sm text-[#6b1f1f]">Archived</p>}
         </div>
         <div className="text-sm sm:text-right">
           <p>
@@ -178,6 +183,7 @@ export default async function AdminLeadDetailPage({ params, searchParams }: { pa
           </li>
         ))}
       </ol>
+      <ArchiveContact contact={profile} />
     </AdminShell>
   );
 }

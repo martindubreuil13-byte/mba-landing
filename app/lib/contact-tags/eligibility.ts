@@ -1,5 +1,6 @@
 export function marketingEligibility(lead: {
   ongoing_content_opt_in: boolean; ongoing_content_opt_in_at: string | null;
+  contact_email_changed_at?: string | null;
   ongoing_content_opt_out_at: string | null; suppressed_at: string | null;
 }, evidence: { action: string; created_at: string; wording_version: string | null; wording_text: string | null }[]) {
   const latest = evidence.find((row) => row.action === "opt_in" || row.action === "opt_out");
@@ -12,6 +13,9 @@ export function marketingEligibility(lead: {
   if (!lead.ongoing_content_opt_in) return latest?.action === "opt_in"
     ? { state: "Unknown", reason: "Opt-in evidence conflicts with subscription status" } as const
     : { state: "Not eligible", reason: "No verified permission" } as const;
+  if (lead.contact_email_changed_at && !(latest && Date.parse(latest.created_at) > Date.parse(lead.contact_email_changed_at))) {
+    return { state: "Unknown", reason: "Consent predates the corrected email address" } as const;
+  }
   if (!lead.ongoing_content_opt_in_at || latest?.action !== "opt_in" || !latest.wording_version || !latest.wording_text?.trim() ||
       Date.parse(latest.created_at) !== Date.parse(lead.ongoing_content_opt_in_at)) {
     return { state: "Unknown", reason: "Incomplete consent evidence" } as const;

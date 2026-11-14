@@ -53,6 +53,8 @@ export const RESOURCE_STATUS_LABELS: Record<ResourceStatus, string> = {
 export type Lead = {
   id: string;
   first_name: string;
+  last_name?: string | null;
+  contact_archived_at?: string | null;
   email: string;
   country: string | null;
   ongoing_content_opt_in: boolean;

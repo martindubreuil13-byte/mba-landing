@@ -2,12 +2,13 @@
 
 import { useState, useTransition, type FormEvent, type ReactNode } from "react";
 
-export default function RelationshipForm({ action, success, children, className, reset = false }: {
+export default function RelationshipForm({ action, success, children, className, reset = false, onSaved }: {
   action: (data: FormData) => Promise<string | null>;
   success: string;
   children: ReactNode;
   className?: string;
   reset?: boolean;
+  onSaved?: () => void;
 }) {
   const [pending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<{ message: string; error: boolean }>();
@@ -21,6 +22,7 @@ export default function RelationshipForm({ action, success, children, className,
       try {
         const error = await action(data);
         if (!error && reset) form.reset();
+        if (!error) onSaved?.();
         setFeedback({ message: error ?? success, error: Boolean(error) });
       } catch {
         setFeedback({ message: "The change could not be confirmed. Check your session and try again.", error: true });

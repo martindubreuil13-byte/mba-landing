@@ -38,11 +38,11 @@ export async function GET(req: Request) {
     rows = leads.filter((l) => l.shortlisted);
     filename = "shortlisted-leads.csv";
   } else if (kind === "subscribers") {
-    rows = leads.filter((l) => l.subscription_status === "subscribed");
+    rows = leads.filter((l) => !l.contact_archived_at && l.subscription_status === "subscribed");
     filename = "subscribers.csv";
   } else if (kind === "filtered") {
     const filters = parseFilters(searchParams);
-    rows = filterUnifiedLeads(leads, filters);
+    rows = filterUnifiedLeads(leads, filters).filter((lead) => Boolean(lead.contact_archived_at) === (searchParams.get("view") === "archived"));
     const tag = searchParams.get("tag");
     if (tag && isUuid(tag)) {
       const matching = new Set(await taggedLeadIds(tag));

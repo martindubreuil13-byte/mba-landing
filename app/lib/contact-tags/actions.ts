@@ -5,6 +5,7 @@ import { requireAdmin } from "@/app/lib/supabase/admin-session";
 import { getServiceClient } from "@/app/lib/supabase/service";
 import { isUuid } from "@/app/lib/relationships/model";
 import { isLifecycle } from "./lifecycle";
+import { contactProfile } from "./profile";
 
 export async function updateContactTag(form: FormData) {
   await requireAdmin();
@@ -47,4 +48,42 @@ export async function updateContactLifecycle(form: FormData) {
   revalidatePath("/admin/leads/" + id);
   revalidatePath("/admin/leads");
   return null;
+}
+
+export async function saveContactProfile(form: FormData) {
+  await requireAdmin();
+  const id = String(form.get("lead") ?? "");
+  const profile = contactProfile.safeParse({
+    first_name: form.get("first_name"), last_name: form.get("last_name"), email: form.get("email"),
+  });
+  if (!isUuid(id) || !profile.success) return "Enter a valid email and names up to 100 characters.";
+  const expectedEmail = form.get("expected_email");
+  if (typeof expectedEmail !== "string") return "Reload this contact and try again.";
+  const { data, error } = await getServiceClient().from("leads").update(profile.data)
+    .eq("id", id).eq("email", expectedEmail).select("id").maybeSingle();
+  if (error?.code === "23505") return "That email already belongs to another contact, including archived contacts.";
+  if (error || !data) return "The contact could not be saved. Reload and try again.";
+  refreshProfile(id);
+  return null;
+}
+
+export async function setContactArchive(form: FormData) {
+  await requireAdmin();
+  const id = String(form.get("lead") ?? "");
+  const operation = form.get("operation");
+  const email = form.get("email");
+  if (!isUuid(id) || typeof email !== "string" || form.get("confirmed") !== "yes" ||
+      (operation !== "archive" && operation !== "restore")) return "Confirm the contact before continuing.";
+  const { data, error } = await getServiceClient().from("leads")
+    .update({ contact_archived_at: operation === "archive" ? new Date().toISOString() : null })
+    .eq("id", id).eq("email", email).select("id").maybeSingle();
+  if (error || !data) return "The contact could not be updated. Reload and try again.";
+  refreshProfile(id);
+  return null;
+}
+
+function refreshProfile(id: string) {
+  revalidatePath("/admin/leads/" + id);
+  revalidatePath("/admin/leads");
+  revalidatePath("/admin/email");
 }

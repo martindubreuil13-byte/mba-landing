@@ -127,6 +127,8 @@ function resourceTitle(resource: ResourceRequestRow["resource"]) {
 export type SubscriptionStatus = "subscribed" | "pending_confirmation" | "unsubscribed" | "suppressed" | "never_subscribed";
 
 export type UnifiedLeadRow = {
+  last_name?: string | null;
+  contact_archived_at?: string | null;
   contact_lifecycle?: string | null;
   lead_status?: string;
   id: string;
@@ -227,6 +229,8 @@ export async function listUnifiedLeadsAdmin(): Promise<UnifiedLeadRow[]> {
     return {
       id: lead.id,
       first_name: lead.first_name,
+      last_name: lead.last_name,
+      contact_archived_at: lead.contact_archived_at,
       email: lead.email,
       country: lead.country,
       shortlisted: lead.ongoing_content_opt_in,
@@ -335,7 +339,7 @@ function truthy(filterValue: string, actual: boolean) {
 export function filterUnifiedLeads(rows: UnifiedLeadRow[], f: LeadFilters): UnifiedLeadRow[] {
   const q = f.query.trim().toLowerCase();
   return rows.filter((r) => {
-    const haystack = [r.first_name, r.email, r.country, r.acquired_through].filter(Boolean).join(" ").toLowerCase();
+    const haystack = [r.first_name, r.last_name, r.email, r.country, r.acquired_through].filter(Boolean).join(" ").toLowerCase();
     const acquired = new Date(r.first_acquired_at).getTime();
     return (
       (!q || haystack.includes(q)) &&

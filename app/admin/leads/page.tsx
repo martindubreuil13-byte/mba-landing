@@ -49,7 +49,9 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
   const params = await searchParams;
   const filters = parseFilters(params);
 
-  const [allLeads, insights] = await Promise.all([listUnifiedLeadsAdmin(), getExperienceInsights()]);
+  const [records, insights] = await Promise.all([listUnifiedLeadsAdmin(), getExperienceInsights()]);
+  const archived = value(params, "view") === "archived";
+  const allLeads = records.filter((lead) => Boolean(lead.contact_archived_at) === archived);
   const tag = value(params, "tag");
   const [tagData, tagNames] = await Promise.all([contactTags().catch(() => null), contactTagNames().catch(() => null)]);
   const requestedStatus = value(params, "status");
@@ -64,6 +66,7 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
   );
   const filteredExportQs = new URLSearchParams(activeFilterQs);
   filteredExportQs.set("kind", "filtered");
+  if (archived) filteredExportQs.set("view", "archived");
   if (tagged) filteredExportQs.set("tag", tag);
   if (status) filteredExportQs.set("status", status);
 
@@ -79,6 +82,7 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
       <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
         <h1 className="font-serif text-4xl text-[#27211d]">Contacts</h1>
         <div className="flex flex-wrap gap-4 text-xs uppercase tracking-widest">
+          <Link href={archived ? "/admin/leads" : "/admin/leads?view=archived"} className="text-[#6b1f1f]">{archived ? "Active contacts" : "Archived contacts"}</Link>
           <a href={`/api/admin/leads/export?${filteredExportQs}`} className="text-[#6b1f1f] border-b-2 border-[#6b1f1f] pb-1">
             Export filtered
           </a>
@@ -102,6 +106,7 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
       </div>
 
       <form className="rounded-2xl border border-[#e6dcd4] bg-[#fffcf9] p-4 mb-8 text-sm shadow-sm">
+        {archived && <input type="hidden" name="view" value="archived" />}
         <div className="mb-4 grid gap-3 sm:grid-cols-[2fr_1fr_1fr]">
           <label className="grid gap-1">Search contacts<input type="search" name="query" defaultValue={filters.query} placeholder="Name or email" className="min-w-0 rounded-lg border border-[#daccc1] bg-white px-3 py-2" /></label>
           <label className="grid gap-1">Lifecycle<select name="status" defaultValue={status} className="min-w-0 rounded-lg border border-[#daccc1] bg-white px-3 py-2">
@@ -179,7 +184,7 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
           <ul className="grid gap-2">
             {filtered.map((lead) => <li key={lead.id}>
               <Link href={`/admin/leads/${lead.id}`} className="grid gap-2 rounded-2xl border border-[#e6dcd4] bg-[#fffcf9] px-4 py-3 shadow-sm hover:border-[#a96c68] sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto] sm:items-center">
-                <span className="min-w-0 break-words"><strong className="block text-[#6b1f1f]">{lead.first_name || lead.email}</strong><span className="text-sm text-[#655951]">{lead.email}</span></span>
+                <span className="min-w-0 break-words"><strong className="block text-[#6b1f1f]">{[lead.first_name, lead.last_name].filter(Boolean).join(" ") || lead.email}</strong><span className="text-sm text-[#655951]">{lead.email}</span></span>
                 <span className="flex flex-wrap gap-1.5 text-xs">
                   <span className="rounded-full bg-[#efdfd8] px-2.5 py-1 text-[#6b1f1f]">{lifecycleLabel(lead.contact_lifecycle, lead.lead_status)}</span>
                   {(tagNames?.get(lead.id) ?? []).map((name) => <span key={name} className="break-all rounded-full bg-[#f5eee8] px-2.5 py-1">{name}</span>)}
