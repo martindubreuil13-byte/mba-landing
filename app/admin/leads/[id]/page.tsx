@@ -1,3 +1,5 @@
+import ContactTags from "@/app/components/admin/ContactTags";
+import { contactTags } from "@/app/lib/contact-tags/data";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -33,7 +35,7 @@ export default async function AdminLeadDetailPage({ params, searchParams }: { pa
 
   const { lead, row } = detail;
   const timeZone = await businessTimeZone();
-  const [{ inquiry }, linked, tasks] = await Promise.all([searchParams, relationshipEvents(id, timeZone), listTasks(id)]);
+  const [{ inquiry }, linked, tasks, tagData] = await Promise.all([searchParams, relationshipEvents(id, timeZone), listTasks(id), contactTags(id).catch(() => null)]);
   const selectedInquiry = inquiry && linked.some((event) => event.href === inquiryHref(inquiry)) ? inquiry : undefined;
   const timeline = [...detail.timeline.filter((event) => event.kind !== "pmb" &&
     (!linked.some((item) => item.kind === "consent") || !["opt_in", "opt_out"].includes(event.kind) || event.title === "Lead created")), ...linked]
@@ -82,6 +84,8 @@ export default async function AdminLeadDetailPage({ params, searchParams }: { pa
           <p className="text-xs uppercase tracking-widest text-[#1a1816]/50 mt-1">Reality Check</p>
         </div>
       </div>
+
+      {tagData ? <ContactTags leadId={id} {...tagData} /> : <p role="status" className="mb-5">Contact tags are unavailable.</p>}
 
       <section className="mb-10" aria-labelledby="follow-ups">
         <h2 id="follow-ups" className="mb-4 text-xl">Follow-ups</h2>

@@ -1,3 +1,5 @@
+import { contactTags, taggedLeadIds } from "@/app/lib/contact-tags/data";
+import { isUuid } from "@/app/lib/relationships/model";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireAdmin } from "@/app/lib/supabase/admin-session";
@@ -48,7 +50,10 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
   const filters = parseFilters(params);
 
   const [allLeads, insights] = await Promise.all([listUnifiedLeadsAdmin(), getExperienceInsights()]);
-  const filtered = filterUnifiedLeads(allLeads, filters);
+  const tag = value(params, "tag");
+  const tagData = await contactTags().catch(() => null);
+  const tagged = isUuid(tag) ? new Set(await taggedLeadIds(tag)) : null;
+  const filtered = filterUnifiedLeads(allLeads, filters).filter((row) => !tagged || tagged.has(row.id));
 
   const countries = [...new Set(allLeads.map((l) => l.country).filter((c): c is string => Boolean(c)))].sort();
 
@@ -57,6 +62,7 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
   );
   const filteredExportQs = new URLSearchParams(activeFilterQs);
   filteredExportQs.set("kind", "filtered");
+  if (tagged) filteredExportQs.set("tag", tag);
 
   const stats = {
     total: allLeads.length,
@@ -68,7 +74,7 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
   return (
     <AdminShell>
       <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
-        <h1 className="text-2xl font-light">Leads</h1>
+        <h1 className="text-2xl font-light">Contacts</h1>
         <div className="flex flex-wrap gap-4 text-xs uppercase tracking-widest">
           <a href={`/api/admin/leads/export?${filteredExportQs}`} className="text-[#6b1f1f] border-b-2 border-[#6b1f1f] pb-1">
             Export filtered
@@ -93,6 +99,12 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
       </div>
 
       <form className="bg-white border border-[#1a1816]/10 p-4 mb-8 text-sm">
+        {tagData && <label className="mb-3 flex items-center gap-2">Tag
+          <select name="tag" defaultValue={tag} className="rounded-lg border border-[#daccc1] bg-white px-2 py-1">
+            <option value="">All tags</option>
+            {tagData.tags.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+          </select>
+        </label>}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
           <input
             name="query"

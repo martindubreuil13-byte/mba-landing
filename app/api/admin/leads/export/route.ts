@@ -1,3 +1,5 @@
+import { taggedLeadIds } from "@/app/lib/contact-tags/data";
+import { isUuid } from "@/app/lib/relationships/model";
 import { NextResponse } from "next/server";
 import { getAdminUser } from "@/app/lib/supabase/admin-session";
 import {
@@ -40,6 +42,11 @@ export async function GET(req: Request) {
   } else if (kind === "filtered") {
     const filters = parseFilters(searchParams);
     rows = filterUnifiedLeads(leads, filters);
+    const tag = searchParams.get("tag");
+    if (tag && isUuid(tag)) {
+      const matching = new Set(await taggedLeadIds(tag));
+      rows = rows.filter((row) => matching.has(row.id));
+    }
     filename = "filtered-leads.csv";
   }
 
