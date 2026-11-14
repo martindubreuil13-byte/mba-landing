@@ -1,4 +1,5 @@
 import "server-only";
+import { activeException, type PreferenceRecord } from "./preferences";
 import { marketingEligibility } from "./eligibility";
 import { getServiceClient } from "@/app/lib/supabase/service";
 
@@ -29,8 +30,10 @@ export async function recipientCandidates(ids?: string[]) {
   const contacts = [];
   for (let offset = 0; ; offset += 250) {
     const query = db.from("leads").select(
-      "id,first_name,last_name,email,contact_email_changed_at,ongoing_content_opt_in,ongoing_content_opt_in_at,ongoing_content_opt_out_at,suppressed_at,contact_tag_assignments(tag_id),consent_records(action,created_at,wording_version,wording_text), opt_out_evidence:consent_records(action)",
+      "id,first_name,last_name,email,contact_email_changed_at,ongoing_content_opt_in,ongoing_content_opt_in_at,ongoing_content_opt_out_at,suppressed_at,contact_tag_assignments(tag_id),consent_records(action,created_at,wording_version,wording_text), opt_out_evidence:consent_records(action), contact_email_preference_audit(action,details,email,created_at)",
     ).is("contact_archived_at", null).order("id").order("created_at", { referencedTable: "consent_records", ascending: false })
+      .in("contact_email_preference_audit.action", ["exception", "remove"]).order("created_at", { referencedTable: "contact_email_preference_audit", ascending: false })
+      .limit(1, { referencedTable: "contact_email_preference_audit" })
       .eq("opt_out_evidence.action", "opt_out").limit(1, { referencedTable: "opt_out_evidence" })
       .in("consent_records.action", ["opt_in", "opt_out"]).limit(2, { referencedTable: "consent_records" })
       .range(offset, offset + 249);
@@ -42,6 +45,7 @@ export async function recipientCandidates(ids?: string[]) {
     const blocked = new Set(blocks.data.map(({ lead_id }) => lead_id));
     contacts.push(...data.map((row) => ({
       id: row.id as string, name: [row.first_name, row.last_name].filter(Boolean).join(" "), email: row.email as string,
+      administrativeException: activeException(row.contact_email_preference_audit as PreferenceRecord[], row.email, row.contact_email_changed_at),
       tags: row.contact_tag_assignments.map((link) => link.tag_id as string),
       ...(blocked.has(row.id) ? { state: "Not eligible", reason: "Known bounce, complaint, or provider suppression" } as const
         : marketingEligibility(row, [...row.consent_records, ...row.opt_out_evidence.map(({ action }) => ({ action, created_at: "", wording_version: null, wording_text: null }))])),
@@ -63,4 +67,14 @@ export async function contactTagNames() {
     }
     if (data.length < 500) return names;
   }
+}
+
+export async function emailPreferenceHistory(id: string) {
+  const db = getServiceClient();
+  const [audit, evidence] = await Promise.all([
+    db.from("contact_email_preference_audit").select("id,action,email,details,created_at,admin_id").eq("lead_id", id).order("created_at", { ascending: false }).limit(50),
+    db.from("consent_records").select("id,action,source_type,method,created_at").eq("lead_id", id).order("created_at", { ascending: false }).limit(50),
+  ]);
+  if (audit.error || evidence.error) throw new Error("Preference history is unavailable.");
+  return { audit: audit.data, evidence: evidence.data };
 }

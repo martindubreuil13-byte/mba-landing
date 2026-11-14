@@ -1,3 +1,4 @@
+import EmailPreferences from "@/app/components/admin/EmailPreferences";
 import { ArchiveContact, EditContact } from "@/app/components/admin/ContactProfileActions";
 import RelationshipForm from "@/app/components/admin/RelationshipForm";
 import { updateContactLifecycle } from "@/app/lib/contact-tags/actions";
@@ -8,7 +9,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/app/lib/supabase/admin-session";
-import { getLeadDetailAdmin, SUBSCRIPTION_STATUS_LABELS, type ActivityEvent } from "@/app/lib/leads/admin-queries";
+import { getLeadDetailAdmin, type ActivityEvent } from "@/app/lib/leads/admin-queries";
 import { businessTimeZone, listTasks, relationshipEvents } from "@/app/lib/relationships/queries";
 import { FollowUpForm, TaskList } from "@/app/components/admin/RelationshipTasks";
 import { inquiryHref, isUuid, workspaceStamp, workspaceToday } from "@/app/lib/relationships/model";
@@ -70,13 +71,11 @@ export default async function AdminLeadDetailPage({ params, searchParams }: { pa
             <span className="text-[#1a1816]/50">Shortlisted: </span>
             {row.shortlisted ? <span className="text-green-700">Yes</span> : <span className="text-[#1a1816]/40">No</span>}
           </p>
-          <p className="mt-1">
-            <span className="text-[#1a1816]/50">Subscription: </span>
-            {SUBSCRIPTION_STATUS_LABELS[row.subscription_status]}
-          </p>
           <p className="mt-1 text-[#1a1816]/50">Acquired via {row.acquired_through}</p>
         </div>
       </div>
+
+      <EmailPreferences id={id} email={lead.email} archived={profile.archived} />
 
       <section className="mb-5 rounded-2xl border border-[#e6dcd4] bg-[#fffcf9] p-4 shadow-sm">
         <h2 className="font-serif text-xl">Lifecycle · {lifecycleLabel(lead.contact_lifecycle, lead.lead_status)}</h2>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { preferenceLabel } from "@/app/lib/contact-tags/preferences";
 import { exceptionEvidence, type ExceptionReview } from "@/app/lib/email-studio/campaign";
 import type { recipientCandidates } from "@/app/lib/contact-tags/data";
 import { mutateAudience } from "@/app/lib/email-audiences/actions";
@@ -140,6 +141,7 @@ export default function RecipientPicker({ contacts, tags, available, tagsAvailab
         <p className="my-2">Unknown consent is excluded by default. Document a basis and supporting evidence for each contact you include.</p>
         {unknown.map((contact) => <details key={contact.id} className="border-t border-[#daccc1] py-2">
           <summary className="cursor-pointer break-words">{contact.name || contact.email} · {contact.email}{approved.some(({ id }) => id === contact.id) ? " · Included for review" : ""}</summary>
+          {contact.administrativeException && <p className="my-2 text-sm">Exception on file through {contact.administrativeException.expiresAt.slice(0, 10)} UTC. Review the evidence for this campaign before including this contact.</p>}
           <form className="mt-2 grid gap-2" onSubmit={(event) => {
             event.preventDefault();
             const fields = new FormData(event.currentTarget);
@@ -147,13 +149,13 @@ export default function RecipientPicker({ contacts, tags, available, tagsAvailab
             if (parsed.success) setReviews((values) => ({ ...values, [contact.id]: { ...parsed.data, id: contact.id, email: contact.email.trim().toLowerCase() } }));
             else setError("Enter a reason of at least 10 characters and evidence of at least 15 characters.");
           }}>
-            <label>Basis<select className={field} name="basis" required defaultValue={reviews[contact.id]?.basis ?? ""}>
+            <label>Basis<select className={field} name="basis" required defaultValue={reviews[contact.id]?.basis ?? contact.administrativeException?.basis ?? ""}>
               <option value="">Choose a basis</option>
               <option value="express_permission">Documented express permission for this address</option>
               <option value="documented_applicable_basis">Other documented basis applicable to this campaign</option>
             </select></label>
-            <label>Reason<input className={field} name="reason" required minLength={10} maxLength={500} defaultValue={reviews[contact.id]?.reason} /></label>
-            <label>Evidence and reference<textarea className={field} name="evidence" required minLength={15} maxLength={1000} placeholder="Record what permits this mailing, where the evidence is held, and any relevant dates or expiry." defaultValue={reviews[contact.id]?.evidence} /></label>
+            <label>Reason<input className={field} name="reason" required minLength={10} maxLength={500} defaultValue={reviews[contact.id]?.reason ?? contact.administrativeException?.reason} /></label>
+            <label>Evidence and reference<textarea className={field} name="evidence" required minLength={15} maxLength={1000} placeholder="Record what permits this mailing, where the evidence is held, and any relevant dates or expiry." defaultValue={reviews[contact.id]?.evidence ?? contact.administrativeException?.evidence} /></label>
             <div className="flex flex-wrap gap-2">
               <button className={actionClass}>Include this contact</button>
               {approved.some(({ id }) => id === contact.id) && <button type="button" className={actionClass} onClick={() => setReviews((previous) => {
@@ -177,7 +179,7 @@ export default function RecipientPicker({ contacts, tags, available, tagsAvailab
           <label className="flex items-start gap-2">
             <input type="checkbox" className="mt-1 accent-[#6b1f1f]" checked={idSet.has(contact.id)} onChange={() => toggle(contact.id)} />
             <span className="min-w-0 break-words"><strong>{contact.name || contact.email}</strong><br />{contact.email}<br />
-              <span className={contact.state === "Eligible" ? "text-[#315644]" : "text-[#6b1f1f]"}>{contact.state} · {contact.reason}</span>
+              <span className={contact.state === "Eligible" ? "text-[#315644]" : "text-[#6b1f1f]"}>{preferenceLabel(contact.state, contact.reason)} · {contact.reason}{contact.state === "Unknown" && contact.administrativeException && " · Administrative exception on file"}</span>
             </span>
           </label>
         </li>)}
