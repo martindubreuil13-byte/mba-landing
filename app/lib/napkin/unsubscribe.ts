@@ -13,14 +13,14 @@ function signature(payload: string) {
   return createHmac("sha256", secret()).update(payload).digest("base64url");
 }
 
-export function createUnsubscribeToken(leadId: string): string {
-  const payload = `${TOKEN_VERSION}.${leadId}`;
+export function createUnsubscribeToken(leadId: string, newsletter = false): string {
+  const payload = `${newsletter ? "v2" : TOKEN_VERSION}.${leadId}`;
   return `${payload}.${signature(payload)}`;
 }
 
 export function verifyUnsubscribeToken(token: string): string | null {
   const parts = token.split(".");
-  if (parts.length !== 3 || parts[0] !== TOKEN_VERSION || !parts[1] || !parts[2]) return null;
+  if (parts.length !== 3 || (parts[0] !== TOKEN_VERSION && parts[0] !== "v2") || !parts[1] || !parts[2]) return null;
 
   const payload = `${parts[0]}.${parts[1]}`;
   const expected = Buffer.from(signature(payload));

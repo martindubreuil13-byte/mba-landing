@@ -1,3 +1,4 @@
+import { getServiceClient } from "@/app/lib/supabase/service";
 import { NextResponse } from "next/server";
 import { applyOptOut } from "@/app/lib/leads/consent";
 import { verifyUnsubscribeToken } from "@/app/lib/napkin/unsubscribe";
@@ -25,6 +26,12 @@ export async function POST(req: Request) {
   if (!leadId) return NextResponse.json({ error: "This unsubscribe link is invalid." }, { status: 400 });
 
   try {
+    if (token.startsWith("v2.")) {
+      const { data, error } = await getServiceClient().rpc("suppress_newsletter_recipient", { recipient_id: leadId });
+      if (error) throw new Error("Could not record suppression.");
+      if (!data) return NextResponse.json({ error: "This unsubscribe link is invalid." }, { status: 404 });
+      return NextResponse.json({ success: true });
+    }
     const result = await applyOptOut(leadId, { method: "unsubscribe_link", wordingVersion: "unsubscribe-v1" });
     if (result === "not_found") return NextResponse.json({ error: "This unsubscribe link is invalid." }, { status: 404 });
     return NextResponse.json({ success: true, alreadyUnsubscribed: result === "already_opted_out" });

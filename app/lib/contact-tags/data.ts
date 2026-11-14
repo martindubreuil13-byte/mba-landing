@@ -24,15 +24,16 @@ export async function taggedLeadIds(tag: string) {
   }
 }
 
-export async function recipientCandidates() {
+export async function recipientCandidates(ids?: string[]) {
   const db = getServiceClient();
   const contacts = [];
   for (let offset = 0; ; offset += 250) {
-    const { data, error } = await db.from("leads").select(
+    const query = db.from("leads").select(
       "id,first_name,last_name,email,contact_email_changed_at,ongoing_content_opt_in,ongoing_content_opt_in_at,ongoing_content_opt_out_at,suppressed_at,contact_tag_assignments(tag_id),consent_records(action,created_at,wording_version,wording_text)",
     ).is("contact_archived_at", null).order("id").order("created_at", { referencedTable: "consent_records", ascending: false })
       .in("consent_records.action", ["opt_in", "opt_out"]).limit(2, { referencedTable: "consent_records" })
       .range(offset, offset + 249);
+    const { data, error } = await (ids ? query.in("id", ids) : query);
     if (error) throw new Error("Recipient eligibility could not be loaded.");
     contacts.push(...data.map((row) => ({
       id: row.id as string, name: [row.first_name, row.last_name].filter(Boolean).join(" "), email: row.email as string,

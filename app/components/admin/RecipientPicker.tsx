@@ -10,9 +10,10 @@ const pageSize = 20;
 const field = "min-w-0 w-full rounded-lg border border-[#daccc1] bg-white px-3 py-2";
 const actionClass = "rounded-lg border border-[#daccc1] bg-white px-3 py-2 font-medium text-[#6b1f1f] hover:bg-[#efdfd8] disabled:opacity-50";
 
-export default function RecipientPicker({ contacts, tags, available, tagsAvailable, audiences }: {
+export default function RecipientPicker({ contacts, tags, available, tagsAvailable, audiences, onReview }: {
   contacts: Candidate[]; tags: { id: string; name: string }[]; available: boolean;
   tagsAvailable: boolean; audiences: SavedAudience[] | null;
+  onReview?: (ids: string[], description: string) => void;
 }) {
   const [query, setQuery] = useState("");
   const [tagIds, setTagIds] = useState<string[]>([]);
@@ -129,6 +130,11 @@ export default function RecipientPicker({ contacts, tags, available, tagsAvailab
           onClick={() => setIds((previous) => addMatching(previous, matching))}>Select All Matching</button>
         <button type="button" className={actionClass} disabled={!ids.length} onClick={() => setIds([])}>Deselect All</button>
       </div>
+      {onReview && <button type="button" className={actionClass} disabled={!picked.length} onClick={() => {
+        const names = tags.filter((tag) => tagIds.includes(tag.id)).map((tag) => tag.name);
+        const filters = [query.trim() && `Search: ${query.trim()}`, names.length && names.join(" + ")].filter(Boolean);
+        onReview(picked.map(({ id }) => id), filters.join(" · ") || "No active filters");
+      }}>Review campaign</button>}
       <p role="status"><strong>{matching.length}</strong> matching · <strong>{picked.length}</strong> selected · <strong>{eligible.length}</strong> eligible for marketing · <strong>{picked.length - eligible.length}</strong> excluded</p>
       {excluded.size > 0 && <ul aria-label="Exclusion reasons" className="text-[#6b1f1f]">{[...excluded].map(([reason, count]) =>
         <li key={reason}>{count} · {reason}</li>)}</ul>}

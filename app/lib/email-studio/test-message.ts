@@ -10,10 +10,8 @@ const attributes = z.strictObject({
   color: z.string().refine((color) => colors.includes(color)).optional(),
   font: z.string().refine((font) => Object.hasOwn(fonts, font)).optional(),
 });
-const request = z.strictObject({
-  recipient: z.string().trim().max(254).email(),
+const content = z.strictObject({
   subject: z.string().trim().min(1).max(180).refine((value) => !/[\r\n]/.test(value)),
-  confirmed: z.literal(true),
   operations: z.array(z.union([
     z.strictObject({ insert: z.string().max(50_000), attributes: attributes.optional() }),
     z.strictObject({ insert: z.strictObject({ newsletterBlock: z.strictObject({
@@ -23,10 +21,10 @@ const request = z.strictObject({
   ])).min(1).max(1500),
 });
 
-export function prepareTestMessage(value: unknown, storageOrigin: string) {
-  const parsed = request.safeParse(value);
-  if (!parsed.success) return null;
-  const { recipient, subject, operations } = parsed.data;
+const testRequest = content.extend({ recipient: z.string().trim().max(254).email(), confirmed: z.literal(true) });
+const campaignRequest = content.extend({ previewText: z.string().trim().max(160).refine((value) => !/[\r\n]/.test(value)), ids: z.array(z.uuid()).min(1).max(1000) });
+
+function prepareContent({ subject, operations }: z.infer<typeof content>, storageOrigin: string) {
   const plain: string[] = [];
   for (const { insert } of operations) {
     if (typeof insert === "string") { plain.push(insert); continue; }
@@ -36,5 +34,19 @@ export function prepareTestMessage(value: unknown, storageOrigin: string) {
   }
   const text = plain.join("").trim();
   if (!text) return null;
-  return { recipient, subject: "[TEST] " + subject, html: renderNewsletterEmail(subject, renderEmailBody(operations, storageOrigin)), text: subject + "\n\n" + text };
+  return { subject, body: renderEmailBody(operations, storageOrigin), text: subject + "\n\n" + text };
+}
+
+export function prepareTestMessage(value: unknown, storageOrigin: string) {
+  const parsed = testRequest.safeParse(value);
+  if (!parsed.success) return null;
+  const message = prepareContent(parsed.data, storageOrigin);
+  return message && { recipient: parsed.data.recipient, subject: "[TEST] " + message.subject, html: renderNewsletterEmail(message.subject, message.body), text: message.text };
+}
+
+export function prepareCampaign(value: unknown, storageOrigin: string) {
+  const parsed = campaignRequest.safeParse(value);
+  if (!parsed.success) return null;
+  const message = prepareContent(parsed.data, storageOrigin);
+  return message && { ...message, previewText: parsed.data.previewText, ids: [...new Set(parsed.data.ids)] };
 }
