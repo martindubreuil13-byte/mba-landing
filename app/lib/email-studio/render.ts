@@ -111,3 +111,7 @@ export function renderNewsletterBlock(value: unknown, storageOrigin?: string) {
     : `<table role="presentation" cellspacing="0" cellpadding="0"><tr><td bgcolor="${secondary ? "#fffaf5" : "#6b1f1f"}" style="border:1px solid #6b1f1f;border-radius:8px"><a href="${escape(url)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 22px;color:${secondary ? "#6b1f1f" : "#ffffff"};font:600 16px Arial,sans-serif;text-decoration:none">${escape(text)}</a></td></tr></table>`;
   return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;table-layout:fixed"><tr><td align="${align}" style="padding:4px 0 16px;overflow-wrap:anywhere">${body}</td></tr></table>`;
 }
+
+export function renderNewsletterEmail(subject: string, body: string) {
+  return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;max-width:600px;margin:auto;border:1px solid #e6dcd4;background:#fff;table-layout:fixed"><tr><td style="background:#6b1f1f;padding:16px;color:#fff;font-family:Georgia,serif">The Modern Business Architect</td></tr><tr><td style="padding:20px;overflow-wrap:anywhere"><h1 style="margin:0;font:24px Georgia,serif;color:#27211d">${escape(subject || "Subject")}</h1><div style="margin-top:12px;font:16px/1.55 Arial,Helvetica,sans-serif;color:#27211d">${body || "<p>Your message appears here.</p>"}</div></td></tr><tr><td style="background:#f5f1ed;padding:16px;font:12px Arial,sans-serif;color:#655951">MBA · Email preferences</td></tr></table>`;
+}

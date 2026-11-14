@@ -39,7 +39,7 @@ function createNewsletterEmbed(Editor: typeof Quill, storageOrigin: string) {
   return NewsletterEmbed;
 }
 
-export default function NewsletterEditor({ onChange, storageOrigin }: { storageOrigin: string; onChange: (value: string) => void }) {
+export default function NewsletterEditor({ onChange, storageOrigin }: { storageOrigin: string; onChange: (value: string, operations: ReturnType<Quill["getContents"]>["ops"]) => void }) {
   const host = useRef<HTMLDivElement>(null);
   const toolbar = useRef<HTMLDivElement>(null);
   const editor = useRef<Quill>(null);
@@ -62,7 +62,9 @@ export default function NewsletterEditor({ onChange, storageOrigin }: { storageO
     const mount = document.createElement("div");
     container.appendChild(mount);
     const update = () => {
-      if (instance) onChange(renderEmailBody(instance.getContents().ops, storageOrigin));
+      if (!instance) return;
+      const operations = instance.getContents().ops;
+      onChange(renderEmailBody(operations, storageOrigin), operations);
     };
     import("quill").then(({ default: Editor }) => {
       if (disposed) return;
