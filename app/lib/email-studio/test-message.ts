@@ -49,5 +49,5 @@ export function prepareCampaign(value: unknown, storageOrigin: string) {
   const parsed = campaignRequest.safeParse(value);
   if (!parsed.success) return null;
   const message = prepareContent(parsed.data, storageOrigin);
-  return message && { ...message, previewText: parsed.data.previewText, ids: [...new Set(parsed.data.ids)], exceptions: parsed.data.exceptions };
+  return message && { ...message, operations: parsed.data.operations, previewText: parsed.data.previewText, ids: [...new Set(parsed.data.ids)], exceptions: parsed.data.exceptions };
 }

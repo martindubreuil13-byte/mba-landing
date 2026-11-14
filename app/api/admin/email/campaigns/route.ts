@@ -97,6 +97,7 @@ export async function POST(request: Request) {
     const { data, error } = await db.from("email_campaigns").insert({
       subject: message.subject, preview_text: message.previewText, body_html: message.body, body_text: message.text,
       selected_count: message.ids.length, exclusions, recipients,
+      editor_operations: message.operations, selected_contact_ids: message.ids,
     }).select("id").single();
     if (error || !data) throw error;
     return Response.json({ ...summary, campaignId: data.id });

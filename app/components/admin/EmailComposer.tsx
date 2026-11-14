@@ -13,9 +13,9 @@ import type { ExceptionReview } from "@/app/lib/email-studio/campaign";
 
 type Review = { campaignId: string | null; subject: string; previewText: string; selected: number; eligible: number; exceptionCount: number; exclusions: Record<string, number>; html: string; filters: string };
 
-export default function EmailComposer({ recipients, storageOrigin }: { recipients: ComponentProps<typeof RecipientPicker>; storageOrigin: string }) {
+export default function EmailComposer({ recipients, storageOrigin, draft }: { recipients: ComponentProps<typeof RecipientPicker>; storageOrigin: string; draft?: { subject: string; previewText: string; operations: import("quill").Op[] } }) {
   const router = useRouter();
-  const [previewText, setPreviewText] = useState("");
+  const [previewText, setPreviewText] = useState(draft?.previewText ?? "");
   const [acknowledge, setAcknowledge] = useState(false);
   const [review, setReview] = useState<Review>();
   const [busy, setBusy] = useState(false);
@@ -23,7 +23,7 @@ export default function EmailComposer({ recipients, storageOrigin }: { recipient
   const attempted = useRef(false);
   const [notice, setNotice] = useState("");
   const reviewDialog = useRef<HTMLDialogElement>(null);
-  const [subject, setSubject] = useState("");
+  const [subject, setSubject] = useState(draft?.subject ?? "");
   const [mode, setMode] = useState<"desktop" | "mobile">("desktop");
   const [message, setMessage] = useState("");
   const operations = useRef<unknown[]>([]);
@@ -80,7 +80,7 @@ export default function EmailComposer({ recipients, storageOrigin }: { recipient
       <h2 className="font-serif text-2xl">Compose</h2>
       <label className="grid gap-1 text-sm">Subject<input className={field} maxLength={180} value={subject} onChange={(event) => setSubject(event.target.value)} /></label>
       <label className="grid gap-1 text-sm">Preview text<input className={field} maxLength={160} value={previewText} onChange={(event) => setPreviewText(event.target.value)} /></label>
-      <NewsletterEditor storageOrigin={storageOrigin} onChange={onChange} />
+      <NewsletterEditor initialOperations={draft?.operations} storageOrigin={storageOrigin} onChange={onChange} />
       <TestEmailDialog dialog={dialog} subject={subject} operations={operations} />
       <div><button type="button" onClick={() => dialog.current?.showModal()} className="rounded-lg bg-[#6b1f1f] px-4 py-2 text-white">Send Test</button></div>
       <RecipientPicker {...recipients} onReview={openReview} />

@@ -39,7 +39,7 @@ function createNewsletterEmbed(Editor: typeof Quill, storageOrigin: string) {
   return NewsletterEmbed;
 }
 
-export default function NewsletterEditor({ onChange, storageOrigin }: { storageOrigin: string; onChange: (value: string, operations: ReturnType<Quill["getContents"]>["ops"]) => void }) {
+export default function NewsletterEditor({ onChange, storageOrigin, initialOperations }: { initialOperations?: import("quill").Op[]; storageOrigin: string; onChange: (value: string, operations: ReturnType<Quill["getContents"]>["ops"]) => void }) {
   const host = useRef<HTMLDivElement>(null);
   const toolbar = useRef<HTMLDivElement>(null);
   const editor = useRef<Quill>(null);
@@ -98,6 +98,10 @@ export default function NewsletterEditor({ onChange, storageOrigin }: { storageO
         setLinkOpen(false);
         setPanel({ block, index: instance.getIndex(blot), resolveIndex: () => instance && instance.root.contains(node) ? instance.getIndex(blot) : null });
       });
+      if (initialOperations) {
+        instance.setContents(initialOperations, "silent");
+        update();
+      }
       editor.current = instance;
       setStatus("");
     }).catch(() => { if (!disposed) setStatus("The editor could not load. Reload to try again."); });
@@ -107,7 +111,7 @@ export default function NewsletterEditor({ onChange, storageOrigin }: { storageO
       editor.current = null;
       mount.remove();
     };
-  }, [onChange, storageOrigin]);
+  }, [onChange, storageOrigin, initialOperations]);
 
   useEffect(() => { if (linkOpen) linkInput.current?.focus(); }, [linkOpen]);
 
