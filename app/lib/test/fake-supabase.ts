@@ -20,6 +20,7 @@ export class FakeDb {
     pmb_questions: [],
     program_applications: [],
     program_invitation_sends: [],
+    email_campaign_deliveries: [],
     program_bookings: [],
     program_inquiries: [],
     booking_origins: [],

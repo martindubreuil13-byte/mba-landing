@@ -10,7 +10,7 @@ it("requires matching affirmative evidence and rejects incomplete or conflicting
   expect(marketingEligibility(lead, []).state).toBe("Unknown");
   expect(marketingEligibility(lead, [{...evidence, wording_text: ""}]).state).toBe("Unknown");
   expect(marketingEligibility({ ...lead, ongoing_content_opt_in: false }, [evidence]).state).toBe("Unknown");
-  expect(marketingEligibility({ ...lead, ongoing_content_opt_in: false }, []).state).toBe("Not eligible");
+  expect(marketingEligibility({ ...lead, ongoing_content_opt_in: false }, []).state).toBe("Unknown");
   expect(marketingEligibility({ ...lead, suppressed_at: stamp }, [evidence]).reason).toBe("Suppressed");
-  expect(marketingEligibility({ ...lead, ongoing_content_opt_out_at: stamp }, [evidence]).state).toBe("Unknown");
+  expect(marketingEligibility({ ...lead, ongoing_content_opt_out_at: stamp }, [evidence]).state).toBe("Not eligible");
 });

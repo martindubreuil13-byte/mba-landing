@@ -59,3 +59,9 @@ describe("Resend webhook: Transition booking invitations", () => {
     expect(db.tables.program_invitation_sends[0].delivery_status).toBeNull();
   });
 });
+
+it("records a signed campaign bounce as a future campaign block", async () => {
+  db.tables.email_campaign_deliveries.push({ id: "fixture", campaign_id: "campaign", provider_id: "camp_1" });
+  expect((await post(event("email.bounced", "camp_1"))).status).toBe(200);
+  expect(db.tables.email_campaign_deliveries[0].provider_block).toBe("email.bounced");
+});

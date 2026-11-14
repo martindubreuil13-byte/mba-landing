@@ -18,7 +18,7 @@ vi.mock("@/app/lib/supabase/service", () => ({ getServiceClient: () => ({
   storage: { from: () => ({ getPublicUrl: () => ({ data: { publicUrl: "https://storage.example.com" } }) }) },
   from: (table: string) => table === "email_campaigns" ? {
     insert: () => ({ select: () => ({ single: async () => ({ data: { id } }) }) }),
-    update: (change: {completed_at?: string}) => ({ eq: () => change.completed_at ? Promise.resolve({}) : ({ is: () => ({ gte: () => ({ select: () => ({ maybeSingle: async () => {
+    update: (change: {completed_at?: string}) => ({ eq: () => change.completed_at ? Promise.resolve({}) : ({ is: () => ({ gte: () => ({ eq: vi.fn(), select: () => ({ maybeSingle: async () => {
       if (state.started) return { data: null };
       state.started = true;
       return { data: { subject: "News", preview_text: "Preview", body_html: "<p>News</p>", body_text: "News", recipients: [

@@ -9,11 +9,14 @@ import RecipientPicker from "./RecipientPicker";
 import type { ComponentProps } from "react";
 import TestEmailDialog from "./TestEmailDialog";
 
-type Review = { campaignId: string | null; subject: string; previewText: string; selected: number; eligible: number; exclusions: Record<string, number>; html: string; filters: string };
+import type { ExceptionReview } from "@/app/lib/email-studio/campaign";
+
+type Review = { campaignId: string | null; subject: string; previewText: string; selected: number; eligible: number; exceptionCount: number; exclusions: Record<string, number>; html: string; filters: string };
 
 export default function EmailComposer({ recipients, storageOrigin }: { recipients: ComponentProps<typeof RecipientPicker>; storageOrigin: string }) {
   const router = useRouter();
   const [previewText, setPreviewText] = useState("");
+  const [acknowledge, setAcknowledge] = useState(false);
   const [review, setReview] = useState<Review>();
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false);
@@ -38,13 +41,14 @@ export default function EmailComposer({ recipients, storageOrigin }: { recipient
     return result;
   }
 
-  async function openReview(ids: string[], filters: string) {
+  async function openReview(ids: string[], filters: string, exceptions: ExceptionReview[]) {
     if (inFlight.current || attempted.current) return;
     inFlight.current = true;
     setBusy(true);
     setNotice("");
     try {
-      const result = await campaign({ ids, subject, previewText, operations: operations.current });
+      const result = await campaign({ ids, subject, previewText, operations: operations.current, exceptions });
+      setAcknowledge(false);
       setReview({ ...result, filters });
       reviewDialog.current?.showModal();
     } catch (error) {
@@ -53,12 +57,12 @@ export default function EmailComposer({ recipients, storageOrigin }: { recipient
   }
 
   async function send() {
-    if (!review?.campaignId || inFlight.current || attempted.current) return;
+    if (!review?.campaignId || (review.exceptionCount > 0 && !acknowledge) || inFlight.current || attempted.current) return;
     attempted.current = true;
     inFlight.current = true;
     setBusy(true);
     try {
-      await campaign({ campaignId: review.campaignId, confirmed: true });
+      await campaign({ campaignId: review.campaignId, confirmed: true, ...(review.exceptionCount > 0 ? { acknowledgeExceptions: true } : {}) });
       setNotice("Sending finished. Review the result in Campaign history.");
     } catch {
       setNotice("The result could not be confirmed. Check Campaign history before composing another campaign.");
@@ -88,13 +92,17 @@ export default function EmailComposer({ recipients, storageOrigin }: { recipient
           <p><strong>Subject</strong> · {review.subject}</p>
           <p><strong>Preview text</strong> · {review.previewText || "None"}</p>
           <p><strong>Filters at review</strong> · {review.filters}. Selection may include contacts chosen under other filters.</p>
-          <p>{review.selected} selected · {review.eligible} eligible · {review.selected - review.eligible} excluded</p>
+          <p>{review.selected} selected · {review.eligible - review.exceptionCount} subscribed · {review.exceptionCount} additional by exception · {review.selected - review.eligible} excluded</p>
           <ul>{Object.entries(review.exclusions).map(([reason, count]) => <li key={reason}>{count} · {reason}</li>)}</ul>
           <div className="newsletter-preview-paper" dangerouslySetInnerHTML={{ __html: review.html }} />
           {!review.campaignId && <p role="status">Choose between 1 and 25 eligible recipients.</p>}
+          {review.exceptionCount > 0 && <aside className="rounded-lg border border-[#6b1f1f] bg-[#f8ece8] p-3 text-[#6b1f1f]">
+            <p><strong>Marketing permission is unverified for {review.exceptionCount} additional recipients.</strong> Requirements vary by jurisdiction. Send only if the evidence you recorded supports this campaign.</p>
+            <label className="mt-2 flex items-start gap-2"><input type="checkbox" checked={acknowledge} onChange={(event) => setAcknowledge(event.target.checked)} /> I reviewed the documented basis for these recipients and acknowledge this warning.</label>
+          </aside>}
           <p className="text-sm">Eligibility is checked again at send time. This action sends real email.</p>
           <div className="flex flex-wrap gap-3">
-            <button type="button" disabled={!review.campaignId || busy} onClick={send} className="rounded-lg bg-[#6b1f1f] px-4 py-2 text-white disabled:opacity-50">{busy ? "Sending…" : `Confirm and send to up to ${review.eligible} recipients`}</button>
+            <button type="button" disabled={!review.campaignId || busy || (review.exceptionCount > 0 && !acknowledge)} onClick={send} className="rounded-lg bg-[#6b1f1f] px-4 py-2 text-white disabled:opacity-50">{busy ? "Sending…" : `Confirm and send to up to ${review.eligible} recipients`}</button>
             <button type="button" disabled={busy} onClick={() => reviewDialog.current?.close()}>Back to compose</button>
           </div>
         </div>}

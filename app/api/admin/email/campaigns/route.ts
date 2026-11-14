@@ -12,7 +12,7 @@ import { recipientCandidates } from "@/app/lib/contact-tags/data";
 import { createUnsubscribeToken } from "@/app/lib/napkin/unsubscribe";
 
 export const maxDuration = 120;
-const confirmation = z.strictObject({ campaignId: z.uuid(), confirmed: z.literal(true) });
+const confirmation = z.strictObject({ campaignId: z.uuid(), confirmed: z.literal(true), acknowledgeExceptions: z.literal(true).optional() });
 const origin = "https://modernbusinessarchitect.com";
 
 function fail(error: string, status: number) {
@@ -20,7 +20,8 @@ function fail(error: string, status: number) {
 }
 
 export async function POST(request: Request) {
-  if (!(await getAdminUser())) return fail("Unauthorized.", 401);
+  const admin = await getAdminUser();
+  if (!admin) return fail("Unauthorized.", 401);
   if (!isSameOriginRequest(request.headers)) return fail("Cross-site request refused.", 403);
   const db = getServiceClient();
   try {
@@ -31,10 +32,14 @@ export async function POST(request: Request) {
       const id = send.data.campaignId;
       // Validate signing configuration before claiming the campaign.
       createUnsubscribeToken(id, true);
-      const claimed = await db.from("email_campaigns").update({ started_at: new Date().toISOString() })
-        .eq("id", id).is("started_at", null).gte("created_at", new Date(Date.now() - 30 * 60_000).toISOString()).select("subject,preview_text,body_html,body_text,recipients").maybeSingle();
+      const claim = db.from("email_campaigns").update({
+        started_at: new Date().toISOString(),
+        exceptions_acknowledged_by: send.data.acknowledgeExceptions ? admin.id : null,
+      }).eq("id", id).is("started_at", null).gte("created_at", new Date(Date.now() - 30 * 60_000).toISOString());
+      if (!send.data.acknowledgeExceptions) claim.eq("has_consent_exceptions", false);
+      const claimed = await claim.select("subject,preview_text,body_html,body_text,recipients").maybeSingle();
       if (claimed.error) throw claimed.error;
-      if (!claimed.data) return fail("This campaign has already been started, expired, or is unavailable. Check Campaign history.", 409);
+      if (!claimed.data) return fail("This campaign has requires acknowledgment, has already started, or has expired. Check Campaign history.", 409);
       const campaign = claimed.data;
       const recipients = campaign.recipients as CampaignRecipient[];
       const resend = createResend();
@@ -83,10 +88,10 @@ export async function POST(request: Request) {
     for (let offset = 0; offset < message.ids.length; offset += 100) {
       candidates.push(...await recipientCandidates(message.ids.slice(offset, offset + 100)));
     }
-    const { recipients, exclusions } = reviewRecipients(message.ids, candidates);
+    const { recipients, exclusions } = reviewRecipients(message.ids, candidates, message.exceptions, { adminId: admin.id, reviewedAt: new Date().toISOString() });
     const summary = {
       subject: message.subject, previewText: message.previewText, selected: message.ids.length,
-      eligible: recipients.length, exclusions, html: renderNewsletterEmail(message.subject, message.body, { previewText: message.previewText }),
+      eligible: recipients.length, exceptionCount: recipients.filter(({ exception }) => exception).length, exclusions, html: renderNewsletterEmail(message.subject, message.body, { previewText: message.previewText }),
     };
     if (recipients.length === 0 || recipients.length > campaignLimit) return Response.json({ ...summary, campaignId: null });
     const { data, error } = await db.from("email_campaigns").insert({

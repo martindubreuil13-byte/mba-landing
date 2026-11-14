@@ -29,16 +29,22 @@ export async function recipientCandidates(ids?: string[]) {
   const contacts = [];
   for (let offset = 0; ; offset += 250) {
     const query = db.from("leads").select(
-      "id,first_name,last_name,email,contact_email_changed_at,ongoing_content_opt_in,ongoing_content_opt_in_at,ongoing_content_opt_out_at,suppressed_at,contact_tag_assignments(tag_id),consent_records(action,created_at,wording_version,wording_text)",
+      "id,first_name,last_name,email,contact_email_changed_at,ongoing_content_opt_in,ongoing_content_opt_in_at,ongoing_content_opt_out_at,suppressed_at,contact_tag_assignments(tag_id),consent_records(action,created_at,wording_version,wording_text), opt_out_evidence:consent_records(action)",
     ).is("contact_archived_at", null).order("id").order("created_at", { referencedTable: "consent_records", ascending: false })
+      .eq("opt_out_evidence.action", "opt_out").limit(1, { referencedTable: "opt_out_evidence" })
       .in("consent_records.action", ["opt_in", "opt_out"]).limit(2, { referencedTable: "consent_records" })
       .range(offset, offset + 249);
     const { data, error } = await (ids ? query.in("id", ids) : query);
     if (error) throw new Error("Recipient eligibility could not be loaded.");
+    if (!data.length) return contacts;
+    const blocks = await db.rpc("newsletter_delivery_blocks", { contact_ids: data.map(({ id }) => id) });
+    if (blocks.error || !Array.isArray(blocks.data)) throw new Error("Delivery blocks could not be loaded.");
+    const blocked = new Set(blocks.data.map(({ lead_id }) => lead_id));
     contacts.push(...data.map((row) => ({
       id: row.id as string, name: [row.first_name, row.last_name].filter(Boolean).join(" "), email: row.email as string,
       tags: row.contact_tag_assignments.map((link) => link.tag_id as string),
-      ...marketingEligibility(row, row.consent_records),
+      ...(blocked.has(row.id) ? { state: "Not eligible", reason: "Known bounce, complaint, or provider suppression" } as const
+        : marketingEligibility(row, [...row.consent_records, ...row.opt_out_evidence.map(({ action }) => ({ action, created_at: "", wording_version: null, wording_text: null }))])),
     })));
     if (data.length < 250) return contacts;
   }

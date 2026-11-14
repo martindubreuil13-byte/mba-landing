@@ -46,6 +46,15 @@ export async function POST(req: Request) {
 
   const attemptId = Array.isArray(tags) ? tags.find((t) => t.name === "transition_attempt_id")?.value : tags?.transition_attempt_id;
   const supabase = getServiceClient();
+  if (emailId && (event.type === "email.complained" || event.type === "email.bounced" || event.type === "email.suppressed")) {
+    // Rollbacks and isolated environments may not have campaign tables yet.
+    const blocked = await supabase.from("email_campaign_deliveries").update({ provider_block: event.type })
+      .eq("provider_id", emailId).select("campaign_id");
+    if (blocked.data?.length) return NextResponse.json({ ok: true });
+    if (blocked.error && !["PGRST205", "42703", "42P01"].includes(blocked.error.code)) {
+      return NextResponse.json({ error: "Could not track delivery block" }, { status: 503 });
+    }
+  }
   let query = supabase.from("resource_requests").select("id, lead_id, resource:resources(*)");
   if (emailId) query = query.eq("delivery_provider_id", emailId);
   else if (tagRequestId) query = query.eq("id", tagRequestId);

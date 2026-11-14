@@ -19,3 +19,18 @@ it("records a transport failure as unknown without retrying and continues to the
   await deliverOnce(input);
   expect(finish.mock.calls).toEqual([[{ status: "unknown" }], [{ status: "sent" }]]);
 });
+
+it("requires matching, documented evidence and refuses a newly blocked recipient", () => {
+  const contact = { id: "reviewed", email: "fixture@example.com", state: "Unknown", reason: "Missing evidence" };
+  const review = { id: contact.id, email: contact.email, basis: "express_permission" as const,
+    reason: "Permission recorded separately", evidence: "Signed newsletter consent held in the owner archive" };
+  const audit = { adminId: "owner", reviewedAt: "2026-11-14T00:00:00Z" };
+  expect(reviewRecipients([contact.id], [contact]).recipients).toEqual([]);
+  const included = reviewRecipients([contact.id], [contact], [review], audit).recipients;
+  expect(included[0].exception).toMatchObject(audit);
+  const blocked = { ...contact, state: "Not eligible", reason: "Suppressed" };
+  expect(reviewRecipients([contact.id], [blocked], [review], audit).recipients).toEqual([]);
+  expect(revalidateRecipient(included[0], [blocked])).toBe("Suppressed");
+  expect(revalidateRecipient(included[0], [contact])).toBeNull();
+  expect(reviewRecipients([contact.id], [{ ...contact, email: "changed@example.com" }], [review], audit).recipients).toEqual([]);
+});

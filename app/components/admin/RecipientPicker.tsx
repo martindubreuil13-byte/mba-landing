@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { exceptionEvidence, type ExceptionReview } from "@/app/lib/email-studio/campaign";
 import type { recipientCandidates } from "@/app/lib/contact-tags/data";
 import { mutateAudience } from "@/app/lib/email-audiences/actions";
 import { addMatching, exclusionCounts, matchingContacts, type SavedAudience } from "@/app/lib/email-audiences/model";
@@ -13,8 +14,9 @@ const actionClass = "rounded-lg border border-[#daccc1] bg-white px-3 py-2 font-
 export default function RecipientPicker({ contacts, tags, available, tagsAvailable, audiences, onReview }: {
   contacts: Candidate[]; tags: { id: string; name: string }[]; available: boolean;
   tagsAvailable: boolean; audiences: SavedAudience[] | null;
-  onReview?: (ids: string[], description: string) => void;
+  onReview?: (ids: string[], description: string, exceptions: ExceptionReview[]) => void;
 }) {
+  const [reviews, setReviews] = useState<Record<string, ExceptionReview>>({});
   const [query, setQuery] = useState("");
   const [tagIds, setTagIds] = useState<string[]>([]);
   const [ids, setIds] = useState<string[]>([]);
@@ -27,6 +29,8 @@ export default function RecipientPicker({ contacts, tags, available, tagsAvailab
   const [pending, startTransition] = useTransition();
   const idSet = new Set(ids);
   const picked = contacts.filter((contact) => idSet.has(contact.id));
+  const unknown = picked.filter((contact) => contact.state === "Unknown");
+  const approved = unknown.flatMap(({ id, email }) => reviews[id]?.email === email.trim().toLowerCase() ? [reviews[id]] : []);
   const eligible = picked.filter((contact) => contact.state === "Eligible");
   const excluded = exclusionCounts(picked);
   const matching = matchingContacts(contacts, { search_query: query, tag_ids: tagIds });
@@ -34,6 +38,7 @@ export default function RecipientPicker({ contacts, tags, available, tagsAvailab
   const unknownTags = tagIds.filter((id) => !tags.some((tag) => tag.id === id));
 
   function toggle(id: string) {
+    setReviews((previous) => { const next = { ...previous }; delete next[id]; return next; });
     setIds((previous) => previous.includes(id) ? previous.filter((value) => value !== id) : [...previous, id]);
   }
 
@@ -128,12 +133,41 @@ export default function RecipientPicker({ contacts, tags, available, tagsAvailab
           onClick={() => { setQuery(""); setTagIds([]); setLimit(pageSize); }}>Clear filters</button>
         <button type="button" className={actionClass} disabled={!matching.some(({ id }) => !idSet.has(id))}
           onClick={() => setIds((previous) => addMatching(previous, matching))}>Select All Matching</button>
-        <button type="button" className={actionClass} disabled={!ids.length} onClick={() => setIds([])}>Deselect All</button>
+        <button type="button" className={actionClass} disabled={!ids.length} onClick={() => { setIds([]); setReviews({}); }}>Deselect All</button>
       </div>
+      {unknown.length > 0 && <details className="rounded-lg border border-[#daccc1] bg-white p-3">
+        <summary className="cursor-pointer font-medium text-[#6b1f1f]">Review Exceptions ({unknown.length})</summary>
+        <p className="my-2">Unknown consent is excluded by default. Document a basis and supporting evidence for each contact you include.</p>
+        {unknown.map((contact) => <details key={contact.id} className="border-t border-[#daccc1] py-2">
+          <summary className="cursor-pointer break-words">{contact.name || contact.email} · {contact.email}{approved.some(({ id }) => id === contact.id) ? " · Included for review" : ""}</summary>
+          <form className="mt-2 grid gap-2" onSubmit={(event) => {
+            event.preventDefault();
+            const fields = new FormData(event.currentTarget);
+            const parsed = exceptionEvidence.safeParse({ basis: fields.get("basis"), reason: fields.get("reason"), evidence: fields.get("evidence") });
+            if (parsed.success) setReviews((values) => ({ ...values, [contact.id]: { ...parsed.data, id: contact.id, email: contact.email.trim().toLowerCase() } }));
+            else setError("Enter a reason of at least 10 characters and evidence of at least 15 characters.");
+          }}>
+            <label>Basis<select className={field} name="basis" required defaultValue={reviews[contact.id]?.basis ?? ""}>
+              <option value="">Choose a basis</option>
+              <option value="express_permission">Documented express permission for this address</option>
+              <option value="documented_applicable_basis">Other documented basis applicable to this campaign</option>
+            </select></label>
+            <label>Reason<input className={field} name="reason" required minLength={10} maxLength={500} defaultValue={reviews[contact.id]?.reason} /></label>
+            <label>Evidence and reference<textarea className={field} name="evidence" required minLength={15} maxLength={1000} placeholder="Record what permits this mailing, where the evidence is held, and any relevant dates or expiry." defaultValue={reviews[contact.id]?.evidence} /></label>
+            <div className="flex flex-wrap gap-2">
+              <button className={actionClass}>Include this contact</button>
+              {approved.some(({ id }) => id === contact.id) && <button type="button" className={actionClass} onClick={() => setReviews((previous) => {
+                const next = { ...previous }; delete next[contact.id]; return next;
+              })}>Remove exception</button>}
+            </div>
+          </form>
+        </details>)}
+        <p role="status">{approved.length} exceptions documented for campaign review.</p>
+      </details>}
       {onReview && <button type="button" className={actionClass} disabled={!picked.length} onClick={() => {
         const names = tags.filter((tag) => tagIds.includes(tag.id)).map((tag) => tag.name);
         const filters = [query.trim() && `Search: ${query.trim()}`, names.length && names.join(" + ")].filter(Boolean);
-        onReview(picked.map(({ id }) => id), filters.join(" · ") || "No active filters");
+        onReview(picked.map(({ id }) => id), filters.join(" · ") || "No active filters", approved);
       }}>Review campaign</button>}
       <p role="status"><strong>{matching.length}</strong> matching · <strong>{picked.length}</strong> selected · <strong>{eligible.length}</strong> eligible for marketing · <strong>{picked.length - eligible.length}</strong> excluded</p>
       {excluded.size > 0 && <ul aria-label="Exclusion reasons" className="text-[#6b1f1f]">{[...excluded].map(([reason, count]) =>

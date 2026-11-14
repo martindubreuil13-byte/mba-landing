@@ -1,3 +1,4 @@
+import { exceptionEvidence } from "./campaign";
 import { z } from "zod";
 import { colors, fonts, normalizeBlock, renderEmailBody, renderNewsletterEmail, safeLink, sizes } from "./render";
 
@@ -22,7 +23,7 @@ const content = z.strictObject({
 });
 
 const testRequest = content.extend({ recipient: z.string().trim().max(254).email(), confirmed: z.literal(true) });
-const campaignRequest = content.extend({ previewText: z.string().trim().max(160).refine((value) => !/[\r\n]/.test(value)), ids: z.array(z.uuid()).min(1).max(1000) });
+const campaignRequest = content.extend({ previewText: z.string().trim().max(160).refine((value) => !/[\r\n]/.test(value)), ids: z.array(z.uuid()).min(1).max(1000), exceptions: z.array(exceptionEvidence.extend({ id: z.uuid(), email: z.email().max(254) })).max(25).default([]) });
 
 function prepareContent({ subject, operations }: z.infer<typeof content>, storageOrigin: string) {
   const plain: string[] = [];
@@ -48,5 +49,5 @@ export function prepareCampaign(value: unknown, storageOrigin: string) {
   const parsed = campaignRequest.safeParse(value);
   if (!parsed.success) return null;
   const message = prepareContent(parsed.data, storageOrigin);
-  return message && { ...message, previewText: parsed.data.previewText, ids: [...new Set(parsed.data.ids)] };
+  return message && { ...message, previewText: parsed.data.previewText, ids: [...new Set(parsed.data.ids)], exceptions: parsed.data.exceptions };
 }
