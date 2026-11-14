@@ -1,3 +1,4 @@
+import { isLifecycle } from "@/app/lib/contact-tags/lifecycle";
 import { taggedLeadIds } from "@/app/lib/contact-tags/data";
 import { isUuid } from "@/app/lib/relationships/model";
 import { NextResponse } from "next/server";
@@ -47,6 +48,8 @@ export async function GET(req: Request) {
       const matching = new Set(await taggedLeadIds(tag));
       rows = rows.filter((row) => matching.has(row.id));
     }
+    const status = searchParams.get("status");
+    if (isLifecycle(status)) rows = rows.filter((row) => row.contact_lifecycle === status);
     filename = "filtered-leads.csv";
   }
 

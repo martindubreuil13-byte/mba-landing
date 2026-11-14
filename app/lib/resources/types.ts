@@ -59,6 +59,7 @@ export type Lead = {
   ongoing_content_opt_in_at: string | null;
   ongoing_content_opt_out_at: string | null;
   lead_status?: LeadStatus;
+  contact_lifecycle?: string | null;
   last_activity_at?: string | null;
   suppressed_at?: string | null;
   suppression_reason?: string | null;

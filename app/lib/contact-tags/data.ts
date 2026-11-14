@@ -42,3 +42,18 @@ export async function recipientCandidates() {
     if (data.length < 250) return contacts;
   }
 }
+
+export async function contactTagNames() {
+  const db = getServiceClient();
+  const names = new Map<string, string[]>();
+  for (let offset = 0; ; offset += 500) {
+    const { data, error } = await db.from("contact_tag_assignments").select("lead_id,contact_tags(name)")
+      .order("lead_id").order("tag_id").range(offset, offset + 499);
+    if (error) throw new Error("Contact tags could not be loaded.");
+    for (const row of data) {
+      const tag = Array.isArray(row.contact_tags) ? row.contact_tags[0] : row.contact_tags;
+      if (tag) names.set(row.lead_id, [...(names.get(row.lead_id) ?? []), tag.name]);
+    }
+    if (data.length < 500) return names;
+  }
+}

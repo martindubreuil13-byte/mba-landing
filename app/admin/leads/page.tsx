@@ -1,4 +1,5 @@
-import { contactTags, taggedLeadIds } from "@/app/lib/contact-tags/data";
+import { isLifecycle, lifecycleLabels, lifecycleLabel } from "@/app/lib/contact-tags/lifecycle";
+import { contactTagNames, contactTags, taggedLeadIds } from "@/app/lib/contact-tags/data";
 import { isUuid } from "@/app/lib/relationships/model";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -7,7 +8,6 @@ import {
   DEFAULT_LEAD_FILTERS,
   filterUnifiedLeads,
   listUnifiedLeadsAdmin,
-  SUBSCRIPTION_STATUS_LABELS,
   type LeadFilters,
 } from "@/app/lib/leads/admin-queries";
 import { getExperienceInsights } from "@/app/lib/leads/experience-insights";
@@ -37,7 +37,7 @@ function parseFilters(p: Params): LeadFilters {
 
 function StatTile({ label, value }: { label: string; value: number }) {
   return (
-    <div className="border border-[#1a1816]/10 bg-white px-5 py-4">
+    <div className="rounded-2xl border border-[#e6dcd4] bg-[#fffcf9] px-5 py-4 shadow-sm">
       <p className="text-2xl font-light">{value}</p>
       <p className="text-xs uppercase tracking-widest text-[#1a1816]/50 mt-1">{label}</p>
     </div>
@@ -51,9 +51,11 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
 
   const [allLeads, insights] = await Promise.all([listUnifiedLeadsAdmin(), getExperienceInsights()]);
   const tag = value(params, "tag");
-  const tagData = await contactTags().catch(() => null);
+  const [tagData, tagNames] = await Promise.all([contactTags().catch(() => null), contactTagNames().catch(() => null)]);
+  const requestedStatus = value(params, "status");
+  const status = isLifecycle(requestedStatus) ? requestedStatus : "";
   const tagged = isUuid(tag) ? new Set(await taggedLeadIds(tag)) : null;
-  const filtered = filterUnifiedLeads(allLeads, filters).filter((row) => !tagged || tagged.has(row.id));
+  const filtered = filterUnifiedLeads(allLeads, filters).filter((row) => (!tagged || tagged.has(row.id)) && (!status || row.contact_lifecycle === status));
 
   const countries = [...new Set(allLeads.map((l) => l.country).filter((c): c is string => Boolean(c)))].sort();
 
@@ -63,10 +65,11 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
   const filteredExportQs = new URLSearchParams(activeFilterQs);
   filteredExportQs.set("kind", "filtered");
   if (tagged) filteredExportQs.set("tag", tag);
+  if (status) filteredExportQs.set("status", status);
 
   const stats = {
     total: allLeads.length,
-    shortlisted: allLeads.filter((l) => l.shortlisted).length,
+    newLeads: allLeads.filter((l) => l.contact_lifecycle === "new").length,
     subscribed: allLeads.filter((l) => l.subscription_status === "subscribed").length,
     unsubscribed: allLeads.filter((l) => l.subscription_status === "unsubscribed").length,
   };
@@ -74,7 +77,7 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
   return (
     <AdminShell>
       <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
-        <h1 className="text-2xl font-light">Contacts</h1>
+        <h1 className="font-serif text-4xl text-[#27211d]">Contacts</h1>
         <div className="flex flex-wrap gap-4 text-xs uppercase tracking-widest">
           <a href={`/api/admin/leads/export?${filteredExportQs}`} className="text-[#6b1f1f] border-b-2 border-[#6b1f1f] pb-1">
             Export filtered
@@ -93,25 +96,26 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <StatTile label="Total leads" value={stats.total} />
-        <StatTile label="Shortlisted" value={stats.shortlisted} />
+        <Link href="/admin/leads?status=new" aria-current={status === "new" ? "page" : undefined} className="rounded-2xl outline-[#6b1f1f] hover:outline focus-visible:outline aria-[current=page]:outline"><StatTile label="New Leads →" value={stats.newLeads} /></Link>
         <StatTile label="Subscribed" value={stats.subscribed} />
         <StatTile label="Unsubscribed" value={stats.unsubscribed} />
       </div>
 
-      <form className="bg-white border border-[#1a1816]/10 p-4 mb-8 text-sm">
-        {tagData && <label className="mb-3 flex items-center gap-2">Tag
-          <select name="tag" defaultValue={tag} className="rounded-lg border border-[#daccc1] bg-white px-2 py-1">
+      <form className="rounded-2xl border border-[#e6dcd4] bg-[#fffcf9] p-4 mb-8 text-sm shadow-sm">
+        <div className="mb-4 grid gap-3 sm:grid-cols-[2fr_1fr_1fr]">
+          <label className="grid gap-1">Search contacts<input type="search" name="query" defaultValue={filters.query} placeholder="Name or email" className="min-w-0 rounded-lg border border-[#daccc1] bg-white px-3 py-2" /></label>
+          <label className="grid gap-1">Lifecycle<select name="status" defaultValue={status} className="min-w-0 rounded-lg border border-[#daccc1] bg-white px-3 py-2">
+            <option value="">All statuses</option>
+            {Object.entries(lifecycleLabels).map(([key,label]) => <option key={key} value={key}>{label}</option>)}
+          </select></label>
+          {tagData && <label className="grid gap-1">Tag<select name="tag" defaultValue={tag} className="min-w-0 rounded-lg border border-[#daccc1] bg-white px-3 py-2">
             <option value="">All tags</option>
             {tagData.tags.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-          </select>
-        </label>}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-          <input
-            name="query"
-            defaultValue={filters.query}
-            placeholder="Search name, email, source…"
-            className="border border-[#1a1816]/15 px-3 py-2"
-          />
+          </select></label>}
+        </div>
+        <details className="mb-3">
+          <summary className="cursor-pointer text-[#6b1f1f]">More filters</summary>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <select name="shortlisted" defaultValue={filters.shortlisted} className="border border-[#1a1816]/15 px-2 py-2">
             <option value="">Shortlisted: any</option>
             <option value="yes">Shortlisted: yes</option>
@@ -125,12 +129,7 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
             <option value="suppressed">Suppressed</option>
             <option value="never_subscribed">Never subscribed</option>
           </select>
-        </div>
-
-        <details className="mb-3">
-          <summary className="text-xs uppercase tracking-widest text-[#1a1816]/50 cursor-pointer select-none">
-            More filters
-          </summary>
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mt-3">
             <select name="country" defaultValue={filters.country} className="border border-[#1a1816]/15 px-2 py-2">
               <option value="">All countries</option>
@@ -177,58 +176,18 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
           <p className="text-xs text-[#1a1816]/50 mb-3">
             Showing {filtered.length} of {allLeads.length} leads
           </p>
-          <table className="w-full text-sm min-w-[1100px]">
-            <thead>
-              <tr className="text-left border-b border-[#1a1816]/15 text-[#1a1816]/50 uppercase text-xs tracking-widest">
-                <th className="py-3 pr-4">Name</th>
-                <th className="py-3 pr-4">Email</th>
-                <th className="py-3 pr-4">Country</th>
-                <th className="py-3 pr-4">Acquired through</th>
-                <th className="py-3 pr-4">Shortlisted</th>
-                <th className="py-3 pr-4">First acquired</th>
-                <th className="py-3 pr-4">Last interaction</th>
-                <th className="py-3 pr-4">Resources</th>
-                <th className="py-3 pr-4">Subscription</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((lead) => (
-                <tr key={lead.id} className="border-b border-[#1a1816]/8 align-top">
-                  <td className="py-3 pr-4">
-                    <Link href={`/admin/leads/${lead.id}`} className="text-[#6b1f1f] hover:underline">
-                      {lead.first_name}
-                    </Link>
-                  </td>
-                  <td className="py-3 pr-4 text-[#1a1816]/70">{lead.email}</td>
-                  <td className="py-3 pr-4 text-[#1a1816]/70">{lead.country || "—"}</td>
-                  <td className="py-3 pr-4 text-[#1a1816]/70 max-w-xs">{lead.acquired_through}</td>
-                  <td className="py-3 pr-4">
-                    {lead.shortlisted ? <span className="text-green-700">Yes</span> : <span className="text-[#1a1816]/40">No</span>}
-                  </td>
-                  <td className="py-3 pr-4 text-[#1a1816]/60 whitespace-nowrap">
-                    {new Date(lead.first_acquired_at).toLocaleDateString()}
-                  </td>
-                  <td className="py-3 pr-4 text-[#1a1816]/60 whitespace-nowrap">
-                    {new Date(lead.last_interaction_at).toLocaleDateString()}
-                  </td>
-                  <td className="py-3 pr-4 text-[#1a1816]/70">
-                    {lead.resource_count}
-                    {lead.napkin_count > 0 && ` · Napkin ×${lead.napkin_count}`}
-                    {lead.reality_check_count > 0 && ` · Reality ×${lead.reality_check_count}`}
-                  </td>
-                  <td className="py-3 pr-4 text-[#1a1816]/70">
-                    {SUBSCRIPTION_STATUS_LABELS[lead.subscription_status]}
-                    {lead.consent_at && (
-                      <span className="block text-xs text-[#1a1816]/45">
-                        {new Date(lead.consent_at).toISOString().slice(0, 10)}
-                        {lead.consent_source ? ` · ${lead.consent_source}` : ""}
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ul className="grid gap-2">
+            {filtered.map((lead) => <li key={lead.id}>
+              <Link href={`/admin/leads/${lead.id}`} className="grid gap-2 rounded-2xl border border-[#e6dcd4] bg-[#fffcf9] px-4 py-3 shadow-sm hover:border-[#a96c68] sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto] sm:items-center">
+                <span className="min-w-0 break-words"><strong className="block text-[#6b1f1f]">{lead.first_name || lead.email}</strong><span className="text-sm text-[#655951]">{lead.email}</span></span>
+                <span className="flex flex-wrap gap-1.5 text-xs">
+                  <span className="rounded-full bg-[#efdfd8] px-2.5 py-1 text-[#6b1f1f]">{lifecycleLabel(lead.contact_lifecycle, lead.lead_status)}</span>
+                  {(tagNames?.get(lead.id) ?? []).map((name) => <span key={name} className="break-all rounded-full bg-[#f5eee8] px-2.5 py-1">{name}</span>)}
+                </span>
+                <span className="flex items-center gap-3 text-xs text-[#655951]"><time dateTime={lead.last_interaction_at}>Active {new Date(lead.last_interaction_at).toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok" })}</time><span className="text-[#6b1f1f]">Open →</span></span>
+              </Link>
+            </li>)}
+          </ul>
         </div>
       )}
 

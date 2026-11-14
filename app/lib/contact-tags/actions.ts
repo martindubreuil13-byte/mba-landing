@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/app/lib/supabase/admin-session";
 import { getServiceClient } from "@/app/lib/supabase/service";
 import { isUuid } from "@/app/lib/relationships/model";
+import { isLifecycle } from "./lifecycle";
 
 export async function updateContactTag(form: FormData) {
   await requireAdmin();
@@ -33,5 +34,17 @@ export async function updateContactTag(form: FormData) {
   revalidatePath("/admin/leads/" + leadId);
   revalidatePath("/admin/leads");
   revalidatePath("/admin/email");
+  return null;
+}
+
+export async function updateContactLifecycle(form: FormData) {
+  await requireAdmin();
+  const id = String(form.get("lead") ?? "");
+  const status = form.get("status");
+  if (!isUuid(id) || !isLifecycle(status)) return "Choose a valid lifecycle status.";
+  const { data, error } = await getServiceClient().from("leads").update({ contact_lifecycle: status }).eq("id", id).select("id").maybeSingle();
+  if (error || !data) return "Lifecycle status could not be saved.";
+  revalidatePath("/admin/leads/" + id);
+  revalidatePath("/admin/leads");
   return null;
 }

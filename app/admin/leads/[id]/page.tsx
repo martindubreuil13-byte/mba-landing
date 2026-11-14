@@ -1,3 +1,6 @@
+import RelationshipForm from "@/app/components/admin/RelationshipForm";
+import { updateContactLifecycle } from "@/app/lib/contact-tags/actions";
+import { lifecycleLabel, lifecycleLabels } from "@/app/lib/contact-tags/lifecycle";
 import ContactTags from "@/app/components/admin/ContactTags";
 import { contactTags } from "@/app/lib/contact-tags/data";
 import type { Metadata } from "next";
@@ -44,12 +47,12 @@ export default async function AdminLeadDetailPage({ params, searchParams }: { pa
   return (
     <AdminShell>
       <Link href="/admin/leads" className="text-xs tracking-widest uppercase text-[#1a1816]/50 hover:text-[#1a1816]">
-        ← All leads
+        ← All contacts
       </Link>
 
-      <div className="flex items-start justify-between gap-6 flex-wrap mt-6 mb-10">
+      <div className="flex items-start justify-between gap-6 flex-wrap mt-6 mb-6 rounded-3xl border border-[#e6dcd4] bg-[#fffcf9] p-6 shadow-sm">
         <div>
-          <h1 className="text-3xl font-light">{lead.first_name}</h1>
+          <h1 className="break-words font-serif text-4xl">{lead.first_name || lead.email}</h1>
           <p className="text-[#1a1816]/60 text-sm mt-1">
             <a href={`mailto:${lead.email}`} className="hover:text-[#6b1f1f]">
               {lead.email}
@@ -57,7 +60,7 @@ export default async function AdminLeadDetailPage({ params, searchParams }: { pa
             {lead.country ? ` — ${lead.country}` : ""}
           </p>
         </div>
-        <div className="text-right text-sm">
+        <div className="text-sm sm:text-right">
           <p>
             <span className="text-[#1a1816]/50">Shortlisted: </span>
             {row.shortlisted ? <span className="text-green-700">Yes</span> : <span className="text-[#1a1816]/40">No</span>}
@@ -69,6 +72,23 @@ export default async function AdminLeadDetailPage({ params, searchParams }: { pa
           <p className="mt-1 text-[#1a1816]/50">Acquired via {row.acquired_through}</p>
         </div>
       </div>
+
+      <section className="mb-5 rounded-2xl border border-[#e6dcd4] bg-[#fffcf9] p-4 shadow-sm">
+        <h2 className="font-serif text-xl">Lifecycle · {lifecycleLabel(lead.contact_lifecycle, lead.lead_status)}</h2>
+        <details className="mt-2">
+          <summary className="cursor-pointer text-sm text-[#6b1f1f]">Change status</summary>
+          <RelationshipForm action={updateContactLifecycle} success="Lifecycle status saved." className="mt-2 flex flex-wrap items-end gap-2">
+            <input type="hidden" name="lead" value={id} />
+            <label className="grid gap-1 text-sm">Lifecycle status
+              <select name="status" required defaultValue={lead.contact_lifecycle ?? ""} className="rounded-lg border border-[#daccc1] bg-white px-3 py-2">
+                <option value="" disabled>Choose a status</option>
+                {Object.entries(lifecycleLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
+              </select>
+            </label>
+            <button className="rounded-lg bg-[#6b1f1f] px-3 py-2 text-sm text-white">Save status</button>
+          </RelationshipForm>
+        </details>
+      </section>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
         <div className="border border-[#1a1816]/10 bg-white px-5 py-4">

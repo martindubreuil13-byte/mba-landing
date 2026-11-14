@@ -127,6 +127,8 @@ function resourceTitle(resource: ResourceRequestRow["resource"]) {
 export type SubscriptionStatus = "subscribed" | "pending_confirmation" | "unsubscribed" | "suppressed" | "never_subscribed";
 
 export type UnifiedLeadRow = {
+  contact_lifecycle?: string | null;
+  lead_status?: string;
   id: string;
   first_name: string;
   email: string;
@@ -234,6 +236,8 @@ export async function listUnifiedLeadsAdmin(): Promise<UnifiedLeadRow[]> {
       consent_source: lead.ongoing_content_opt_in && latestConsent.get(lead.id) ? consentSourceLabel(latestConsent.get(lead.id)!) : "",
       first_acquired_at: lead.created_at,
       last_interaction_at: lastInteraction,
+      contact_lifecycle: lead.contact_lifecycle,
+      lead_status: lead.lead_status,
       acquired_through: acquiredThrough,
       resource_count: leadRequests.length,
       resource_titles: leadRequests.map((r) => resourceTitle(r.resource)).filter((t): t is string => Boolean(t)),
