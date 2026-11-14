@@ -87,3 +87,18 @@
 @media (prefers-reduced-motion: no-preference) {
   .newsletter-preview-paper { transition: max-width 180ms ease; }
 }
+
+.newsletter-block {
+  margin: 12px 0;
+  border: 1px solid #e8dbd0;
+  border-radius: 10px;
+  padding: 8px;
+}
+.newsletter-edit-block {
+  display: block;
+  margin-inline-start: auto;
+  color: #6b1f1f;
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+}

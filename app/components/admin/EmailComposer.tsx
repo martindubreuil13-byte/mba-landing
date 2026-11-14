@@ -4,7 +4,7 @@ import { Monitor, Smartphone } from "lucide-react";
 import { useState } from "react";
 import NewsletterEditor from "./NewsletterEditor";
 
-export default function EmailComposer({ audienceCount }: { audienceCount: number | null }) {
+export default function EmailComposer({ audienceCount, storageOrigin }: { audienceCount: number | null; storageOrigin: string }) {
   const [audience, setAudience] = useState("none");
   const [subject, setSubject] = useState("");
   const [mode, setMode] = useState<"desktop" | "mobile">("desktop");
@@ -20,7 +20,7 @@ export default function EmailComposer({ audienceCount }: { audienceCount: number
         </select>
       </label>
       <label className="grid gap-1 text-sm">Subject<input className={field} value={subject} onChange={(event) => setSubject(event.target.value)} /></label>
-      <NewsletterEditor onChange={setMessage} />
+      <NewsletterEditor storageOrigin={storageOrigin} onChange={setMessage} />
       <div><button type="button" disabled className="rounded-lg bg-[#eee4db] px-4 py-2 text-[#655951]">Send email</button>
         <p className="mt-2 text-xs text-[#655951]">Sending requires verified recipient consent, suppression reconciliation and sending authorization.</p></div>
     </section>

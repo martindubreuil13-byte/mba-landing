@@ -36,12 +36,20 @@ function inline(text: string, attributes: Record<string, unknown>) {
   return href ? '<a style="color:#6b1f1f;text-decoration:underline" href="' + escape(href) + '" target="_blank" rel="noopener noreferrer">' + html + "</a>" : html;
 }
 
-export function renderEmailBody(operations: Operation[]) {
+export function renderEmailBody(operations: Operation[], storageOrigin?: string) {
   let html = "";
   let line = "";
   let list: "ul" | "ol" | null = null;
   for (const { insert, attributes = {} } of operations) {
-    if (typeof insert !== "string") continue;
+    if (typeof insert !== "string") {
+      if (!insert || typeof insert !== "object" || !("newsletterBlock" in insert)) continue;
+      const block = renderNewsletterBlock(insert.newsletterBlock, storageOrigin);
+      if (!block) continue;
+      if (list) { html += "</" + list + ">"; list = null; }
+      if (line) { html += '<p style="margin:0 0 16px">' + line + "</p>"; line = ""; }
+      html += block;
+      continue;
+    }
     const parts = insert.split("\n");
     parts.forEach((part, index) => {
       if (index > 0) {
@@ -64,4 +72,42 @@ export function renderEmailBody(operations: Operation[]) {
   if (list) html += "</" + list + ">";
   if (line) html += '<p style="margin:0 0 16px">' + line + "</p>";
   return html;
+}
+
+export type NewsletterBlock = {
+  kind: "image" | "button";
+  url: string;
+  text: string;
+  align: "left" | "center" | "right";
+  variant: "small" | "medium" | "full" | "primary" | "secondary";
+};
+
+export function normalizeBlock(value: unknown, storageOrigin?: string): NewsletterBlock | null {
+  if (!value || typeof value !== "object") return null;
+  const block = value as Partial<NewsletterBlock>;
+  const url = safeLink(block.url);
+  if (!url?.startsWith("https://") && !url?.startsWith("http://localhost:") && !url?.startsWith("http://127.0.0.1:")) return null;
+  const address = new URL(url);
+  if (address.username || address.password) return null;
+  const align = block.align === "left" || block.align === "right" ? block.align : "center";
+  const text = typeof block.text === "string" ? block.text.trim().slice(0, 200) : "";
+  if (block.kind === "image" && address.origin === storageOrigin && /^\/storage\/v1\/object\/public\/resource-covers\/newsletter\/[a-f0-9-]{36}\.png$/.test(address.pathname) && !address.search && !address.hash) {
+    return { kind: "image", url, text, align, variant: block.variant === "small" || block.variant === "medium" ? block.variant : "full" };
+  }
+  if (block.kind === "button" && url.startsWith("https://") && text) {
+    return { kind: "button", url, text, align, variant: block.variant === "secondary" ? "secondary" : "primary" };
+  }
+  return null;
+}
+
+export function renderNewsletterBlock(value: unknown, storageOrigin?: string) {
+  const block = normalizeBlock(value, storageOrigin);
+  if (!block) return "";
+  const { kind, url, text, align, variant } = block;
+  const width = variant === "small" ? 180 : variant === "medium" ? 320 : 560;
+  const secondary = variant === "secondary";
+  const body = kind === "image"
+    ? `<img src="${escape(url)}" alt="${escape(text)}" width="${width}" style="display:block;width:${width}px;max-width:100%;height:auto;border:0;margin:${align === "center" ? "0 auto" : align === "right" ? "0 0 0 auto" : "0 auto 0 0"}">`
+    : `<table role="presentation" cellspacing="0" cellpadding="0"><tr><td bgcolor="${secondary ? "#fffaf5" : "#6b1f1f"}" style="border:1px solid #6b1f1f;border-radius:8px"><a href="${escape(url)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 22px;color:${secondary ? "#6b1f1f" : "#ffffff"};font:600 16px Arial,sans-serif;text-decoration:none">${escape(text)}</a></td></tr></table>`;
+  return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;table-layout:fixed"><tr><td align="${align}" style="padding:4px 0 16px;overflow-wrap:anywhere">${body}</td></tr></table>`;
 }

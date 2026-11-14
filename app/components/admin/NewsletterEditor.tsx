@@ -1,17 +1,51 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AlignLeft, Bold, Italic, Underline, List, ListOrdered, Link2, Undo2, Redo2, RemoveFormatting } from "lucide-react";
+import { ImagePlus, RectangleEllipsis, AlignLeft, Bold, Italic, Underline, List, ListOrdered, Link2, Undo2, Redo2, RemoveFormatting } from "lucide-react";
 import "./newsletter-editor.css";
 import type Quill from "quill";
-import { colors, fonts, renderEmailBody, safeLink, sizes } from "@/app/lib/email-studio/render";
+import type { BlockEmbed } from "quill/blots/block";
+import NewsletterBlockForm from "./NewsletterBlockForm";
+import { colors, fonts, renderEmailBody, safeLink, sizes, normalizeBlock, renderNewsletterBlock, type NewsletterBlock } from "@/app/lib/email-studio/render";
 import "quill/dist/quill.core.css";
 
-export default function NewsletterEditor({ onChange }: { onChange: (value: string) => void }) {
+function createNewsletterEmbed(Editor: typeof Quill, storageOrigin: string) {
+  const Block = Editor.import("blots/block/embed") as typeof BlockEmbed;
+  class NewsletterEmbed extends Block {
+    static blotName = "newsletterBlock";
+    static tagName = "div";
+    static className = "newsletter-block";
+    static create(value: unknown) {
+      const node = super.create(value) as HTMLDivElement;
+      node.contentEditable = "false";
+      const block = normalizeBlock(value, storageOrigin);
+      if (!block) return node;
+      node.dataset.newsletter = JSON.stringify(block);
+      node.innerHTML = renderNewsletterBlock(block, storageOrigin);
+      // Links in the composer act as edit targets. The preview owns navigation.
+      node.querySelectorAll("a").forEach((link) => link.removeAttribute("href"));
+      const edit = document.createElement("button");
+      edit.type = "button";
+      edit.className = "newsletter-edit-block";
+      edit.textContent = block.kind === "image" ? "Edit image" : "Edit button";
+      node.append(edit);
+      return node;
+    }
+    static value(node: HTMLElement) {
+      try { return normalizeBlock(JSON.parse(node.dataset.newsletter ?? "null"), storageOrigin); }
+      catch { return null; }
+    }
+  }
+  return NewsletterEmbed;
+}
+
+export default function NewsletterEditor({ onChange, storageOrigin }: { storageOrigin: string; onChange: (value: string) => void }) {
   const host = useRef<HTMLDivElement>(null);
   const toolbar = useRef<HTMLDivElement>(null);
   const editor = useRef<Quill>(null);
   const [status, setStatus] = useState("Loading editor…");
+  const [panel, setPanel] = useState<{ block: NewsletterBlock; index: number; resolveIndex?: () => number | null }>();
+  const blockTrigger = useRef<HTMLElement | null>(null);
   const [linkOpen, setLinkOpen] = useState(false);
   const [url, setUrl] = useState("");
   const [linkError, setLinkError] = useState("");
@@ -28,7 +62,7 @@ export default function NewsletterEditor({ onChange }: { onChange: (value: strin
     const mount = document.createElement("div");
     container.appendChild(mount);
     const update = () => {
-      if (instance) onChange(renderEmailBody(instance.getContents().ops));
+      if (instance) onChange(renderEmailBody(instance.getContents().ops, storageOrigin));
     };
     import("quill").then(({ default: Editor }) => {
       if (disposed) return;
@@ -39,9 +73,11 @@ export default function NewsletterEditor({ onChange }: { onChange: (value: strin
         format.whitelist = whitelist;
         Editor.register(name === "attributors/style/size" ? "formats/size" : name, format, true);
       }
+      const NewsletterEmbed = createNewsletterEmbed(Editor, storageOrigin);
+      Editor.register(NewsletterEmbed, true);
       instance = new Editor(mount, {
         placeholder: "Write your newsletter…",
-        formats: ["bold", "italic", "underline", "header", "list", "align", "link", "font", "size", "color"],
+        formats: ["bold", "italic", "underline", "header", "list", "align", "link", "font", "size", "color", "newsletterBlock"],
         modules: { toolbar: { container: controls }, history: { userOnly: true } },
       });
       instance.root.setAttribute("role", "textbox");
@@ -49,6 +85,17 @@ export default function NewsletterEditor({ onChange }: { onChange: (value: strin
       instance.root.setAttribute("aria-multiline", "true");
       instance.on("text-change", update);
       instance.on("selection-change", (selection) => { if (selection) range.current = selection; });
+      instance.root.addEventListener("click", (event) => {
+        if (!(event.target instanceof Element)) return;
+        const node = event.target.closest<HTMLElement>(".newsletter-block");
+        if (!node || !instance) return;
+        const block = NewsletterEmbed.value(node);
+        const blot = Editor.find(node);
+        if (!block || !(blot instanceof NewsletterEmbed)) return;
+        blockTrigger.current = node.querySelector("button");
+        setLinkOpen(false);
+        setPanel({ block, index: instance.getIndex(blot), resolveIndex: () => instance && instance.root.contains(node) ? instance.getIndex(blot) : null });
+      });
       editor.current = instance;
       setStatus("");
     }).catch(() => { if (!disposed) setStatus("The editor could not load. Reload to try again."); });
@@ -58,9 +105,43 @@ export default function NewsletterEditor({ onChange }: { onChange: (value: strin
       editor.current = null;
       mount.remove();
     };
-  }, [onChange]);
+  }, [onChange, storageOrigin]);
 
   useEffect(() => { if (linkOpen) linkInput.current?.focus(); }, [linkOpen]);
+
+  function openBlock(kind: NewsletterBlock["kind"], trigger: HTMLElement) {
+    const quill = editor.current;
+    if (!quill) return;
+    blockTrigger.current = trigger;
+    const selection = quill.getSelection() ?? range.current;
+    setLinkOpen(false);
+    setPanel({
+      block: { kind, url: "", text: "", align: "center", variant: kind === "image" ? "full" : "primary" },
+      index: selection?.index ?? quill.getLength() - 1,
+    });
+  }
+
+  function closeBlock() {
+    setPanel(undefined);
+    if (blockTrigger.current?.isConnected) blockTrigger.current.focus();
+    else editor.current?.focus();
+  }
+
+  function changeBlock(block?: NewsletterBlock) {
+    const quill = editor.current;
+    if (!quill || !panel) return false;
+    const current = panel.resolveIndex ? panel.resolveIndex() : panel.index;
+    if (current === null) return false;
+    const index = Math.min(current, quill.getLength() - 1);
+    const delta = quill.getContents(0, 0).retain(index);
+    if (panel.resolveIndex) delta.delete(1);
+    if (block) delta.insert({ newsletterBlock: block });
+    quill.history.cutoff();
+    quill.updateContents(delta, "user");
+    quill.history.cutoff();
+    closeBlock();
+    return true;
+  }
 
   function openLink() {
     const quill = editor.current;
@@ -68,6 +149,7 @@ export default function NewsletterEditor({ onChange }: { onChange: (value: strin
     range.current = quill.getSelection() ?? range.current;
     setUrl(String(range.current ? quill.getFormat(range.current).link ?? "" : ""));
     setLinkError("");
+    setPanel(undefined);
     setLinkOpen(true);
   }
 
@@ -109,6 +191,10 @@ export default function NewsletterEditor({ onChange }: { onChange: (value: strin
           <button type="button" title="Clear formatting" aria-label="Clear formatting" className="ql-clean"><RemoveFormatting /></button>
         </span>
         <span className="newsletter-group">
+          <button type="button" title="Insert image" aria-label="Insert image" onClick={(event) => openBlock("image", event.currentTarget)}><ImagePlus /></button>
+          <button type="button" title="Insert button" aria-label="Insert button" onClick={(event) => openBlock("button", event.currentTarget)}><RectangleEllipsis /></button>
+        </span>
+        <span className="newsletter-group">
           <button type="button" title="Undo" aria-label="Undo" onClick={() => editor.current?.history.undo()}><Undo2 /></button>
           <button type="button" title="Redo" aria-label="Redo" onClick={() => editor.current?.history.redo()}><Redo2 /></button>
         </span>
@@ -141,6 +227,8 @@ export default function NewsletterEditor({ onChange }: { onChange: (value: strin
       <div className="flex gap-3"><button type="button" onClick={() => applyLink()}>Apply link</button>
         <button type="button" onClick={() => applyLink(true)}>Remove link</button><button type="button" onClick={closeLink}>Cancel</button></div>
     </div>}
+    {panel && <NewsletterBlockForm key={panel.block.kind + ":" + panel.index + ":" + Boolean(panel.resolveIndex)}
+      initial={panel.block} storageOrigin={storageOrigin} editing={Boolean(panel.resolveIndex)} save={changeBlock} remove={() => { changeBlock(); }} close={closeBlock} />}
     <div ref={host} className="newsletter-editor" />
     {status && <p role="status" className="mt-2 text-xs">{status}</p>}
   </div>;
