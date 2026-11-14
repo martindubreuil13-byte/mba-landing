@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { AlignLeft, Bold, Italic, Underline, List, ListOrdered, Link2, Undo2, Redo2, RemoveFormatting } from "lucide-react";
+import "./newsletter-editor.css";
 import type Quill from "quill";
 import { colors, fonts, renderEmailBody, safeLink, sizes } from "@/app/lib/email-studio/render";
 import "quill/dist/quill.core.css";
@@ -90,24 +92,36 @@ export default function NewsletterEditor({ onChange }: { onChange: (value: strin
 
   return <div className="min-w-0">
     <p className="mb-1 text-sm">Message</p>
-    <div ref={toolbar} aria-label="Newsletter formatting" className="rounded-t-lg border border-[#daccc1] bg-white p-3 [&_button]:mr-2 [&_button]:rounded [&_button]:border [&_button]:px-2 [&_button]:py-1 [&_button.ql-active]:bg-[#eee4db] [&_select]:max-w-full [&_select]:rounded [&_select]:border [&_select]:p-1">
-      <span className="ql-formats">
-        <button type="button" className="ql-bold" aria-label="Bold" title="Bold">B</button>
-        <button type="button" className="ql-italic" aria-label="Italic" title="Italic">I</button>
-        <button type="button" className="ql-underline" aria-label="Underline" title="Underline">U</button>
-        <button type="button" className="ql-list" value="bullet" aria-label="Bullet list" title="Bullet list">Bullets</button>
-        <button type="button" className="ql-list" value="ordered" aria-label="Numbered list" title="Numbered list">Numbers</button>
-        <button type="button" className="ql-clean" aria-label="Clear formatting" title="Clear formatting">Clear</button>
-      </span>
+    <div className="newsletter-toolbar">
+    <div ref={toolbar} aria-label="Newsletter formatting" role="group">
+      <div className="newsletter-tools">
+        <span className="newsletter-group">
+          <button type="button" className="ql-bold" aria-label="Bold" title="Bold"><Bold /></button>
+          <button type="button" className="ql-italic" aria-label="Italic" title="Italic"><Italic /></button>
+          <button type="button" className="ql-underline" aria-label="Underline" title="Underline"><Underline /></button>
+        </span>
+        <span className="newsletter-group">
+          <button type="button" className="ql-list" value="bullet" aria-label="Bullet list" title="Bullet list"><List /></button>
+          <button type="button" className="ql-list" value="ordered" aria-label="Numbered list" title="Numbered list"><ListOrdered /></button>
+        </span>
+        <span className="newsletter-group">
+          <button ref={linkButton} type="button" title="Link" aria-label="Link" aria-expanded={linkOpen} onClick={openLink}><Link2 /></button>
+          <button type="button" title="Clear formatting" aria-label="Clear formatting" className="ql-clean"><RemoveFormatting /></button>
+        </span>
+        <span className="newsletter-group">
+          <button type="button" title="Undo" aria-label="Undo" onClick={() => editor.current?.history.undo()}><Undo2 /></button>
+          <button type="button" title="Redo" aria-label="Redo" onClick={() => editor.current?.history.redo()}><Redo2 /></button>
+        </span>
+      </div>
       <div className="mt-2 flex flex-wrap gap-2 text-xs">
         <select aria-label="Paragraph style" className="ql-header" defaultValue="">
           <option value="">Paragraph</option><option value="1">Heading 1</option><option value="2">Heading 2</option>
         </select>
-        <select aria-label="Alignment" className="ql-align" defaultValue="">
+        <label className="newsletter-align" title="Text alignment"><AlignLeft aria-hidden /><select aria-label="Alignment" className="ql-align" defaultValue="">
           <option value="">Left</option><option value="center">Center</option><option value="right">Right</option><option value="justify">Justify</option>
-        </select>
+        </select></label>
         <select aria-label="Font family" className="ql-font" defaultValue="">
-          <option value="">Default</option>{Object.keys(fonts).map((font) => <option key={font}>{font}</option>)}
+          <option value="">Default</option>{Object.keys(fonts).map((font) => <option key={font} value={font}>{font === "courier" ? "Courier New" : font[0].toUpperCase() + font.slice(1)}</option>)}
         </select>
         <select aria-label="Font size" className="ql-size" defaultValue="">
           <option value="">Default</option>{sizes.map((size) => <option key={size}>{size}</option>)}
@@ -117,10 +131,6 @@ export default function NewsletterEditor({ onChange }: { onChange: (value: strin
         </select>
       </div>
     </div>
-    <div className="flex flex-wrap gap-3 border-x border-[#ccc] bg-white px-3 py-2 text-xs text-[#6b1f1f]">
-      <button ref={linkButton} type="button" aria-expanded={linkOpen} onClick={openLink}>Link</button>
-      <button type="button" onClick={() => editor.current?.history.undo()}>Undo</button>
-      <button type="button" onClick={() => editor.current?.history.redo()}>Redo</button>
     </div>
     {linkOpen && <div className="grid gap-2 border-x border-[#ccc] bg-white p-3 text-sm" onKeyDown={(event) => {
       if (event.key === "Escape") closeLink();
@@ -131,7 +141,7 @@ export default function NewsletterEditor({ onChange }: { onChange: (value: strin
       <div className="flex gap-3"><button type="button" onClick={() => applyLink()}>Apply link</button>
         <button type="button" onClick={() => applyLink(true)}>Remove link</button><button type="button" onClick={closeLink}>Cancel</button></div>
     </div>}
-    <div ref={host} className="newsletter-editor min-h-52 border border-[#daccc1] bg-white [&_a]:underline [&_.ql-editor]:focus-visible:outline-[#6b1f1f] [&_.ql-container]:min-h-52 [&_.ql-editor]:min-h-52" />
+    <div ref={host} className="newsletter-editor" />
     {status && <p role="status" className="mt-2 text-xs">{status}</p>}
   </div>;
 }

@@ -1,15 +1,17 @@
 "use client";
 
+import { Monitor, Smartphone } from "lucide-react";
 import { useState } from "react";
 import NewsletterEditor from "./NewsletterEditor";
 
 export default function EmailComposer({ audienceCount }: { audienceCount: number | null }) {
   const [audience, setAudience] = useState("none");
   const [subject, setSubject] = useState("");
+  const [mode, setMode] = useState<"desktop" | "mobile">("desktop");
   const [message, setMessage] = useState("");
   const field = "w-full rounded-lg border border-[#daccc1] bg-white px-3 py-2";
-  return <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-    <section className="grid gap-4 rounded-2xl border border-[#e6dcd4] bg-[#fffcf9] p-5 shadow-sm">
+  return <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+    <section className="grid gap-4 min-w-0 rounded-3xl border border-[#e6dcd4] bg-[#fffcf9] p-4 shadow-sm sm:p-6">
       <h2 className="font-serif text-2xl">Compose</h2>
       <label className="grid gap-1 text-sm">Audience
         <select className={field} value={audience} onChange={(event) => setAudience(event.target.value)}>
@@ -22,16 +24,24 @@ export default function EmailComposer({ audienceCount }: { audienceCount: number
       <div><button type="button" disabled className="rounded-lg bg-[#eee4db] px-4 py-2 text-[#655951]">Send email</button>
         <p className="mt-2 text-xs text-[#655951]">Sending requires verified recipient consent, suppression reconciliation and sending authorization.</p></div>
     </section>
-    <section className="rounded-2xl border border-[#e6dcd4] bg-[#fffcf9] p-5 shadow-sm">
-      <h2 className="font-serif text-2xl">Preview</h2>
+    <section className="min-w-0 rounded-3xl border border-[#e6dcd4] bg-[#fffcf9] p-4 shadow-sm sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-serif text-2xl">Preview</h2>
+        <div role="group" aria-label="Preview width" className="newsletter-segment">
+          <button type="button" aria-pressed={mode === "desktop"} onClick={() => setMode("desktop")}><Monitor size={15} aria-hidden /> Desktop</button>
+          <button type="button" aria-pressed={mode === "mobile"} onClick={() => setMode("mobile")}><Smartphone size={15} aria-hidden /> Mobile</button>
+        </div>
+      </div>
       <p className="my-3 text-sm text-[#655951]">{audience === "subscribers" ? `Recorded opt-ins · ${audienceCount} contacts` : "No audience selected"}</p>
-      <article style={{ border: "1px solid #e6dcd4", backgroundColor: "#fff", overflowWrap: "anywhere" }}>
+      <div className="newsletter-preview-stage">
+      <article className="newsletter-preview-paper" style={{ border: "1px solid #e6dcd4", backgroundColor: "#fff", overflowWrap: "anywhere", maxWidth: mode === "mobile" ? 375 : 600 }}>
         <header style={{ backgroundColor: "#6b1f1f", padding: 16, color: "#fff", fontFamily: "Georgia, serif" }}>The Modern Business Architect</header>
         <div style={{ padding: 20 }}><h3 style={{ margin: 0, fontFamily: "Georgia, serif", fontSize: 24, color: "#27211d" }}>{subject || "Subject"}</h3>
           <div style={{ marginTop: 12, fontFamily: "Arial, Helvetica, sans-serif", fontSize: 16, lineHeight: 1.55, color: "#27211d" }}
             dangerouslySetInnerHTML={{ __html: message || "<p>Your message appears here.</p>" }} /></div>
         <footer style={{ backgroundColor: "#f5f1ed", padding: 16, fontSize: 12, color: "#655951", fontFamily: "Arial, sans-serif" }}>MBA · Email preferences</footer>
       </article>
+      </div>
     </section>
   </div>;
 }
