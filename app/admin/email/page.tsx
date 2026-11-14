@@ -10,11 +10,12 @@ export default async function EmailStudioPage() {
   await requireAdmin();
   const db = getServiceClient();
   const storageOrigin = new URL(db.storage.from("resource-covers").getPublicUrl("newsletter").data.publicUrl).origin;
-  const [contacts, tagData] = await Promise.all([
+  const [contacts, tagData, audienceData] = await Promise.all([
     recipientCandidates().catch(() => null), contactTags().catch(() => null),
+    db.from("email_saved_audiences").select("id,name,search_query,tag_ids").order("name").order("id"),
   ]);
   return <AdminShell>
     <h1 className="mb-5 font-serif text-4xl tracking-tight">Email Studio</h1>
-    <EmailComposer storageOrigin={storageOrigin} recipients={{ contacts: contacts ?? [], tags: tagData?.tags ?? [], available: contacts !== null }} />
+    <EmailComposer storageOrigin={storageOrigin} recipients={{ contacts: contacts ?? [], tags: tagData?.tags ?? [], available: contacts !== null, tagsAvailable: tagData !== null, audiences: audienceData.error ? null : audienceData.data }} />
   </AdminShell>;
 }
