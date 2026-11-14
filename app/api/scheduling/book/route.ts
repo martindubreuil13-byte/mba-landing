@@ -1,3 +1,6 @@
+import { getServiceClient } from "@/app/lib/supabase/service";
+import { readAttribution } from "@/app/lib/email-studio/booking-attribution";
+import { attributionCookie } from "@/app/lib/email-studio/intelligence";
 import { getScheduling } from "@/app/lib/scheduling/instance";
 import { json, publicBody, publicRoute, str } from "@/app/lib/scheduling/http";
 import { RATES } from "@/app/lib/scheduling/rate-limit";
@@ -16,5 +19,14 @@ export const POST = publicRoute(async (req) => {
     slug: str(b.slug, 80), invite: str(b.invite, 80) || undefined, startUtc: str(b.startUtc, 40), guestName: str(b.name, 200), guestEmail: str(b.email, 250),
     guestMessage: str(b.message, 2000), guestTimeZone: str(b.timeZone, 80), idempotencyKey: str(b.idempotencyKey, 120), source: str(b.source, 80) || null, originContext: str(b.context, 400) || undefined,
   });
+  if (!replay && b.slug === "complementary-session") {
+    const cookie = req.headers.get("cookie")?.split(";").map((part) => part.trim())
+      .find((part) => part.startsWith(attributionCookie + "="))?.split("=")[1];
+    const link = cookie ? readAttribution(cookie) : null;
+    if (link) {
+      try { await getServiceClient().rpc("attribute_campaign_booking", { booking_ref: booking.reference, link }); }
+      catch { /* Attribution is optional. The booking already succeeded. */ }
+    }
+  }
   return json({ booking, replay }, replay ? 200 : 201);
 }, { rate: RATES.book });

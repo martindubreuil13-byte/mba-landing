@@ -26,10 +26,18 @@ export async function POST(req: Request) {
   if (!leadId) return NextResponse.json({ error: "This unsubscribe link is invalid." }, { status: 400 });
 
   try {
-    if (token.startsWith("v2.")) {
+    if (/^v[23]\./.test(token)) {
       const { data, error } = await getServiceClient().rpc("suppress_newsletter_recipient", { recipient_id: leadId });
       if (error) throw new Error("Could not record suppression.");
       if (!data) return NextResponse.json({ error: "This unsubscribe link is invalid." }, { status: 404 });
+      if (token.startsWith("v3.")) {
+        const campaignId = token.split(".")[2];
+        const recorded = await getServiceClient().from("campaign_provider_events").upsert({
+          event_id: `unsubscribe/${campaignId}/${leadId}`, campaign_id: campaignId, lead_id: leadId,
+          event_type: "unsubscribe", occurred_at: new Date().toISOString(),
+        }, { onConflict: "event_id", ignoreDuplicates: true });
+        if (recorded.error) throw new Error("Could not record campaign unsubscribe.");
+      }
       return NextResponse.json({ success: true });
     }
     const result = await applyOptOut(leadId, { method: "unsubscribe_link", wordingVersion: "unsubscribe-v1" });

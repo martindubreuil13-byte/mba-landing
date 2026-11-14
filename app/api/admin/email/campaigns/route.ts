@@ -1,3 +1,4 @@
+import { trackCampaignLinks } from "@/app/lib/email-studio/track-links";
 import { z } from "zod";
 import { getAdminUser } from "@/app/lib/supabase/admin-session";
 import { getServiceClient } from "@/app/lib/supabase/service";
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
       // Validate signing configuration before claiming the campaign.
       createUnsubscribeToken(id, true);
       const claim = db.from("email_campaigns").update({
-        started_at: new Date().toISOString(),
+        started_at: new Date().toISOString(), intelligence_started_at: new Date().toISOString(),
         exceptions_acknowledged_by: send.data.acknowledgeExceptions ? admin.id : null,
       }).eq("id", id).is("started_at", null).gte("created_at", new Date(Date.now() - 30 * 60_000).toISOString());
       if (!send.data.acknowledgeExceptions) claim.eq("has_consent_exceptions", false);
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
       for (const [index, recipient] of recipients.entries()) {
         if (index) await new Promise((resolve) => setTimeout(resolve, 600));
         const key = { campaign_id: id, lead_id: recipient.id, email: recipient.email };
-        const token = createUnsubscribeToken(recipient.id, true);
+        const token = createUnsubscribeToken(recipient.id, true, id);
         const unsubscribeUrl = `${origin}/unsubscribe?token=${token}`;
         await deliverOnce({
           recheck: async () => revalidateRecipient(recipient, await recipientCandidates([recipient.id])),
@@ -55,9 +56,11 @@ export async function POST(request: Request) {
             if (error) throw error;
           },
           send: async () => {
+            const tracked = await trackCampaignLinks(id, campaign.body_html);
             const { data, error } = await resend.emails.send({
+              tags: [{ name: "mba_campaign", value: id }],
               from: DEFAULT_RESOURCE_FROM, to: recipient.email, subject: campaign.subject,
-              html: renderNewsletterEmail(campaign.subject, campaign.body_html, { previewText: campaign.preview_text, unsubscribeUrl }),
+              html: renderNewsletterEmail(campaign.subject, tracked, { previewText: campaign.preview_text, unsubscribeUrl }),
               text: campaign.body_text + "\n\nUnsubscribe: " + unsubscribeUrl,
               headers: {
                 "List-Unsubscribe": `<${origin}/api/unsubscribe?token=${token}>`,

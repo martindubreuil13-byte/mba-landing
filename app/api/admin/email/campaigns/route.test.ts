@@ -11,6 +11,7 @@ const candidate = { id, email, state: "Eligible", reason: "Recorded marketing op
 
 vi.mock("@/app/lib/supabase/admin-session", () => ({ getAdminUser: state.admin }));
 vi.mock("@/app/lib/contact-tags/data", () => ({ recipientCandidates: state.candidates }));
+vi.mock("@/app/lib/email-studio/track-links", () => ({ trackCampaignLinks: async (_id: string, html: string) => html }));
 vi.mock("@/app/lib/email-client", () => ({ createResend: () => ({ emails: { send: state.send } }) }));
 vi.mock("@/app/lib/napkin/unsubscribe", () => ({ createUnsubscribeToken: () => "v2.fixture.signature" }));
 vi.mock("@/app/lib/resources/delivery-email", () => ({ DEFAULT_RESOURCE_FROM: "MBA <fixture@example.com>" }));

@@ -30,6 +30,10 @@ export default async function EmailStudioPage({ searchParams }: { searchParams: 
           <strong>{row.subject}</strong> · {row.status}
           <p className="text-sm">{row.total} selected · {row.sent} accepted by provider · {row.failed} failed · {row.excluded} excluded{row.pending > 0 && ` · ${row.pending} unconfirmed or unattempted`}</p>
           <p className="text-sm">Created {new Date(row.created).toLocaleString("en-GB", { timeZone: "Asia/Bangkok" })} · Started {new Date(row.started).toLocaleString("en-GB", { timeZone: "Asia/Bangkok" })} (Bangkok)</p>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+            <meter min={0} max={Math.max(row.sent, 1)} value={row.delivered} aria-label="Confirmed delivery out of provider acceptances" />
+            <span>{row.delivered ? `${row.delivered} confirmed delivered` : "Delivery unconfirmed"}</span>
+          </div>
           <div className="mt-2 flex flex-wrap gap-4 text-sm text-[#6b1f1f]">
             <Link className="underline" href={`/admin/email/campaigns/${row.id}`}>View Details</Link>
             {row.canDuplicate ? <Link className="underline" href={`/admin/email?duplicate=${row.id}`}>Duplicate</Link> : <span className="text-[#655951]">Duplicate unavailable</span>}

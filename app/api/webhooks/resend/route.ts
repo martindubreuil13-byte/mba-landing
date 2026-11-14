@@ -1,3 +1,4 @@
+import { providerEvents } from "@/app/lib/email-studio/intelligence";
 import { NextResponse } from "next/server";
 import { getServiceClient } from "@/app/lib/supabase/service";
 import { applyOptOut } from "@/app/lib/leads/consent";
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
   });
   if (!valid) return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
 
-  let event: { type?: string; data?: { email_id?: string; tags?: Record<string, string> | { name: string; value: string }[]; bounce?: { message?: string } } };
+  let event: { created_at?: string; type?: string; data?: { email_id?: string; tags?: Record<string, string> | { name: string; value: string }[]; bounce?: { message?: string } } };
   try {
     event = JSON.parse(rawBody);
   } catch {
@@ -38,23 +39,31 @@ export async function POST(req: Request) {
   }
 
   const mapping = mapProviderEvent(event.type ?? "");
-  if (!mapping.status && !mapping.complaint) return NextResponse.json({ ignored: true });
+
 
   const emailId = event.data?.email_id;
   const tags = event.data?.tags;
   const tagRequestId = Array.isArray(tags) ? tags.find((t) => t.name === "request_id")?.value : tags?.request_id;
 
+  const campaignTag = Array.isArray(tags) ? tags.find((t) => t.name === "mba_campaign")?.value : tags?.mba_campaign;
   const attemptId = Array.isArray(tags) ? tags.find((t) => t.name === "transition_attempt_id")?.value : tags?.transition_attempt_id;
   const supabase = getServiceClient();
-  if (emailId && (event.type === "email.complained" || event.type === "email.bounced" || event.type === "email.suppressed")) {
-    // Rollbacks and isolated environments may not have campaign tables yet.
-    const blocked = await supabase.from("email_campaign_deliveries").update({ provider_block: event.type })
-      .eq("provider_id", emailId).select("campaign_id");
-    if (blocked.data?.length) return NextResponse.json({ ok: true });
-    if (blocked.error && !["PGRST205", "42703", "42P01"].includes(blocked.error.code)) {
-      return NextResponse.json({ error: "Could not track delivery block" }, { status: 503 });
+  if (emailId && event.type && providerEvents.has(event.type)) {
+    const eventId = req.headers.get("svix-id");
+    const occurred = event.created_at && Date.parse(event.created_at);
+    if (eventId && occurred) {
+      const saved = await supabase.rpc("record_campaign_provider_event", {
+        message_id: emailId, external_id: eventId, kind: event.type, event_time: new Date(occurred).toISOString(),
+      });
+      if (saved.error && !["PGRST202", "42883"].includes(saved.error.code)) return NextResponse.json({ error: "Could not record campaign event" }, { status: 503 });
+      if (saved.data) return NextResponse.json({ ok: true });
+      if (campaignTag) return NextResponse.json({ error: "Campaign acceptance has not been recorded yet" }, { status: 503 });
+    } else if (["email.bounced", "email.complained", "email.suppressed"].includes(event.type)) {
+      const blocked = await supabase.from("email_campaign_deliveries").update({ provider_block: event.type }).eq("provider_id", emailId).select("campaign_id");
+      if (blocked.data?.length) return NextResponse.json({ ok: true });
     }
   }
+  if (!mapping.status && !mapping.complaint) return NextResponse.json({ ignored: true });
   let query = supabase.from("resource_requests").select("id, lead_id, resource:resources(*)");
   if (emailId) query = query.eq("delivery_provider_id", emailId);
   else if (tagRequestId) query = query.eq("id", tagRequestId);
