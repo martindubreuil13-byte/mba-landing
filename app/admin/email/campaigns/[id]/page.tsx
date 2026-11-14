@@ -1,3 +1,5 @@
+import CampaignIntelligence from "@/app/components/admin/CampaignIntelligence";
+import { reachMetrics } from "@/app/lib/email-studio/visual-metrics";
 import { deliveryOutcome } from "@/app/lib/email-studio/intelligence";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -38,29 +40,14 @@ export default async function CampaignDetails({ params }: { params: Promise<{ id
         {campaign.editor_operations ? <Link className="mt-2 inline-block rounded-lg bg-[#6b1f1f] px-4 py-2 text-white" href={`/admin/email?duplicate=${id}`}>Duplicate</Link> :
           <p className="mt-2 text-sm">Editable source was not saved for this campaign.</p>}
       </header>
+      <CampaignIntelligence reach={reachMetrics(recipients, campaign.campaign_provider_events)} failed={failed}
+        tracked={Boolean(campaign.intelligence_started_at)} engagement={engagement}
+        complaints={eventCount("email.complained")} unsubscribes={eventCount("unsubscribe")} />
       <section className="rounded-xl border border-[#e6dcd4] bg-[#fffcf9] p-4">
         <h2 className="font-serif text-xl">Recorded results</h2>
         <p>{campaign.selected_count} selected · {accepted} accepted by provider · {failed} failed · {excluded} excluded</p>
         <p>{outstanding} unconfirmed or unattempted. Provider acceptance does not confirm delivery.</p>
         <ul>{Object.entries(exclusions as Record<string, number>).map(([reason, number]) => <li key={reason}>{number} · {reason}</li>)}</ul>
-      </section>
-      <section className="rounded-xl border border-[#e6dcd4] bg-[#fffcf9] p-4">
-        <h2 className="font-serif text-xl">Campaign intelligence</h2>
-        <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {[
-            ["Confirmed delivered", campaign.delivered || "Unconfirmed"],
-            ["Provider bounced / failed", eventCount("email.bounced", "email.failed", "email.suppressed") || "None recorded"],
-            ["Complaints", eventCount("email.complained") || "None recorded"],
-            ["Unsubscribes", campaign.intelligence_started_at ? eventCount("unsubscribe") : "Unavailable"],
-            ["Observed clicks", engagement?.clicks ?? "Unavailable"],
-            ["Unique email copies clicked", engagement?.unique ?? "Unavailable"],
-            ["Likely automated requests", engagement?.suspected ?? "Unavailable"],
-            ["Attributed bookings", engagement?.bookings ?? "Unavailable"],
-          ].map(([label, value]) => <div key={label} className="rounded-lg bg-white p-2"><dt className="text-sm">{label}</dt><dd className="font-medium">{value}</dd></div>)}
-        </dl>
-        <p className="mt-3 text-sm">Counts use recorded events. Observed clicks can still include automated requests. Bookings without reliable attribution are unknown.</p>
-        {!!engagement?.destinations.length && <ul className="mt-3 divide-y divide-[#e6dcd4]">{engagement.destinations.map((row) =>
-          <li className="break-all py-2 text-sm" key={row.destination}>{row.destination} · {row.clicks} observed · {row.unique_clicks} unique</li>)}</ul>}
       </section>
       <section className="min-w-0">
         <h2 className="mb-2 font-serif text-xl">Original email</h2>
