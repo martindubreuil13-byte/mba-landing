@@ -8,13 +8,22 @@ import Navigation from "@/app/components/Navigation";
 export default function ThinkingPage() {
   const articles = [
     {
+      href: "/thinking/business-ai-agent-readiness-security",
+      category: "Business Architecture",
+      number: "014",
+      title: "Is Your Business Ready for AI Agents? The Security Dilemma Nobody Expected",
+      standfirst: "AI agents are changing how businesses are discovered and evaluated. But what happens when the systems designed to protect your business prevent those agents from accessing it?",
+      date: "November 15, 2026",
+      featured: true,
+    },
+    {
       href: "/thinking/your-next-customer-might-not-be-human",
       category: "Business Architecture",
       number: "013",
       title: "Your Next Customer Might Not Be Human",
       standfirst: "Why Business-to-Agent commerce could change retail, e-commerce, and the way we architect businesses.",
       date: "November 3, 2026",
-      featured: true,
+      featured: false,
     },
     {
       href: "/thinking/anticipatory-business-architecture",

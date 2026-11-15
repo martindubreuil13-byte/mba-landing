@@ -1,0 +1,102 @@
+import { PageStructuredData } from "@/app/components/PageStructuredData";
+import { SITE_URL, PRINCIPAL_NAME, SITE_NAME, serializeJsonLd } from "@/app/lib/seo";
+import type { Metadata } from "next";
+
+const title = "Is Your Business Ready for AI Agents? | Business Architecture";
+const headline = "Is Your Business Ready for AI Agents? The Security Dilemma Nobody Expected";
+const alternativeHeadline = "AI agents are changing how businesses are discovered and evaluated. But what happens when the systems designed to protect your business prevent those agents from accessing it?";
+const description = "Can AI agents access your business? Explore website security, AI shopping readiness, and why business architecture must evolve.";
+const path = "/thinking/business-ai-agent-readiness-security";
+const canonicalUrl = `${SITE_URL}${path}`;
+const ogImageUrl = "/og/modern-business-architect.png";
+const published = "2026-11-15";
+
+export const metadata: Metadata = {
+  title,
+  description,
+  alternates: { canonical: path },
+  robots: { index: true, follow: true },
+  openGraph: {
+    title,
+    description,
+    url: canonicalUrl,
+    type: "article",
+    siteName: SITE_NAME,
+    locale: "en_US",
+    authors: [PRINCIPAL_NAME],
+    publishedTime: published,
+    modifiedTime: published,
+    images: [
+      {
+        url: ogImageUrl,
+        width: 1200,
+        height: 630,
+        type: "image/png",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: [ogImageUrl],
+    creator: "@martindubreuil",
+  },
+};
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  const articleStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "@id": `${canonicalUrl}#article`,
+    headline,
+    alternativeHeadline,
+    description,
+    url: canonicalUrl,
+    image: `${SITE_URL}${ogImageUrl}`,
+    datePublished: published,
+    dateModified: published,
+    articleSection: "Business Architecture",
+    keywords: [
+      "AI agents",
+      "AI agent readiness",
+      "website security",
+      "bot management",
+      "AI shopping",
+      "agentic commerce",
+      "business architecture",
+    ],
+    about: [
+      { "@type": "Thing", name: "AI agent access to business websites" },
+      { "@type": "Thing", name: "Website bot protection" },
+      { "@type": "Thing", name: "Business architecture" },
+    ],
+    author: {
+      "@type": "Person",
+      "@id": `${SITE_URL}/#martin`,
+      name: PRINCIPAL_NAME,
+    },
+    publisher: {
+      "@type": "ProfessionalService",
+      "@id": `${SITE_URL}/#business`,
+      name: SITE_NAME,
+    },
+    inLanguage: "en",
+    isAccessibleForFree: true,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": canonicalUrl,
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(articleStructuredData) }}
+      />
+      <PageStructuredData name={title} description={description} path={path} />
+      {children}
+    </>
+  );
+}

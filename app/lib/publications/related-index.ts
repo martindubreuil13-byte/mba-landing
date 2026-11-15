@@ -24,6 +24,7 @@ export const RELATED_KIND_LABEL: Record<RelatedKind, string> = {
 };
 
 const THINKING: ReadonlyArray<readonly [string, string]> = [
+  ["/thinking/business-ai-agent-readiness-security", "Is Your Business Ready for AI Agents? The Security Dilemma Nobody Expected"],
   ["/thinking/your-next-customer-might-not-be-human", "Your Next Customer Might Not Be Human"],
   ["/thinking/anticipatory-business-architecture", "Will Your Business Still Be Relevant Tomorrow?"],
   ["/thinking/architecting-intelligence", "Architecting Intelligence"],

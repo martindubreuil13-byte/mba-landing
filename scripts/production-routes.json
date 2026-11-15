@@ -182,6 +182,8 @@
     "app/scheduling-preview/meeting-types/new/page.tsx",
     "app/scheduling-preview/meeting-types/page.tsx",
     "app/scheduling-preview/page.tsx",
+    "app/thinking/business-ai-agent-readiness-security/layout.tsx",
+    "app/thinking/business-ai-agent-readiness-security/page.tsx",
     "app/thinking/an-app-is-not-a-business/layout.tsx",
     "app/thinking/an-app-is-not-a-business/page.tsx",
     "app/thinking/anticipatory-business-architecture/layout.tsx",

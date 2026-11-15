@@ -454,6 +454,9 @@ export default function ArticlePage() {
                 <li>
                   <Link href="/work/business-re-architecture" className={linkClass}>Business Re-Architecture</Link>
                 </li>
+                <li>
+                  <Link href="/thinking/business-ai-agent-readiness-security" className={linkClass}>Is Your Business Ready for AI Agents? The Security Dilemma Nobody Expected</Link>
+                </li>
               </ul>
             </nav>
 

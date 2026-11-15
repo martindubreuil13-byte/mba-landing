@@ -344,6 +344,9 @@ export default function ArticlePage() {
                 <li>
                   <Link href="/answers/how-should-i-use-ai-in-my-business" className={linkClass}>How Should I Use AI in My Business?</Link>
                 </li>
+                <li>
+                  <Link href="/thinking/business-ai-agent-readiness-security" className={linkClass}>Is Your Business Ready for AI Agents? The Security Dilemma Nobody Expected</Link>
+                </li>
               </ul>
             </nav>
 

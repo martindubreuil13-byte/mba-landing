@@ -34,6 +34,7 @@ const publicRoutes = [
   "/thinking/architecting-intelligence",
   "/thinking/anticipatory-business-architecture",
   "/thinking/your-next-customer-might-not-be-human",
+  "/thinking/business-ai-agent-readiness-security",
   "/answers",
   "/answers/what-is-business-architecture",
   "/answers/what-does-a-business-architect-do",

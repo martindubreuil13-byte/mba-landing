@@ -430,6 +430,9 @@ export default function ArticlePage() {
                   <li>
                     <Link href="/thinking/architecting-intelligence" className="text-[#6b1f1f] border-b border-[#6b1f1f] hover:text-[#6b1f1f]/80 hover:border-[#6b1f1f]/80 transition-colors">Architecting Intelligence</Link>
                   </li>
+                  <li>
+                    <Link href="/thinking/business-ai-agent-readiness-security" className="text-[#6b1f1f] border-b border-[#6b1f1f] hover:text-[#6b1f1f]/80 hover:border-[#6b1f1f]/80 transition-colors">Is Your Business Ready for AI Agents? The Security Dilemma Nobody Expected</Link>
+                  </li>
                 </ul>
               </nav>
 
