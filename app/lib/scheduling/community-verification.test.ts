@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { randomBytes } from "node:crypto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
@@ -64,6 +65,14 @@ const leads = () => db.tables.leads as any[];
 const records = () => db.tables.consent_records as any[];
 /** The token inside the one message the recording client received. */
 const tokenSent = () => new URL(/https?:\/\/[^\s"'<>]+\/community\/verify\?token=[^\s"'<>&]+/.exec(outbox.at(-1)!.payload.text)![0]).searchParams.get("token")!;
+
+/**
+ * A verification message is the human-readable wording PLUS links whose `token=` values are signed and derived from random record ids. Wording rules
+ * ("no promotional language", "not the Transition message") are about the wording, so they are checked with those random values replaced by a fixed
+ * placeholder. Everything else (every word, every link path, the markup) is still scanned, byte for byte. Scanning the random values themselves made
+ * these checks fail now and then when a token happened to spell a word such as "buy".
+ */
+const redactTokens = (s: string) => s.replace(/(token=)[^\s"'<>&]+/g, "$1[token]");
 
 beforeEach(() => { for (const k of Object.keys(db.tables)) db.tables[k] = []; db.insertCount = {}; db.failNextInsertInto = null; outbox.length = 0; process.env.RESEND_API_KEY = "test-key"; });
 
@@ -135,10 +144,30 @@ describe("a 'yes' where the site asks for proof of the address", () => {
     expect(everything).toMatch(/unsubscribe\?token=/);
     expect(everything).toMatch(/\/privacy/);
     expect(everything).toContain("When you booked a conversation");
-    for (const transition of ["applying", "application", "Transition", "stay connected", "Your booking link is available"]) expect(everything).not.toContain(transition);
-    for (const promo of ["resource", "guide", "offer", "newsletter", "% off", "buy"]) expect(everything.toLowerCase()).not.toContain(promo);
+    // The wording rules run on the deterministic content: the same message with its random token values replaced by a placeholder.
+    const wording = redactTokens(everything);
+    expect(wording).toContain("token=[token]");
+    for (const transition of ["applying", "application", "Transition", "stay connected", "Your booking link is available"]) expect(wording).not.toContain(transition);
+    for (const promo of ["resource", "guide", "offer", "newsletter", "% off", "buy"]) expect(wording.toLowerCase()).not.toContain(promo);
     expect(m.headers["List-Unsubscribe"]).toMatch(/\/api\/unsubscribe\?token=/);
     expect(m.from).toMatch(/mindrasolutions\.com/);
+  });
+
+  it("has wording that does not depend on the random ids and tokens in its links (so the wording checks above cannot fail by chance)", () => {
+    const build = (leadId: string, requestId: string) => { const e = buildCommunityVerificationEmail({ leadId, requestId, firstName: "Ada", now: NOW }); return { subject: e.subject, text: redactTokens(e.text), html: redactTokens(e.html) }; };
+    const reference = build("lead-1", "request-1");
+    // Ids that are made of the very words the promotional check rejects, and a spread of random ones of the shape the real code generates.
+    const hostile = ["buy", "offer", "guide", "resource", "newsletter", "applying", "Transition", "buybuybuybuy", "OFFER-GUIDE-RESOURCE"];
+    const random = Array.from({ length: 200 }, () => [randomBytes(9).toString("base64url"), randomBytes(9).toString("base64url")] as const);
+    for (const [leadId, requestId] of [...hostile.map((w) => [w, w] as const), ...random]) {
+      const e = buildCommunityVerificationEmail({ leadId, requestId, firstName: "Ada", now: NOW });
+      expect(e.html).toMatch(/community\/verify\?token=m1\./); // the ids really are in the raw links
+      expect(build(leadId, requestId)).toEqual(reference); // and contribute nothing to the checked content
+    }
+    // The redaction removes only token values: a promotional word anywhere else in the message is still caught.
+    const wording = (reference.subject + reference.text + reference.html).toLowerCase();
+    expect(wording).not.toMatch(/buy|offer|guide|resource|newsletter|% off/);
+    expect(redactTokens("Visit /buy?token=abc123 or token=x&y")).toBe("Visit /buy?token=[token] or token=[token]&y");
   });
 
   it("carries a link bound to the contact and its own request, and the link works only through the explicit POST", async () => {
