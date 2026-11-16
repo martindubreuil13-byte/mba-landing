@@ -9,7 +9,8 @@
     "lint": "eslint",
     "indexnow": "node scripts/indexnow.mjs",
     "test": "vitest run",
-    "release:check": "node scripts/check-release.mjs --ancestry"
+    "release:check": "node scripts/check-release.mjs --ancestry",
+    "verify:migrations": "node scripts/verify-migration-history.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.7.0",

@@ -1,0 +1,241 @@
+{
+  "capturedAt": "2026-11-16",
+  "source": "supabase_migrations.schema_migrations of the production Supabase project, read with a SELECT (see docs/supabase/MIGRATION-HISTORY.md for the exact query). Names, counts and hashes only: no SQL text and no data are stored here.",
+  "normalization": "md5 of the recorded statements concatenated, with every ';' and every whitespace character removed. Case, quoting and all other characters are compared exactly. Layout is ignored, which includes whitespace inside string literals.",
+  "acknowledged": {
+    "noStoredStatements": {
+      "20261002090000": "Recorded with no stored statements. The tables, columns, functions, indexes and triggers the file creates all exist in production (2026-11-16 audit); their definitions were not compared.",
+      "20261003090000": "Recorded with no stored statements. The tables, columns, functions, indexes and triggers the file creates all exist in production (2026-11-16 audit); their definitions were not compared.",
+      "20261026090000": "Recorded with no stored statements. The tables, columns, functions, indexes and triggers the file creates all exist in production (2026-11-16 audit); their definitions were not compared.",
+      "20261026090100": "Recorded with no stored statements. The tables, columns, functions, indexes and triggers the file creates all exist in production (2026-11-16 audit); their definitions were not compared.",
+      "20261026090200": "Recorded with no stored statements. The tables, columns, functions, indexes and triggers the file creates all exist in production (2026-11-16 audit); their definitions were not compared."
+    },
+    "contentDeviations": {
+      "20260929120000": "The file was made idempotent on 2026-10-01 (adds 'drop constraint if exists' and comments) after production had applied the original text. Net schema effect is identical."
+    }
+  },
+  "records": [
+    {
+      "version": "20260920091128",
+      "name": "resources_leads_init",
+      "statementCount": 1,
+      "normalizedMd5": "8af789e988d6b7b2d0f7c563b144ddc9"
+    },
+    {
+      "version": "20260921121838",
+      "name": "create_assessments_table",
+      "statementCount": 1,
+      "normalizedMd5": "173b701885954b3cefbd7bfeed5bdb01"
+    },
+    {
+      "version": "20260921130830",
+      "name": "create_api_rate_limits",
+      "statementCount": 1,
+      "normalizedMd5": "22f1167514408bb98b63b26e80fed443"
+    },
+    {
+      "version": "20260925091950",
+      "name": "create_pick_my_brain",
+      "statementCount": 1,
+      "normalizedMd5": "07748dc70589ec44db9454903125e668"
+    },
+    {
+      "version": "20260928123232",
+      "name": "create_napkin_submissions",
+      "statementCount": 1,
+      "normalizedMd5": "9a6bc045421cff511f93c0e21e29b3f6"
+    },
+    {
+      "version": "20260928223000",
+      "name": "create_napkin_admin_metadata",
+      "statementCount": 3,
+      "normalizedMd5": "95a6793449e34991ad6ba259ebfeca89"
+    },
+    {
+      "version": "20260929084610",
+      "name": "add_resource_archived_and_pmb_status",
+      "statementCount": 1,
+      "normalizedMd5": "00efc055f515f14c3c4e377ba6dc4f6a"
+    },
+    {
+      "version": "20260929120000",
+      "name": "add_resource_archived_and_pmb_status",
+      "statementCount": 3,
+      "normalizedMd5": "5c6ea160f5751041f342ec99c7721eac"
+    },
+    {
+      "version": "20261001120000",
+      "name": "resource_events_and_consent_records",
+      "statementCount": 22,
+      "normalizedMd5": "cd2448b13a7503c8e12f958ec28c9fbc"
+    },
+    {
+      "version": "20261001160000",
+      "name": "program_applications",
+      "statementCount": 8,
+      "normalizedMd5": "715bc800e95894cc501974e8beffea12"
+    },
+    {
+      "version": "20261002090000",
+      "name": "program_applications_consent_email",
+      "statementCount": 0,
+      "normalizedMd5": null
+    },
+    {
+      "version": "20261003090000",
+      "name": "resource_member_access",
+      "statementCount": 0,
+      "normalizedMd5": null
+    },
+    {
+      "version": "20261026090000",
+      "name": "website_intelligence",
+      "statementCount": 0,
+      "normalizedMd5": null
+    },
+    {
+      "version": "20261026090100",
+      "name": "website_intelligence_reports",
+      "statementCount": 0,
+      "normalizedMd5": null
+    },
+    {
+      "version": "20261026090200",
+      "name": "website_intelligence_benchmarks",
+      "statementCount": 0,
+      "normalizedMd5": null
+    },
+    {
+      "version": "20261029101433",
+      "name": "publications",
+      "statementCount": 1,
+      "normalizedMd5": "ea4adbf4f552441b60998484ab0d3716"
+    },
+    {
+      "version": "20261030090000",
+      "name": "transition_booking_flow",
+      "statementCount": 1,
+      "normalizedMd5": "6dfa0b10a40b3fc66ed3ddcbf83c924c"
+    },
+    {
+      "version": "20261101034852",
+      "name": "mba_scheduling_stage_e_recovery_components",
+      "statementCount": 1,
+      "normalizedMd5": "e19aecf20c673c04eed88d9b0232cdeb"
+    },
+    {
+      "version": "20261101035116",
+      "name": "mba_scheduling_stage_e_remove_provisioning_bridge",
+      "statementCount": 1,
+      "normalizedMd5": "cf7052b0e3fe5cf2fd439a3e622ee039"
+    },
+    {
+      "version": "20261101090000",
+      "name": "mba_scheduling",
+      "statementCount": 1,
+      "normalizedMd5": "3afbef3312f58645bd4e2363286b3507"
+    },
+    {
+      "version": "20261102090000",
+      "name": "mba_scheduling_phase2e",
+      "statementCount": 1,
+      "normalizedMd5": "b727939f7b51be443d7d94f85cd391f7"
+    },
+    {
+      "version": "20261103090000",
+      "name": "mba_scheduling_phase2f",
+      "statementCount": 1,
+      "normalizedMd5": "6a60f85ae9c6188ee2d8254e25d2e07f"
+    },
+    {
+      "version": "20261104090000",
+      "name": "mba_scheduling_phase2g",
+      "statementCount": 1,
+      "normalizedMd5": "6e866fc5c2615551212e82ece9e7f339"
+    },
+    {
+      "version": "20261105090000",
+      "name": "mba_scheduling_alerting",
+      "statementCount": 1,
+      "normalizedMd5": "8ffe7c34603b2b5d3b9f1dd64b57335e"
+    },
+    {
+      "version": "20261105100000",
+      "name": "mba_scheduling_host_timezone",
+      "statementCount": 1,
+      "normalizedMd5": "e1984448b3b68f677c51812db0bc075b"
+    },
+    {
+      "version": "20261106090000",
+      "name": "program_inquiries",
+      "statementCount": 1,
+      "normalizedMd5": "b458103eb6fe191a0379dd7b494ad65c"
+    },
+    {
+      "version": "20261113085811",
+      "name": "relationship_workspace",
+      "statementCount": 1,
+      "normalizedMd5": "128494d1f6289a7a67e45d0cbcb26762"
+    },
+    {
+      "version": "20261114055550",
+      "name": "newsletter_test_quota",
+      "statementCount": 1,
+      "normalizedMd5": "ff0b6ed4b65d66ea5a224a2005a04704"
+    },
+    {
+      "version": "20261114060832",
+      "name": "contact_tags",
+      "statementCount": 1,
+      "normalizedMd5": "cd918422e483ff4d0f3374f6a11c79a3"
+    },
+    {
+      "version": "20261114062138",
+      "name": "contact_lifecycle",
+      "statementCount": 1,
+      "normalizedMd5": "9c2e3ded7f0dc34f91a84ac8021bae2a"
+    },
+    {
+      "version": "20261114080233",
+      "name": "contact_profile",
+      "statementCount": 1,
+      "normalizedMd5": "2327f4fdb38e0cb5ab097572f88204c6"
+    },
+    {
+      "version": "20261114094546",
+      "name": "email_saved_audiences",
+      "statementCount": 1,
+      "normalizedMd5": "996957d91019c7b9fb8e1d5a7df723e4"
+    },
+    {
+      "version": "20261114095857",
+      "name": "email_campaigns",
+      "statementCount": 1,
+      "normalizedMd5": "3f6fce0e8989ef8c7638f6e0911c0cb4"
+    },
+    {
+      "version": "20261114103350",
+      "name": "campaign_consent_exceptions",
+      "statementCount": 1,
+      "normalizedMd5": "f636d46d2b473303368298c356401418"
+    },
+    {
+      "version": "20261114105325",
+      "name": "campaign_reuse",
+      "statementCount": 1,
+      "normalizedMd5": "9e03e6ea3f1f1a9ae0024d9afcc085c3"
+    },
+    {
+      "version": "20261114110457",
+      "name": "campaign_intelligence",
+      "statementCount": 1,
+      "normalizedMd5": "7d3de5e41d3bdadf2cb828bfa654863a"
+    },
+    {
+      "version": "20261114121156",
+      "name": "manual_email_preferences",
+      "statementCount": 1,
+      "normalizedMd5": "f25f8487830770a4bf11732d129b19c5"
+    }
+  ]
+}
