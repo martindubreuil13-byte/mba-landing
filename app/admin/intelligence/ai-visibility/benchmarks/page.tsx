@@ -4,7 +4,7 @@ import { requireAdmin } from "@/app/lib/supabase/admin-session";
 import { listQuestions, listResults } from "@/app/lib/intelligence/benchmarks";
 import { CSV_COLUMNS, KNOWN_PLATFORMS, formatRate, summarize } from "@/app/lib/intelligence/benchmarks-model";
 import AdminShell from "@/app/components/admin/AdminShell";
-import { Empty, Panel } from "@/app/components/admin/intelligence/parts";
+import { Empty, Panel, ReportTable } from "@/app/components/admin/intelligence/parts";
 import { addQuestionAction, addResultAction, deleteResultAction, importCsvAction, toggleQuestionAction } from "./actions";
 
 export const metadata: Metadata = { robots: { index: false, follow: false }, title: "AI Benchmarks | Website Intelligence" };
@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 type Params = Record<string, string | string[] | undefined>;
 const one = (p: Params, k: string) => (typeof p[k] === "string" ? (p[k] as string) : undefined);
 const input = "mt-1 block w-full border border-[#1a1816]/15 bg-white px-3 py-2 text-sm normal-case tracking-normal text-[#1a1816]";
-const labelCls = "text-xs uppercase tracking-widest text-[#1a1816]/50";
+const labelCls = "text-xs uppercase tracking-widest text-[#5a5049]";
 const btn = "border border-[#6b1f1f] bg-[#6b1f1f] px-4 py-2 text-xs uppercase tracking-widest text-white";
 const TRI = [["", "Not assessed"], ["yes", "Yes"], ["no", "No"]] as const;
 
@@ -42,14 +42,14 @@ export default async function BenchmarksPage({ searchParams }: { searchParams: P
       <div className="mt-8 space-y-6">
         <Panel title="Summary by assistant" note="Counts of recorded answers; not a share of all answers.">
           {summary.length === 0 ? <Empty>No results recorded yet.</Empty> : (
-            <div className="overflow-x-auto">
+            <ReportTable label="Benchmark results">
               <table className="w-full min-w-[640px] text-left text-sm tabular-nums">
-                <thead className="text-xs uppercase tracking-widest text-[#1a1816]/50"><tr><th className="py-2 pr-4 font-normal">Assistant</th><th className="px-2 text-right font-normal">Answers</th><th className="px-2 text-right font-normal">Names the business</th><th className="px-2 text-right font-normal">Names Martin</th><th className="px-2 text-right font-normal">Cites the site</th><th className="px-2 text-right font-normal">Recommends</th><th className="px-2 text-right font-normal">Positioning accurate</th></tr></thead>
+                <thead className="text-xs uppercase tracking-widest text-[#5a5049]"><tr><th className="py-2 pr-4 font-normal">Assistant</th><th className="px-2 text-right font-normal">Answers</th><th className="px-2 text-right font-normal">Names the business</th><th className="px-2 text-right font-normal">Names Martin</th><th className="px-2 text-right font-normal">Cites the site</th><th className="px-2 text-right font-normal">Recommends</th><th className="px-2 text-right font-normal">Positioning accurate</th></tr></thead>
                 <tbody>{summary.map((s) => (
                   <tr key={s.platform} className="border-t border-[#1a1816]/10"><td className="py-2 pr-4">{s.platform}</td><td className="px-2 text-right">{s.answers}</td><td className="px-2 text-right">{formatRate(s.mentions_business)}</td><td className="px-2 text-right">{formatRate(s.mentions_martin)}</td><td className="px-2 text-right">{formatRate(s.cites_site)}</td><td className="px-2 text-right">{formatRate(s.recommends_business)}</td><td className="px-2 text-right">{formatRate(s.positioning_accurate)}</td></tr>
                 ))}</tbody>
               </table>
-            </div>
+              </ReportTable>
           )}
         </Panel>
 
@@ -64,8 +64,8 @@ export default async function BenchmarksPage({ searchParams }: { searchParams: P
               <ul className="space-y-2 text-sm">
                 {questions.map((q) => (
                   <li key={q.id} className="flex items-start justify-between gap-3 border-t border-[#1a1816]/10 pt-2">
-                    <span className={q.active ? "" : "text-[#1a1816]/40 line-through"}>{q.question}{q.topic ? <span className="text-xs text-[#1a1816]/45"> · {q.topic}</span> : null}</span>
-                    <form action={toggleQuestionAction}><input type="hidden" name="id" value={q.id} /><input type="hidden" name="active" value={String(!q.active)} /><button className="shrink-0 text-xs uppercase tracking-widest text-[#1a1816]/50 hover:text-[#1a1816]">{q.active ? "Retire" : "Restore"}</button></form>
+                    <span className={q.active ? "" : "text-[#5a5049] line-through"}>{q.question}{q.topic ? <span className="text-xs text-[#5a5049]"> · {q.topic}</span> : null}</span>
+                    <form action={toggleQuestionAction}><input type="hidden" name="id" value={q.id} /><input type="hidden" name="active" value={String(!q.active)} /><button className="shrink-0 text-xs uppercase tracking-widest text-[#5a5049] hover:text-[#1a1816]">{q.active ? "Retire" : "Restore"}</button></form>
                   </li>
                 ))}
               </ul>
@@ -109,14 +109,14 @@ export default async function BenchmarksPage({ searchParams }: { searchParams: P
               {results.map((r) => (
                 <li key={r.id} className="border-t border-[#1a1816]/10 pt-3">
                   <div className="flex items-start justify-between gap-3">
-                    <p><strong>{r.platform}</strong>{r.model_label ? <span className="text-[#1a1816]/50"> ({r.model_label})</span> : null} <span className="text-xs text-[#1a1816]/45">· {r.asked_on} · {r.method}</span><br /><span className="text-[#1a1816]/70">{r.question}</span></p>
-                    <form action={deleteResultAction}><input type="hidden" name="id" value={r.id} /><button className="text-xs uppercase tracking-widest text-[#1a1816]/45 hover:text-[#6b1f1f]">Delete</button></form>
+                    <p><strong>{r.platform}</strong>{r.model_label ? <span className="text-[#5a5049]"> ({r.model_label})</span> : null} <span className="text-xs text-[#5a5049]">· {r.asked_on} · {r.method}</span><br /><span className="text-[#1a1816]/70">{r.question}</span></p>
+                    <form action={deleteResultAction}><input type="hidden" name="id" value={r.id} /><button className="text-xs uppercase tracking-widest text-[#5a5049] hover:text-[#6b1f1f]">Delete</button></form>
                   </div>
                   <p className="mt-1 text-xs text-[#1a1816]/55">
                     {([["Names business", r.mentions_business], ["Names Martin", r.mentions_martin], ["Cites site", r.cites_site], ["Recommends", r.recommends_business]] as const).map(([t, v]) => `${t}: ${v === null ? "not assessed" : v ? "yes" : "no"}`).join(" · ")}
                     {r.positioning ? ` · positioning ${r.positioning}` : ""}
                   </p>
-                  {r.cited_urls.length ? <p className="mt-1 break-words text-xs text-[#1a1816]/45">{r.cited_urls.join(" · ")}</p> : null}
+                  {r.cited_urls.length ? <p className="mt-1 break-words text-xs text-[#5a5049]">{r.cited_urls.join(" · ")}</p> : null}
                   {r.notes ? <p className="mt-1 text-xs text-[#1a1816]/60">{r.notes}</p> : null}
                 </li>
               ))}

@@ -1,65 +1,57 @@
 import type { TrendPoint } from "@/app/lib/intelligence/reports";
+import { ReportCaption } from "./EditorialReport";
 
-/**
- * Server-rendered SVG: bars = sessions, line = page views, one shared scale. No chart library, no client JS.
- * The same numbers are available as a table underneath for accessibility.
- */
+const series = [
+  { key: "sessions", label: "Sessions" },
+  { key: "pageviews", label: "Page views" },
+  { key: "ai_sessions", label: "AI referral sessions" },
+  { key: "conversions", label: "Confirmed conversions" },
+] as const;
+
 export default function TrendChart({ points }: { points: TrendPoint[] }) {
-  const W = 720;
-  const H = 220;
-  const pad = { l: 36, r: 8, t: 10, b: 24 };
-  const max = Math.max(1, ...points.map((p) => Math.max(p.sessions, p.pageviews)));
-  const niceMax = max <= 4 ? max : Math.ceil(max / 4) * 4;
-  const innerW = W - pad.l - pad.r;
-  const innerH = H - pad.t - pad.b;
-  const slot = innerW / Math.max(points.length, 1);
-  const barW = Math.max(1, Math.min(28, slot * 0.6));
-  const x = (i: number) => pad.l + slot * i + slot / 2;
-  const y = (v: number) => pad.t + innerH - (v / niceMax) * innerH;
-  const line = points.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.pageviews).toFixed(1)}`).join(" ");
-  const ticks = [0, 0.5, 1].map((f) => Math.round(niceMax * f));
-  const labelAt = new Set([0, Math.floor((points.length - 1) / 2), points.length - 1]);
-  const total = points.reduce((a, p) => a + p.sessions, 0);
-
+  if (points.length === 0) return <ReportCaption>No daily observations in this range.</ReportCaption>;
   return (
-    <div>
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Daily sessions and page views, ${points.length} days, ${total} sessions in total`} className="h-auto w-full">
-        {ticks.map((t) => (
-          <g key={t}>
-            <line x1={pad.l} x2={W - pad.r} y1={y(t)} y2={y(t)} stroke="#1a1816" strokeOpacity={0.08} />
-            <text x={pad.l - 6} y={y(t) + 3} textAnchor="end" fontSize="10" fill="#1a1816" fillOpacity={0.5}>{t}</text>
-          </g>
-        ))}
-        {points.map((p, i) => (
-          <g key={p.day}>
-            <rect x={x(i) - barW / 2} y={y(p.sessions)} width={barW} height={Math.max(0, pad.t + innerH - y(p.sessions))} fill="#6b1f1f" fillOpacity={0.85}>
-              <title>{`${p.day}: ${p.sessions} sessions, ${p.pageviews} page views`}</title>
-            </rect>
-            {labelAt.has(i) ? (
-              <text x={x(i)} y={H - 6} textAnchor={i === 0 ? "start" : i === points.length - 1 ? "end" : "middle"} fontSize="10" fill="#1a1816" fillOpacity={0.5}>{p.day.slice(5)}</text>
-            ) : null}
-          </g>
-        ))}
-        {points.length > 1 ? <path d={line} fill="none" stroke="#1a1816" strokeWidth={1.5} /> : null}
-        {points.length === 1 ? <circle cx={x(0)} cy={y(points[0].pageviews)} r={3} fill="#1a1816" /> : null}
-      </svg>
-      <div className="mt-2 flex gap-5 text-xs text-[#1a1816]/60">
-        <span className="flex items-center gap-2"><span className="inline-block h-2.5 w-2.5 bg-[#6b1f1f]" />Sessions</span>
-        <span className="flex items-center gap-2"><span className="inline-block h-0.5 w-4 bg-[#1a1816]" />Page views</span>
+    <figure className="space-y-4">
+      <figcaption><ReportCaption>Each row has its own scale starting at zero. Compare timing across rows and use the daily values for exact counts. Dates are UTC.</ReportCaption></figcaption>
+      <div aria-hidden="true" className="space-y-4">
+        {series.map(({ key, label }) => {
+          const peak = Math.max(...points.map((point) => point[key]));
+          return (
+            <div key={key}>
+              <div className="mb-1 flex flex-wrap justify-between gap-x-3 text-sm">
+                <span className="font-semibold">{label}</span>
+                <span className="tabular-nums text-[#5a5049]">{peak > 0 ? `Daily peak · ${peak}` : "0 across recorded days"}</span>
+              </div>
+              <svg className="block h-12 w-full border-b border-[#b19d90] bg-[#f1e7d8]" viewBox={`0 0 ${points.length} 100`} preserveAspectRatio="none">
+                {peak > 0 && points.map((point, index) => (
+                  <rect key={point.day} x={index + 0.1} y={100 - point[key] / peak * 100} width={0.8} height={point[key] / peak * 100} fill="#6b1f1f" />
+                ))}
+              </svg>
+            </div>
+          );
+        })}
+        <div className="flex justify-between gap-2 text-xs tabular-nums text-[#5a5049]">
+          <span>{points[0].day}</span>
+          {points.length > 1 && <span>{points.at(-1)?.day}</span>}
+        </div>
       </div>
-      <details className="mt-3 text-xs">
-        <summary className="cursor-pointer select-none uppercase tracking-widest text-[#1a1816]/50">Data table</summary>
-        <div className="mt-2 max-h-64 overflow-auto">
-          <table className="w-full text-left tabular-nums">
-            <thead className="text-[#1a1816]/50"><tr><th className="py-1 pr-4 font-normal">Day (UTC)</th><th className="pr-4 font-normal">Sessions</th><th className="font-normal">Page views</th></tr></thead>
+      <details>
+        <summary className="w-fit cursor-pointer py-2 font-semibold text-[#6b1f1f] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2">Daily values table</summary>
+        <div role="region" aria-label="Scrollable daily values" tabIndex={0} className="max-h-72 overflow-auto focus-visible:outline-2">
+          <table className="w-full border-collapse text-left text-sm tabular-nums">
+            <caption className="sr-only">Daily Website Intelligence values in UTC</caption>
+            <thead><tr><th scope="col" className="p-2">Day (UTC)</th>{series.map(({ key, label }) => <th key={key} scope="col" className="p-2 text-right">{label}</th>)}</tr></thead>
             <tbody>
-              {points.map((p) => (
-                <tr key={p.day} className="border-t border-[#1a1816]/5"><td className="py-1 pr-4">{p.day}</td><td className="pr-4">{p.sessions}</td><td>{p.pageviews}</td></tr>
+              {points.map((point) => (
+                <tr key={point.day} className="border-t border-[#d7c8bb]">
+                  <th scope="row" className="whitespace-nowrap p-2 font-normal">{point.day}</th>
+                  {series.map(({ key }) => <td key={key} className="p-2 text-right">{point[key]}</td>)}
+                </tr>
               ))}
             </tbody>
           </table>
         </div>
       </details>
-    </div>
+    </figure>
   );
 }

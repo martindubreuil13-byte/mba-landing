@@ -198,3 +198,9 @@ The deny rules for production writes (deployments, promotion, production migrati
 3. **The approval is explicit and per action,** given by Martin for a named change, commit or deployment, and recorded with the result.
 
 When a rule is relaxed, change it from `deny` to `ask` for that specific command, not to a blanket allow, and update this document in the same pull request. Approval stays mandatory even after the deny rule is gone.
+
+## Codex development rules
+
+The trusted Codex project configuration can load [.codex/rules/mba-development.rules](../.codex/rules/mba-development.rules). Review the file before trusting the project. The rules prompt for feature pushes and sensitive GitHub commands, and block common release, database, and secret-file commands in development.
+
+These are command-prefix checks, not access control. Alternative argument orders, scripts, APIs, browser actions, and connectors may be outside their coverage. Do not work around a blocked command. Keep production credentials and write-capable provider access out of the development session, retain GitHub's required PR and CI rules, and use a separately authorized release session for production actions. Keep this checkout unlinked from Vercel.
