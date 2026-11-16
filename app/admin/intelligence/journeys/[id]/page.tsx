@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { reportHref, type ReportParams } from "@/app/components/admin/intelligence/report-links";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/app/lib/supabase/admin-session";
 import { getCollectionStart } from "@/app/lib/intelligence/reports";
@@ -16,12 +17,14 @@ export const metadata: Metadata = { robots: { index: false, follow: false }, tit
 export const dynamic = "force-dynamic";
 
 const Fact = ({ label, value }: { label: string; value: React.ReactNode }) => (
-  <div><dt className="text-xs uppercase tracking-widest text-[#1a1816]/45">{label}</dt><dd className="mt-1 break-words text-sm">{value || <span className="text-[#1a1816]/35">—</span>}</dd></div>
+  <div><dt className="text-xs uppercase tracking-widest text-[#5a5049]">{label}</dt><dd className="mt-1 break-words text-sm">{value || <span className="text-[#1a1816]/35">—</span>}</dd></div>
 );
 
-export default async function IntelligenceJourneyPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function IntelligenceJourneyPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<ReportParams> }) {
   await requireAdmin();
-  const { id } = await params;
+  const [{ id }, query] = await Promise.all([params, searchParams]);
+  const one = (value: string | string[] | undefined) => typeof value === "string" ? value : undefined;
+  const range = resolveRange({ range: one(query.range), from: one(query.from), to: one(query.to) });
   if (!isSessionId(id)) notFound();
   const [journey, collectionStart] = await Promise.all([getJourney(id), getCollectionStart()]);
   if (!journey) notFound();
@@ -32,8 +35,8 @@ export default async function IntelligenceJourneyPage({ params }: { params: Prom
     ? `source=${s.utm_source ?? "—"} · medium=${s.utm_medium ?? "—"} · campaign=${s.utm_campaign ?? "—"} · content=${s.utm_content ?? "—"}` : null;
 
   return (
-    <IntelligenceFrame active="journeys" range={resolveRange({ range: "30d" })} collectionStart={collectionStart}>
-      <Link href="/admin/intelligence/journeys" className="mb-4 inline-block text-xs uppercase tracking-widest text-[#6b1f1f]">← All sessions</Link>
+    <IntelligenceFrame active="journeys" range={range} params={query} collectionStart={collectionStart}>
+      <Link href={reportHref("/admin/intelligence/journeys", query, range)} className="mb-4 inline-block text-xs uppercase tracking-widest text-[#6b1f1f]">← All sessions</Link>
       <p className="mb-6 max-w-3xl text-sm text-[#1a1816]/60">
         One anonymous browser-tab session. It does not represent an identified person, and it holds nothing a visitor typed.
         {s.environment !== "production" ? ` (Recorded by a ${s.environment} deployment.)` : ""}
@@ -60,26 +63,26 @@ export default async function IntelligenceJourneyPage({ params }: { params: Prom
         </Panel>
 
         <Panel title="Timeline" note="Time shown on a page is visible, in-focus time; the last page may be under-counted if the tab was killed.">
-          <ol className="relative space-y-0 border-l border-[#1a1816]/15 pl-6">
+          <ol className="relative space-y-0 border-l border-[#b19d90] pl-6">
             {items.map((item, i) => (
-              <li key={i} className="relative pb-5 last:pb-0">
-                <span className={`absolute -left-[1.85rem] top-1.5 h-2.5 w-2.5 rounded-full ${item.kind === "event" && item.confirmed ? "bg-[#6b1f1f]" : item.kind === "pageview" ? "bg-[#1a1816]" : "border border-[#1a1816]/40 bg-[#f5f1ed]"}`} />
-                <p className="text-xs tabular-nums text-[#1a1816]/45">{item.at.slice(11, 19)} UTC</p>
+              <li key={i} className="relative pb-7 last:pb-0 [overflow-wrap:anywhere]">
+                <span aria-hidden="true" className={`absolute -left-[1.85rem] top-1.5 h-2.5 w-2.5 rounded-full ${item.kind === "event" && item.confirmed ? "bg-[#6b1f1f]" : item.kind === "pageview" ? "bg-[#1a1816]" : "border border-[#1a1816]/40 bg-[#f5f1ed]"}`} />
+                <p className="mb-1 text-xs font-semibold tabular-nums text-[#5a5049]"><time dateTime={item.at}>{item.at.slice(11, 19)} UTC</time> · {item.kind === "arrival" ? "Arrival" : item.kind === "pageview" ? "Page view" : item.confirmed ? "Confirmed outcome" : "Observed event"}</p>
                 {item.kind === "arrival" ? (
-                  <p className="text-sm">{item.label}{item.evidence ? <span className="text-xs text-[#1a1816]/45"> · evidence: {item.evidence}</span> : null}</p>
+                  <p className="text-sm">{item.label}{item.evidence ? <span className="text-xs text-[#5a5049]"> · evidence: {item.evidence}</span> : null}</p>
                 ) : item.kind === "pageview" ? (
                   <p className="text-sm">
                     <span className="font-medium">{cleanTitle(item.title, item.path)}</span>
                     <span className="text-[#1a1816]/50"> {item.path}</span>
                     {item.isLanding ? <span className="ml-2 text-xs uppercase tracking-widest text-[#6b1f1f]">landing</span> : null}
-                    {item.isLast ? <span className="ml-2 text-xs uppercase tracking-widest text-[#1a1816]/45">last seen</span> : null}
-                    <span className="block text-xs text-[#1a1816]/45">{item.engagedMs ? `${formatDuration(item.engagedMs)} on page` : "time on page not recorded"}</span>
+                    {item.isLast ? <span className="ml-2 text-xs uppercase tracking-widest text-[#5a5049]">last seen</span> : null}
+                    <span className="block text-xs text-[#5a5049]">{item.engagedMs ? `${formatDuration(item.engagedMs)} on page` : "time on page not recorded"}</span>
                   </p>
                 ) : (
                   <p className={`text-sm ${item.confirmed ? "font-medium text-[#6b1f1f]" : ""}`}>
                     {item.label}
-                    {item.path ? <span className="text-xs text-[#1a1816]/45"> on {item.path}</span> : null}
-                    {Object.keys(item.props).length ? <span className="block text-xs text-[#1a1816]/45">{Object.entries(item.props).map(([k, v]) => `${k}: ${String(v)}`).join(" · ")}</span> : null}
+                    {item.path ? <span className="text-xs text-[#5a5049]"> on {item.path}</span> : null}
+                    {Object.keys(item.props).length ? <span className="block text-xs text-[#5a5049]">{Object.entries(item.props).map(([k, v]) => `${k}: ${String(v)}`).join(" · ")}</span> : null}
                   </p>
                 )}
               </li>
