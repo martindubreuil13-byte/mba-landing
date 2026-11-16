@@ -11,10 +11,10 @@ import { renderNewsletterEmail } from "@/app/lib/email-studio/render";
 import { campaignLimit, deliverOnce, revalidateRecipient, reviewRecipients, type CampaignRecipient } from "@/app/lib/email-studio/campaign";
 import { recipientCandidates } from "@/app/lib/contact-tags/data";
 import { createUnsubscribeToken } from "@/app/lib/napkin/unsubscribe";
+import { appBaseUrl } from "@/app/lib/resources/base-url";
 
 export const maxDuration = 120;
 const confirmation = z.strictObject({ campaignId: z.uuid(), confirmed: z.literal(true), acknowledgeExceptions: z.literal(true).optional() });
-const origin = "https://modernbusinessarchitect.com";
 
 function fail(error: string, status: number) {
   return Response.json({ error }, { status });
@@ -44,6 +44,7 @@ export async function POST(request: Request) {
       const campaign = claimed.data;
       const recipients = campaign.recipients as CampaignRecipient[];
       const resend = createResend();
+      const origin = appBaseUrl();
       for (const [index, recipient] of recipients.entries()) {
         if (index) await new Promise((resolve) => setTimeout(resolve, 600));
         const key = { campaign_id: id, lead_id: recipient.id, email: recipient.email };

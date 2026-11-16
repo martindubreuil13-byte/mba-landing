@@ -1,6 +1,5 @@
 import { safeLink } from "./render";
 
-export const marketingOrigin = "https://modernbusinessarchitect.com";
 export const attributionCookie = "mba_campaign_link";
 export const providerEvents = new Set([
   "email.sent", "email.delivered", "email.bounced", "email.complained", "email.failed",
