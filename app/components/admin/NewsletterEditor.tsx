@@ -70,10 +70,16 @@ export default function NewsletterEditor({ onChange, storageOrigin, initialOpera
       if (disposed) return;
       for (const [name, whitelist] of [
         ["formats/font", Object.keys(fonts)], ["attributors/style/size", sizes],
+        // Clipboard text can carry arbitrary colors (for example Word's black).
+        // Keep the Delta consistent with the renderer and server's palette.
+        // Parchment checks CSSOM values before Quill converts RGB back to hex.
+        ["attributors/style/color", colors.flatMap((hex) => [hex,
+          `rgb(${[1, 3, 5].map((start) => parseInt(hex.slice(start, start + 2), 16)).join(", ")})`,
+        ])],
       ] as const) {
         const format = Editor.import(name) as { whitelist: readonly string[] };
         format.whitelist = whitelist;
-        Editor.register(name === "attributors/style/size" ? "formats/size" : name, format, true);
+        Editor.register(name.startsWith("attributors/style/") ? name.replace("attributors/style/", "formats/") : name, format, true);
       }
       const NewsletterEmbed = createNewsletterEmbed(Editor, storageOrigin);
       Editor.register(NewsletterEmbed, true);

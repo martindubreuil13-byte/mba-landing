@@ -33,6 +33,7 @@ vi.mock("@/app/lib/supabase/service", () => ({ getServiceClient: () => ({
 }) }));
 
 import { POST } from "./route";
+import { colors } from "@/app/lib/email-studio/render";
 function post(value: object) {
   return POST(new Request("https://modernbusinessarchitect.com/api/admin/email/campaigns", {
     method: "POST", headers: { "content-type": "application/json", origin: "https://modernbusinessarchitect.com", host: "modernbusinessarchitect.com" },
@@ -51,6 +52,36 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllEnvs());
 
 describe("campaign route", () => {
+  it("reviews pasted content with editor-supported colors without sending mail", async () => {
+    state.candidates.mockResolvedValue([candidate]);
+    // Plain text is what remains when the editor drops an out-of-palette
+    // clipboard color; palette colors must still survive review unchanged.
+    for (const color of [undefined, ...colors]) {
+      const review = await post({
+        subject: "November update", previewText: "", ids: [id], exceptions: [],
+        operations: [{ insert: "Pasted newsletter content.", ...(color ? { attributes: { color } } : {}) }, { insert: "\n\n" }],
+      });
+      expect(review.status).toBe(200);
+      const result = await review.json();
+      expect(result).toMatchObject({ selected: 1, eligible: 1 });
+      expect(result.html).toContain("Pasted newsletter content.");
+      if (color) expect(result.html).toContain(`color:${color}`);
+    }
+    expect(state.send).not.toHaveBeenCalled();
+    expect(state.deliveries).toEqual([]);
+  });
+
+  it("rejects unsupported clipboard colors before resolving recipients or sending", async () => {
+    const response = await post({
+      subject: "November update", previewText: "", ids: [id], exceptions: [],
+      operations: [{ insert: "Pasted newsletter content.", attributes: { color: "#000000" } }, { insert: "\n\n" }],
+    });
+    expect(response.status).toBe(400);
+    expect(state.candidates).not.toHaveBeenCalled();
+    expect(state.send).not.toHaveBeenCalled();
+    expect(state.deliveries).toEqual([]);
+  });
+
   it("requires an admin and an explicit confirmation before calling Resend", async () => {
     state.admin.mockResolvedValueOnce(null);
     expect((await post({ campaignId: id, confirmed: true })).status).toBe(401);
