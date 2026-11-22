@@ -1,6 +1,23 @@
 import { z } from "zod";
 
-export const campaignLimit = 25;
+export const campaignBatchSize = 25;
+
+export async function sendCampaignBatches(total: number,
+  submit: (offset: number) => Promise<{ nextOffset: number; done: boolean }>,
+  progress: (processed: number, total: number) => void,
+) {
+  let offset = 0;
+  progress(offset, total);
+  while (offset < total) {
+    const result = await submit(offset);
+    const expected = Math.min(offset + campaignBatchSize, total);
+    if (result.nextOffset !== expected || result.done !== (expected === total)) {
+      throw new Error("Batch progress could not be confirmed. Check Campaign history before retrying.");
+    }
+    offset = result.nextOffset;
+    progress(offset, total);
+  }
+}
 export const exceptionEvidence = z.strictObject({
   basis: z.enum(["express_permission", "documented_applicable_basis"]),
   reason: z.string().trim().min(10).max(500),
@@ -54,9 +71,9 @@ export async function deliverOnce(input: {
   send: () => Promise<Delivery>;
   finish: (result: Delivery | {status: "excluded"; reason: string}) => Promise<void>;
 }) {
+  await input.claim();
   const reason = await input.recheck();
   if (reason) { await input.finish({ status: "excluded", reason }); return; }
-  await input.claim();
   let outcome: Delivery;
   try { outcome = await input.send(); }
   catch { outcome = { status: "unknown" }; }

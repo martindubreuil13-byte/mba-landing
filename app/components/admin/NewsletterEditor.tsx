@@ -6,7 +6,7 @@ import "./newsletter-editor.css";
 import type Quill from "quill";
 import type { BlockEmbed } from "quill/blots/block";
 import NewsletterBlockForm from "./NewsletterBlockForm";
-import { colors, fonts, renderEmailBody, safeLink, sizes, normalizeBlock, renderNewsletterBlock, type NewsletterBlock } from "@/app/lib/email-studio/render";
+import { colors, fonts, headingSizes, renderEmailBody, safeLink, sizes, normalizeBlock, renderNewsletterBlock, type NewsletterBlock } from "@/app/lib/email-studio/render";
 import "quill/dist/quill.core.css";
 
 function createNewsletterEmbed(Editor: typeof Quill, storageOrigin: string) {
@@ -213,7 +213,7 @@ export default function NewsletterEditor({ onChange, storageOrigin, initialOpera
       </div>
       <div className="mt-2 flex flex-wrap gap-2 text-xs">
         <select aria-label="Paragraph style" className="ql-header" defaultValue="">
-          <option value="">Paragraph</option><option value="1">Heading 1</option><option value="2">Heading 2</option>
+          <option value="">Paragraph</option>{Object.keys(headingSizes).map((level) => <option key={level} value={level}>Heading {level}</option>)}
         </select>
         <label className="newsletter-align" title="Text alignment"><AlignLeft aria-hidden /><select aria-label="Alignment" className="ql-align" defaultValue="">
           <option value="">Left</option><option value="center">Center</option><option value="right">Right</option><option value="justify">Justify</option>
