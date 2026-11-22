@@ -6,6 +6,7 @@ export const fonts = {
 } as const;
 export const sizes = ["12px", "16px", "20px", "24px", "32px"];
 export const colors = ["#27211d", "#6b1f1f", "#315644", "#25466d", "#655951"];
+export const headingSizes = { 1: 28, 2: 22, 3: 20, 4: 18, 5: 16, 6: 14 } as const;
 
 type Operation = { insert?: unknown; attributes?: Record<string, unknown> };
 const escape = (text: string) => text.replace(/[&<>"']/g, (char) =>
@@ -59,10 +60,11 @@ export function renderEmailBody(operations: Operation[], storageOrigin?: string)
           if (next) html += '<' + next + ' style="margin:0 0 16px;padding-left:26px">';
           list = next;
         }
-        const tag = next ? "li" : attributes.header === 1 ? "h1" : attributes.header === 2 ? "h2" : "p";
+        const heading = typeof attributes.header === "number" && Object.hasOwn(headingSizes, attributes.header)
+          ? attributes.header as keyof typeof headingSizes : null;
+        const tag = next ? "li" : heading ? `h${heading}` : "p";
         const align = ["center", "right", "justify"].some((value) => value === attributes.align) ? attributes.align : "left";
-        const typography = tag === "h1" ? "font-family:Georgia,serif;font-size:28px;line-height:1.25;" :
-          tag === "h2" ? "font-family:Georgia,serif;font-size:22px;line-height:1.3;" : "";
+        const typography = !next && heading ? `font-family:Georgia,serif;font-size:${headingSizes[heading]}px;line-height:${heading === 1 ? "1.25" : "1.3"};` : "";
         html += '<' + tag + ' style="margin:0 0 ' + (next ? "6" : "16") + 'px;text-align:' + align + ';' + typography + '">' + (line || "<br>") + "</" + tag + ">";
         line = "";
       }
