@@ -1,0 +1,53 @@
+/*
+ * Page-scoped styles for /business-rearchitecture. Everything is prefixed `bra-` so nothing leaks into other pages.
+ * All motion is decoration and sits behind prefers-reduced-motion: no-preference; with it off, or in a browser without
+ * scroll-driven animations, every section is simply visible.
+ */
+
+/* Sections rise gently into view. Pure CSS: no script, no layout shift, content is visible by default. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .bra-rise {
+      animation: bra-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+  }
+}
+
+@keyframes bra-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Information moving through the schematic. */
+@media (prefers-reduced-motion: no-preference) {
+  .bra-flow {
+    stroke-dasharray: 2 10;
+    animation: bra-flow 7s linear infinite;
+  }
+  .bra-flow-slow { animation-duration: 11s; }
+  .bra-hub-pulse {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: bra-hub-pulse 4.5s ease-in-out infinite;
+  }
+  .bra-bottleneck {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: bra-hub-pulse 2.4s ease-in-out infinite;
+  }
+}
+
+@keyframes bra-flow { to { stroke-dashoffset: -96; } }
+@keyframes bra-hub-pulse {
+  0%, 100% { transform: scale(1); opacity: .55; }
+  50% { transform: scale(1.12); opacity: 1; }
+}
+
+/* A native <details> FAQ: draw the plus/minus ourselves and hide the default marker. */
+.bra-faq summary { list-style: none; }
+.bra-faq summary::-webkit-details-marker { display: none; }
+.bra-faq details[open] .bra-faq-plus-v { opacity: 0; }
+.bra-faq-plus-v { transition: opacity .2s ease; }
+@media (prefers-reduced-motion: reduce) { .bra-faq-plus-v { transition: none; } }

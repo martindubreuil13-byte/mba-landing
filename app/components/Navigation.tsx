@@ -23,6 +23,7 @@ export default function Navigation() {
     if (pathname.startsWith("/thinking")) return "THINKING";
     if (pathname.startsWith("/publications")) return "PUBLICATIONS";
     if (pathname.startsWith("/lets-talk")) return "LET'S TALK";
+    if (pathname === "/business-rearchitecture" || pathname.startsWith("/business-rearchitecture/")) return "RE-ARCHITECTURE";
     return "HOME";
   };
 

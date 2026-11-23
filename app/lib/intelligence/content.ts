@@ -11,6 +11,6 @@ export function contentCategory(path: string): string {
   if (path === "/thinking" || path.startsWith("/thinking/")) return "Thinking";
   if (path === "/resources" || path.startsWith("/resources/")) return "Resources";
   if (path === "/cases" || path.startsWith("/cases/")) return "Cases";
-  if (path === "/work" || path.startsWith("/work/") || path.startsWith("/transition") || path.startsWith("/lets-talk")) return "Services";
+  if (path === "/work" || path.startsWith("/work/") || path.startsWith("/transition") || path.startsWith("/business-rearchitecture") || path.startsWith("/lets-talk")) return "Services";
   return "Other";
 }

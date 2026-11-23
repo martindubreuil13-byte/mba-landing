@@ -18,6 +18,7 @@ const publicRoutes = [
   "/cases/evolve-it",
   "/cases/create-it",
   "/lets-talk",
+  "/business-rearchitecture",
   "/resources",
   "/privacy",
   "/thinking",

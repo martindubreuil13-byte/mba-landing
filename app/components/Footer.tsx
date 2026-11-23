@@ -74,6 +74,10 @@ export default function Footer() {
             <Link href="/lets-talk" className="hover:text-[#1a1816] transition-colors">
               Let&apos;s Talk
             </Link>
+            <span>·</span>
+            <Link href="/business-rearchitecture" className="hover:text-[#1a1816] transition-colors">
+              Business Re-Architecture
+            </Link>
             <span className="ml-auto flex items-center gap-4 text-[#1a1816]/65">
               <ConsentPreferencesLink />
               <span>© 2026</span>
@@ -116,6 +120,9 @@ export default function Footer() {
               </Link>
               <Link href="/lets-talk" className="block hover:text-[#1a1816] transition-colors">
                 Let&apos;s Talk
+              </Link>
+              <Link href="/business-rearchitecture" className="block hover:text-[#1a1816] transition-colors">
+                Business Re-Architecture
               </Link>
             </nav>
 

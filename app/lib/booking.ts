@@ -18,7 +18,7 @@ export const INTRO_BOOKING_PATH = "/book/complementary-session";
 export const INTRO_BOOKING_MINUTES = 45;
 
 /** Where the booking started, shown to the administrator beside each booking. Short, fixed vocabulary: never free text from a visitor. */
-export type BookingOrigin = "transition" | "inquiry" | "answers";
+export type BookingOrigin = "transition" | "inquiry" | "answers" | "rearchitecture";
 export type Origin = BookingOrigin | `inquiry-${string}`;
 
 /**

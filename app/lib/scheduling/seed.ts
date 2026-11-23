@@ -41,6 +41,15 @@ export function seedMeetingTypes(): MeetingType[] {
       availability: { weekly: { "1": [{ start: "13:00", end: "16:30" }], "3": [{ start: "13:00", end: "16:30" }] }, breaks: [], daysOff: [], overrides: {}, bookingWindowDays: 60 },
       minNoticeHours: 72, bufferBeforeMinutes: 15, bufferAfterMinutes: 30, maxPerDay: 1, slotIntervalMinutes: 30, active: true,
     },
+    {
+      // Mirrors the slug and length of the public introductory booking link (app/lib/booking.ts) so that link works in local development.
+      // Local sample data only: production's meeting types live in its own database and are managed in the admin.
+      id: "mt-complementary", slug: "complementary-session", name: "Complimentary Session",
+      description: "A first conversation about your business and what you would like to improve. Not the assessment, and no obligation.",
+      durationMinutes: 45, format: "zoom", priceLabel: "Complimentary", visibility: "public",
+      availability: { weekly: weekdays([2, 3, 4], "09:30", "16:30"), breaks: [{ start: "12:00", end: "13:00" }], daysOff: [], overrides: {}, bookingWindowDays: 60 },
+      minNoticeHours: 24, bufferBeforeMinutes: 0, bufferAfterMinutes: 15, maxPerDay: 3, slotIntervalMinutes: 45, active: true,
+    },
   ];
 }
 
