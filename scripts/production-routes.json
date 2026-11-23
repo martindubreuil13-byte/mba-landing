@@ -140,6 +140,8 @@
     "app/book/[meetingType]/page.tsx",
     "app/book/confirmed/[reference]/page.tsx",
     "app/book/layout.tsx",
+    "app/business-rearchitecture/layout.tsx",
+    "app/business-rearchitecture/page.tsx",
     "app/cases/create-it/layout.tsx",
     "app/cases/create-it/page.tsx",
     "app/cases/evolve-it/layout.tsx",
@@ -217,6 +219,7 @@
     "app/unsubscribe/napkin/page.tsx",
     "app/unsubscribe/page.tsx",
     "app/work/[slug]/page.tsx",
-    "app/work/page.tsx"
+    "app/work/page.tsx",
+    "public/brand/mba-logo.png"
   ]
 }

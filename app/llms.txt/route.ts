@@ -20,6 +20,7 @@ Principal: Martin Dubreuil
 - [Thinking and perspectives](${SITE_URL}/thinking)
 - [Answers to common business questions](${SITE_URL}/answers)
 - [Start a conversation](${SITE_URL}/lets-talk)
+- [Business Re-Architecture: AI and business redesign for established manufacturing and retail businesses](${SITE_URL}/business-rearchitecture)
 
 ## Services: eight independent programs (start anywhere; none is a prerequisite for another)
 ${programLines}

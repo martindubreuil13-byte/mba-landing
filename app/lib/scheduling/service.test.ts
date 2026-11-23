@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { createMockGoogleCalendar, createMockZoom } from "./providers";
-import { buildSeedData, DEMO_REFERENCE } from "./seed";
+import { buildSeedData, DEMO_REFERENCE, seedMeetingTypes } from "./seed";
 import { SchedulingError, SchedulingService, type BookingInput } from "./service";
 import { MemoryStore } from "./store";
 import { formatTime, localDate, weekdayOf, zonedParts } from "./timezone";
@@ -320,6 +320,6 @@ describe("administrator configuration", () => {
     await svc.saveSettings({ homeTimeZone: "Europe/London" });
     await svc.resetPrototype();
     expect((await store.read()).settings.homeTimeZone).toBe("Asia/Bangkok");
-    expect((await store.read()).meetingTypes).toHaveLength(3);
+    expect((await store.read()).meetingTypes).toHaveLength(seedMeetingTypes().length);
   });
 });
