@@ -60,7 +60,7 @@ The server action gained one operation, `update` (search text and tags of an exi
 
 ## Database change (migration required)
 
-`supabase/migrations/20261124040000_individual_outreach.sql`, additive only:
+`supabase/migrations/20261124074109_individual_outreach.sql`, additive only:
 
 - `email_campaigns.kind` (`'newsletter'` default, or `'outreach'`), plus a check that an outreach campaign has exactly one recipient. Existing rows become `'newsletter'`; nothing else about them changes.
 - New table `email_outreach_drafts` (row security on, service role only).

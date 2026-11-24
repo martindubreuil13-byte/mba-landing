@@ -1,6 +1,6 @@
 # Migration runbook: individual outreach (for approval)
 
-`supabase/migrations/20261124040000_individual_outreach.sql`. **Not applied anywhere.** Nothing in this document has been run against production. Applying it needs Martin's explicit approval of this specific migration (AGENTS.md rule 3). Agents are blocked from running it.
+`supabase/migrations/20261124074109_individual_outreach.sql`. **Applied in production on 2026-11-24 as version `20261124074109`** (name `individual_outreach`, 1 statement, normalised hash `1d78c9c4015f1a55b0490e7e824ebe78`, which matches this file), and recorded in `docs/supabase/production-migration-records.json`. The file was renamed from its draft version `20261124040000` with its content unchanged. The text below is the plan that was approved and followed, kept as the record. Applying it needs Martin's explicit approval of this specific migration (AGENTS.md rule 3). Agents are blocked from running it.
 
 Read [MIGRATION-HISTORY.md](MIGRATION-HISTORY.md) first. Its warning stands: do **not** use `supabase db push` or `supabase migration repair` against production.
 
@@ -8,7 +8,7 @@ Read [MIGRATION-HISTORY.md](MIGRATION-HISTORY.md) first. Its warning stands: do 
 
 | | |
 |---|---|
-| **Migration file** | `supabase/migrations/20261124040000_individual_outreach.sql` (on `feat/individual-outreach`, PR #11) |
+| **Migration file** | `supabase/migrations/20261124074109_individual_outreach.sql` (on `feat/individual-outreach`, PR #11) |
 | **Size / SHA-256 of the file** | 4,532 bytes / `9242928d20bfc87b3cd6ce5271fda1f81bd5b6b36ebab6570419a625b7102b25` |
 | **Normalised SQL hash** (what production will record; layout and semicolons ignored) | `1d78c9c4015f1a55b0490e7e824ebe78` |
 | **Target** | Supabase project **"The MBA"**, ref **`sbntzyivfhvogxiiysuh`**, organisation "Martin SaaS Lab" (as recorded in `docs/mba-scheduling/STAGE-A-COMPLETION.md` and `PRODUCTION-RELEASE-PREPARATION.md`, and as the default production ref in `app/lib/deployment.ts`). Confirm in the dashboard that this is the project behind modernbusinessarchitect.com before applying. |
@@ -116,7 +116,7 @@ If any expectation is not met, stop and report: do not continue to step 4.
 
 ### 4. Record it in the repository (on `feat/individual-outreach`)
 
-1. If the recorded version differs from `20261124040000`, rename the file to the recorded version (`git mv supabase/migrations/20261124040000_individual_outreach.sql supabase/migrations/<recorded-version>_individual_outreach.sql`). The content must not change (as was done for twelve earlier migrations).
+1. If the recorded version differs from `20261124040000`, rename the file to the recorded version (`git mv supabase/migrations/20261124074109_individual_outreach.sql supabase/migrations/<recorded-version>_individual_outreach.sql`). The content must not change (as was done for twelve earlier migrations).
 2. Add the record to `docs/supabase/production-migration-records.json` (`version`, `name`, `statementCount`, `normalizedMd5`) and refresh `capturedAt`, using the query in MIGRATION-HISTORY.md.
 3. `node scripts/verify-migration-history.mjs --strict` must pass, then `SCHEDULING_DB_TESTS=0 npm test`: the migration-history test, red until now, goes green.
 4. The local-database test and the in-memory SQL test refer to the migration by its file name: update the file name in `app/lib/email-outreach/outreach-db.test.mjs` if it was renamed.

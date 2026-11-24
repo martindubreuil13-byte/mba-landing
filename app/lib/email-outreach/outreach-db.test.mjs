@@ -1,10 +1,12 @@
 import { it } from "vitest";
 import { PGlite } from "@electric-sql/pglite";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import assert from "node:assert/strict";
 
 const repo = process.cwd();
 const sql = (name) => readFileSync(`${repo}/supabase/migrations/${name}`, "utf8");
+// Found by name: production stamps its own version on a migration when it is applied, so the file name's version prefix is not fixed.
+const outreachMigration = readdirSync(`${repo}/supabase/migrations`).filter((name) => name.endsWith("_individual_outreach.sql")).sort().at(-1);
 
 /**
  * Runs the real SQL of the individual-outreach migration in an in-memory Postgres (no network, no Supabase, no production).
@@ -38,7 +40,7 @@ it("makes an individual send a one-recipient campaign that can be claimed only o
     await markDelivered(before, b1.recipients);
     assert.deepEqual(await finishNews(before, b1.claimToken), { nextOffset: 25, done: false });
 
-    await db.exec(sql("20261124040000_individual_outreach.sql"));
+    await db.exec(sql(outreachMigration));
 
     const b2 = await claimNews(before, 25);                       // the half-sent newsletter carries on in the same session
     assert.equal(b2.recipients.length, 5);
