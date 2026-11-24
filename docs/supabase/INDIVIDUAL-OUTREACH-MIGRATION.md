@@ -54,7 +54,8 @@ It runs as one transaction: it applies completely or not at all. Do **not** past
 ### 3. Read-only verification (production)
 
 ```sql
--- (a) It was recorded, with the exact SQL. Expect one new row, statement_count 1, and normalized_md5 = 1d78c9c4015f1a55b0490e7e824ebe78.
+-- (a) It was recorded, with the exact SQL. Expect one new row and normalized_md5 = 1d78c9c4015f1a55b0490e7e824ebe78 (the invariant).
+--     statement_count is 1 when applied through apply_migration (as for the earlier migrations); the local CLI splits the same file into 10.
 select version, name,
        coalesce(array_length(statements, 1), 0) as statement_count,
        md5(regexp_replace(replace(array_to_string(statements, ''), ';', ''), '\s+', '', 'g')) as normalized_md5
@@ -109,31 +110,45 @@ What has been proven so far, and what has not:
 | In-memory Postgres (PGlite) runs the migration's real SQL | constraints, the one-recipient rule, single claim, the attach function (including voiding and refusing), permissions | **passes** in CI |
 | Mocked route and helper tests | the decisions and wording around the database | **passes** in CI |
 | Browser run against a stand-in server | the interface in every state | **passes** (not part of CI) |
-| `app/lib/email-outreach/local-db.test.ts` on a local Supabase stack | the same SQL through real PostgREST (embedded selects, error codes) and **true concurrency** (12 simultaneous claims, 8 rounds of a send racing a re-review), contacts, recent sends, the review route end to end, and that the newsletter history queries still run | **written and type-checked; not yet run** (Docker was not available) |
+| `app/lib/email-outreach/local-db.test.ts` on a local Supabase stack | the same SQL through real PostgREST (embedded selects, error codes) and **true concurrency** (12 simultaneous claims, 8 rounds of a send racing a re-review), contacts, recent sends, the review route end to end, and that the newsletter history queries still run | **10 of 10 pass** (2026-11-24, isolated stack; repeated 6 times without a failure; fails 3 of 10 when the function is deliberately weakened, so it can detect the original bug) |
 | A real send | Resend and the production-only send route | **cannot be done in isolation**; only a production-mode run can, and none is planned |
 
 ### Running it (safe by construction)
 
-Prerequisites: Docker Desktop running (the first start downloads the Supabase images, roughly 2 to 3 GB), and the `supabase` CLI (installed).
+**Do not run `supabase db reset` in the repository.** The repository's `supabase/config.toml` names its local stack `mba-site`, and that name (and its database volume) is shared by every checkout of this project on the machine. A reset there destroys whatever local data that stack holds. On 2026-11-24 the existing `mba-site` stack was an old partial one (12 migrations, no campaign tables). Use a **separate, throwaway stack** instead:
 
 ```bash
-cd mba-site
-supabase start                       # a disposable local stack; nothing leaves this machine
-supabase db reset                    # applies every file in supabase/migrations to the LOCAL database only
-supabase status -o env               # prints the local API_URL, ANON_KEY and SERVICE_ROLE_KEY
+W=/tmp/mba-outreach-stack                       # anywhere outside the repository
+mkdir -p $W/supabase/migrations
+cp supabase/migrations/*.sql $W/supabase/migrations/
+cp supabase/config.toml $W/supabase/config.toml
+# In $W/supabase/config.toml change ONLY:
+#   project_id = "mba-outreach-validate"          (own containers and volume; nothing shared)
+#   every port 543xx -> 555xx                      (api 55521, db 55522, shadow 55520, studio 55523, inbucket 55524, analytics 55527, pooler 55529)
+#   enabled = false for [studio], [inbucket], [edge_runtime], [analytics], [db.seed]   (not needed; saves downloads)
+
+DO_NOT_TRACK=1 supabase start --workdir $W       # applies every migration on first boot; pulls any missing images
+DO_NOT_TRACK=1 supabase db reset --local --workdir $W   # optional: explicit rebuild; --local targets only this stack
+DO_NOT_TRACK=1 supabase status --workdir $W -o env      # API_URL (http://127.0.0.1:55521), ANON_KEY, SERVICE_ROLE_KEY
 ```
 
-Create `.env.development.local` (git-ignored) containing **only** those three values, under the names `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY`. Do **not** copy an env file from any other checkout, and do **not** set `RESEND_API_KEY` or any provider key. (An earlier `.env.development.local` held live Google, Zoom and Resend settings and caused the 2026-11-01 incident; see the project notes.) The test helper refuses any URL that is not `127.0.0.1` or `localhost`, and the app refuses to run a non-production deployment against the production database.
+Confirm the target before any reset: `supabase status --workdir $W` must show `127.0.0.1:555xx`, the containers are named `supabase_*_mba-outreach-validate`, and `supabase/.temp/project-ref` must not exist in the repository (that file would mean the checkout is linked to a hosted project; it was absent).
+
+Create `.env.development.local` (git-ignored) with **only** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` (the local JWT keys from `status -o env`, not the newer `sb_*` keys). Do **not** copy an env file from any other checkout and do **not** set `RESEND_API_KEY` or any provider key. (An earlier `.env.development.local` held live Google, Zoom and Resend settings and caused the 2026-11-01 incident.) The test helper refuses any URL that is not `127.0.0.1` or `localhost`, and the app refuses to run a non-production deployment against the production database. Delete the file when finished: while it exists, a plain `npm test` also runs the local-database suites and `npm run dev` points at the local stack.
 
 ```bash
 npx vitest run --project local-db app/lib/email-outreach/local-db.test.ts   # this feature
-SCHEDULING_DB_TESTS=1 npx vitest run --project local-db                     # plus the existing local-database suites, as a regression check
-node scripts/local-admin.mjs         # optional: creates the local admin so Email Studio can be opened with `npm run dev`
+npx vitest run                                                               # everything, with the local suites enabled
+(set -a; source .env.development.local; set +a; LOCAL_DB_IT=1 npx vitest run app/lib/publications/queries.local-db.test.ts)   # the publications suite has its own opt-in
+DO_NOT_TRACK=1 supabase stop --workdir $W                                    # stop the stack (it binds 0.0.0.0 with well-known default keys); add --no-backup to also delete its data
 ```
 
-Known unknowns to expect on the first run:
+### Results on 2026-11-24
 
-- `supabase db reset` replays **all** migrations on an empty database, which has never been done for this repository (MIGRATION-HISTORY.md says so). One of the older files (for example the recovered ones that enable `pg_cron`/`pg_net`) could fail locally. If that happens it is a finding about the old history, not about this migration; the fallback is to apply only the email-related migrations plus this one to the local database.
-- In `npm run dev` the real send route is intentionally unavailable ("Campaign sending is unavailable in this environment"), so the UI can be exercised up to the final confirmation, and the send itself is covered by the test above plus the existing route tests.
+- **Full replay of all 39 migration files on an empty database: no failure**, including this migration and the recovered `pg_cron`/`pg_net` ones. This history had never been replayed from scratch before.
+- This feature's real-database test: **10 passed, 0 failed, 0 skipped**, including 12 simultaneous claims on one individual email (exactly one wins) and 8 rounds of a send racing a re-review of the same draft (never both sent).
+- Whole suite with the local stack available: 1,658 passed, 1 failed, 18 skipped. The failure is the migration-history test (expected until the migration is recorded). The 18 skipped are the publications tests, which need `LOCAL_DB_IT=1`.
+- Publications suite run with that opt-in: 17 passed, 1 failed. The failure ("a database failure after the upload rolls the new asset back") **also fails on untouched `origin/main`** in this environment and concerns a part of the code this change does not touch. It was not investigated.
+- The verification SQL in this runbook was executed against the local database: it runs, and the recorded normalised hash is exactly `1d78c9c4015f1a55b0490e7e824ebe78`. The pre-check reads true/true/true on a database without the migration.
 
 Cost: none beyond the local download and disk. A hosted Supabase branch would also work but is billed and is not needed.

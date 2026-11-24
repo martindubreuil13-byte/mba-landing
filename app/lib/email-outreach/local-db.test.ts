@@ -155,9 +155,11 @@ const evidence = { basis: "express_permission", reason: "Asked me to write after
     const mine = await campaign("recent", { kind: "outreach" });
     const news = await campaign("recent", { kind: "newsletter" });
     const old = await campaign("recent", { kind: "outreach" });
+    // Every row names the same columns: a bulk insert through PostgREST turns a column missing from some rows into an explicit null.
+    const now = new Date().toISOString();
     const rows = [
-      { campaign_id: mine.id, lead_id: person("recent").id, email: email("recent"), status: "sent" },
-      { campaign_id: news.id, lead_id: person("recent").id, email: email("recent"), status: "sent" },
+      { campaign_id: mine.id, lead_id: person("recent").id, email: email("recent"), status: "sent", updated_at: now },
+      { campaign_id: news.id, lead_id: person("recent").id, email: email("recent"), status: "sent", updated_at: now },
       { campaign_id: old.id, lead_id: person("recent").id, email: email("recent"), status: "sent", updated_at: new Date(Date.now() - 45 * 86_400_000).toISOString() },
     ];
     expect((await db.from("email_campaign_deliveries").insert(rows)).error).toBeNull();
