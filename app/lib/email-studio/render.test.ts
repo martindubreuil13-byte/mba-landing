@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { renderEmailBody, safeLink } from "./render";
+import { renderEmailBody, safeLink, renderOutreachEmail, renderNewsletterEmail } from "./render";
 
 it("escapes text, rejects active URLs and drops embeds and unknown styles", () => {
   const html = renderEmailBody([
@@ -44,4 +44,15 @@ it("renders only uploaded images and safe HTTPS buttons in a mixed newsletter", 
   expect(html).toContain("Read &lt;more&gt;");
   expect(html).toContain('bgcolor="#fffaf5"');
   expect(html).not.toMatch(/Unsafe|Insecure|attacker|javascript/);
+});
+
+it("renders personal outreach without a branded frame or repeated subject, preserving the opt-out", () => {
+  const body = "<p>Hi Ada,</p><p>Could we talk?</p><p>Martin</p>";
+  const html = renderOutreachEmail("A question", body, { previewText: "A short question", unsubscribeUrl: "https://example.com/unsubscribe?x=1&y=2" });
+  expect(html).toContain(body);
+  expect(html).toContain("A short question");
+  expect(html).toContain('href="https://example.com/unsubscribe?x=1&amp;y=2"');
+  expect(html).not.toMatch(/<table|<h1|The Modern Business Architect|border:|background:/);
+  expect(html).not.toContain("A question");
+  expect(renderNewsletterEmail("A question", body)).toContain("The Modern Business Architect");
 });

@@ -7,7 +7,7 @@ import type { recipientCandidates } from "@/app/lib/contact-tags/data";
 import { OutreachError, callOutreach } from "@/app/lib/email-outreach/client";
 import { isDirty, isEmail, type DeliveryResult, type OutreachDraft, type ReviewResponse } from "@/app/lib/email-outreach/model";
 import { sendCampaignBatches } from "@/app/lib/email-studio/campaign";
-import { renderNewsletterEmail } from "@/app/lib/email-studio/render";
+import { renderOutreachEmail } from "@/app/lib/email-studio/render";
 import NewsletterEditor from "./NewsletterEditor";
 import OutreachDraftList from "./OutreachDraftList";
 import OutreachRecipient, { type Recipient } from "./OutreachRecipient";
@@ -248,7 +248,7 @@ export default function OutreachComposer({ contacts, available, storageOrigin, i
       <label className="grid gap-1 text-sm"><span>Preview text <span className="text-[#655951]">(optional)</span></span><input className={field} maxLength={160} value={previewText} disabled={unavailable} onChange={(event) => setPreviewText(event.target.value)} /></label>
       <NewsletterEditor key={editorKey} initialOperations={initialOps} storageOrigin={storageOrigin} onChange={onEditorChange}
         placeholder="Write your message…" label="Outreach message" />
-      <TestEmailDialog dialog={testDialog} subject={subject} operations={operations} />
+      <TestEmailDialog kind="outreach" dialog={testDialog} subject={subject} operations={operations} />
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" disabled={busy || unavailable || (!dirty && currentId !== null)} onClick={saveDraft}
           className="rounded-lg border border-[#daccc1] bg-white px-4 py-2 font-medium text-[#6b1f1f] hover:bg-[#efdfd8] disabled:opacity-50">Save draft</button>
@@ -273,7 +273,7 @@ export default function OutreachComposer({ contacts, available, storageOrigin, i
       </div>
       <div className="newsletter-preview-stage">
         <article className="newsletter-preview-paper" style={{ maxWidth: mode === "mobile" ? 375 : 600 }}
-          dangerouslySetInnerHTML={{ __html: renderNewsletterEmail(subject, message, { previewText }) }} />
+          dangerouslySetInnerHTML={{ __html: renderOutreachEmail(subject, message, { previewText }) }} />
       </div>
     </section>
   </div>;

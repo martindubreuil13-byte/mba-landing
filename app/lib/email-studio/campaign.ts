@@ -25,7 +25,7 @@ export const exceptionEvidence = z.strictObject({
 });
 export type ExceptionEvidence = z.infer<typeof exceptionEvidence>;
 export type ExceptionReview = ExceptionEvidence & { id: string; email: string };
-export type CampaignRecipient = { id: string; email: string; exception?: ExceptionEvidence & { adminId: string; reviewedAt: string } };
+export type CampaignRecipient = { id: string; email: string; exception?: (ExceptionEvidence | { basis: "individual_b2b_outreach"; reason: string; evidence: string }) & { adminId: string; reviewedAt: string } };
 type Candidate = CampaignRecipient & { state: string; reason: string };
 
 export function reviewRecipients(ids: string[], contacts: Candidate[], reviews: ExceptionReview[] = [], audit?: { adminId: string; reviewedAt: string }) {

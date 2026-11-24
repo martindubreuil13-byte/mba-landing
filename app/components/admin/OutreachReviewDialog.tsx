@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState, type RefObject } from "react";
 import { preferenceLabel } from "@/app/lib/contact-tags/preferences";
-import { exceptionEvidence } from "@/app/lib/email-studio/campaign";
 import type { DeliveryResult, ReviewResponse } from "@/app/lib/email-outreach/model";
 
 export type Flow =
@@ -18,7 +17,6 @@ export type Continue = { exception?: { basis: string; reason: string; evidence: 
 
 const button = "rounded-lg border border-[#daccc1] bg-white px-4 py-2 font-medium text-[#6b1f1f] hover:bg-[#efdfd8] disabled:opacity-50";
 const primary = "rounded-lg bg-[#6b1f1f] px-4 py-2 text-white disabled:opacity-50";
-const field = "w-full min-w-0 rounded-lg border border-[#daccc1] bg-white px-3 py-2";
 
 const blockedHelp = (reason: string) =>
   reason === "Unsubscribed" ? "This person unsubscribed from email. They cannot be emailed from Email Studio."
@@ -34,36 +32,10 @@ function Facts({ data }: { data: ReviewResponse }) {
     <dt className="font-semibold">To</dt><dd className="break-words text-base font-semibold">{contact.name ? `${contact.name} <${contact.email}>` : contact.email}</dd>
     <dt className="font-semibold">Contact</dt>
     <dd>{contact.created ? "New contact, added to Contacts for this email. Not subscribed to the newsletter." : "Existing contact."}{" "}
-      <span className={contact.state === "Eligible" ? "text-[#315644]" : "text-[#6b1f1f]"}>{preferenceLabel(contact.state, contact.reason)} · {contact.reason}</span></dd>
+      <span>{contact.state === "Unknown" ? "Individual B2B outreach. Not subscribed to the newsletter." : `${preferenceLabel(contact.state, contact.reason)} · ${contact.reason}`}</span></dd>
     <dt className="font-semibold">Subject</dt><dd className="break-words">{data.subject}</dd>
     <dt className="font-semibold">Preview text</dt><dd className="break-words">{data.previewText || "None"}</dd>
   </dl>;
-}
-
-type Prefill = Extract<ReviewResponse, { status: "needs_exception" }>["prefill"];
-
-function ExceptionForm({ prefill, busy, onSubmit }: { prefill: Prefill; busy: boolean; onSubmit: (value: NonNullable<Continue["exception"]>) => void }) {
-  const [error, setError] = useState("");
-  return <form className="grid gap-2 rounded-lg border border-[#6b1f1f] bg-[#f8ece8] p-3 text-sm" onSubmit={(event) => {
-    event.preventDefault();
-    const fields = new FormData(event.currentTarget);
-    const parsed = exceptionEvidence.safeParse({ basis: fields.get("basis"), reason: fields.get("reason"), evidence: fields.get("evidence") });
-    if (!parsed.success) { setError("Enter a reason of at least 10 characters and evidence of at least 15 characters."); return; }
-    setError("");
-    onSubmit(parsed.data);
-  }}>
-    <p><strong>No marketing permission is recorded for this address.</strong> Requirements vary by jurisdiction. Send only if you can document a basis that applies to this email, and record it here. It is saved with the send.</p>
-    <label className="grid gap-1">Basis<select className={field} name="basis" required defaultValue={prefill?.basis ?? ""}>
-      <option value="">Choose a basis</option>
-      <option value="express_permission">Documented express permission for this address</option>
-      <option value="documented_applicable_basis">Other documented basis applicable to this email</option>
-    </select></label>
-    <label className="grid gap-1">Reason<input className={field} name="reason" required minLength={10} maxLength={500} defaultValue={prefill?.reason ?? ""} /></label>
-    <label className="grid gap-1">Evidence and reference<textarea className={field} name="evidence" required minLength={15} maxLength={1000} defaultValue={prefill?.evidence ?? ""}
-      placeholder="Record what permits this email, where the evidence is held, and any relevant dates or expiry." /></label>
-    {error && <p role="alert" className="text-[#6b1f1f]">{error}</p>}
-    <div><button className={primary} disabled={busy}>Use this basis and continue</button></div>
-  </form>;
 }
 
 /** The final check before one email goes out: exactly who, exactly what, and everything that has to be confirmed first. */
@@ -80,7 +52,6 @@ export default function OutreachReviewDialog({ dialog, flow, ...handlers }: { di
 }
 
 function Body({ flow, onContinue, onSend, onBackToEditing, onNext, onCopy, onReopen }: { flow: Exclude<Flow, { stage: "closed" }> } & Omit<Handlers, "onClose">) {
-  const [acknowledged, setAcknowledged] = useState(false);
   const [recentSeen, setRecentSeen] = useState(false);
   const busy = flow.stage === "loading" || flow.stage === "sending";
   const data = "data" in flow ? flow.data : null;
@@ -102,11 +73,6 @@ function Body({ flow, onContinue, onSend, onBackToEditing, onNext, onCopy, onReo
         <div><button type="button" className={button} onClick={onBackToEditing}>Back to editing</button></div>
       </>}
 
-      {flow.stage === "review" && flow.data.status === "needs_exception" && <>
-        <ExceptionForm prefill={flow.data.prefill} busy={false} onSubmit={(exception) => onContinue({ exception })} />
-        <div><button type="button" className={button} onClick={onBackToEditing}>Back to editing</button></div>
-      </>}
-
       {flow.stage === "review" && flow.data.status === "needs_recent_acknowledgement" && <>
         <aside role="alert" className="rounded-lg border border-[#6b1f1f] bg-[#f8ece8] p-3 text-sm text-[#6b1f1f]">
           <p><strong>You already emailed this address recently.</strong></p>
@@ -121,14 +87,10 @@ function Body({ flow, onContinue, onSend, onBackToEditing, onNext, onCopy, onReo
       </>}
 
       {(flow.stage === "review" && flow.data.status === "ready") || flow.stage === "sending" ? <>
-        {data && data.exceptionCount > 0 && <aside className="rounded-lg border border-[#6b1f1f] bg-[#f8ece8] p-3 text-sm text-[#6b1f1f]">
-          <p><strong>Marketing permission is unverified for this address.</strong> The basis you documented will be saved with this send.</p>
-          <label className="mt-2 flex items-start gap-2"><input type="checkbox" checked={acknowledged} disabled={busy} onChange={(event) => setAcknowledged(event.target.checked)} /> I reviewed the documented basis and acknowledge this warning.</label>
-        </aside>}
         {data && <div className="newsletter-preview-paper" dangerouslySetInnerHTML={{ __html: data.html }} />}
         <p className="text-sm">The unsubscribe link is personalised when the email is sent. Eligibility is checked again at that moment. <strong>This sends a real email, once.</strong></p>
         <div className="flex flex-wrap gap-3">
-          <button type="button" className={primary} disabled={busy || (data !== null && data.exceptionCount > 0 && !acknowledged)} onClick={onSend}>
+          <button type="button" className={primary} disabled={busy} onClick={onSend}>
             {flow.stage === "sending" ? "Sending…" : `Send this email to ${data?.contact.email ?? ""}`}</button>
           <button type="button" className={button} disabled={busy} onClick={onBackToEditing}>Back to editing</button>
         </div>

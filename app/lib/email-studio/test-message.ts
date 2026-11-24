@@ -1,6 +1,6 @@
 import { exceptionEvidence } from "./campaign";
 import { z } from "zod";
-import { colors, fonts, normalizeBlock, renderEmailBody, renderNewsletterEmail, safeLink, sizes } from "./render";
+import { colors, fonts, normalizeBlock, renderEmailBody, renderNewsletterEmail, renderOutreachEmail, safeLink, sizes } from "./render";
 
 const attributes = z.strictObject({
   bold: z.literal(true).optional(), italic: z.literal(true).optional(), underline: z.literal(true).optional(),
@@ -22,7 +22,7 @@ const content = z.strictObject({
   ])).min(1).max(1500),
 });
 
-const testRequest = content.extend({ recipient: z.string().trim().max(254).email(), confirmed: z.literal(true) });
+const testRequest = content.extend({ recipient: z.string().trim().max(254).email(), kind: z.enum(["newsletter", "outreach"]).default("newsletter"), confirmed: z.literal(true) });
 const campaignRequest = content.extend({ previewText: z.string().trim().max(160).refine((value) => !/[\r\n]/.test(value)), ids: z.array(z.uuid()).min(1), exceptions: z.array(exceptionEvidence.extend({ id: z.uuid(), email: z.email().max(254) })).default([]) });
 
 function prepareContent({ subject, operations }: z.infer<typeof content>, storageOrigin: string) {
@@ -42,7 +42,7 @@ export function prepareTestMessage(value: unknown, storageOrigin: string) {
   const parsed = testRequest.safeParse(value);
   if (!parsed.success) return null;
   const message = prepareContent(parsed.data, storageOrigin);
-  return message && { recipient: parsed.data.recipient, subject: "[TEST] " + message.subject, html: renderNewsletterEmail(message.subject, message.body), text: message.text };
+  return message && { recipient: parsed.data.recipient, subject: "[TEST] " + message.subject, html: (parsed.data.kind === "outreach" ? renderOutreachEmail : renderNewsletterEmail)(message.subject, message.body), text: message.text };
 }
 
 export function validateCampaign(value: unknown, storageOrigin: string) {

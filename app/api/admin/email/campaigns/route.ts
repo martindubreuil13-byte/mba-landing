@@ -7,7 +7,7 @@ import { createResend } from "@/app/lib/email-client";
 import { DEFAULT_RESOURCE_FROM } from "@/app/lib/resources/delivery-email";
 import { BodyTooLargeError, isSameOriginRequest, readJsonBody } from "@/app/lib/publications/request-guards";
 import { validateCampaign } from "@/app/lib/email-studio/test-message";
-import { renderNewsletterEmail } from "@/app/lib/email-studio/render";
+import { renderNewsletterEmail, renderOutreachEmail } from "@/app/lib/email-studio/render";
 import { deliverOnce, revalidateRecipient, reviewRecipients, type CampaignRecipient } from "@/app/lib/email-studio/campaign";
 import { recipientCandidates } from "@/app/lib/contact-tags/data";
 import { createUnsubscribeToken } from "@/app/lib/napkin/unsubscribe";
@@ -34,6 +34,10 @@ export async function POST(request: Request) {
       // Refuse before claiming anything rather than silently stopping at 25.
       if (!Object.hasOwn(body as object, "offset")) return fail("Reload Email Studio before sending to enable all recipient batches. Keep a copy of your draft first.", 409);
       const id = send.data.campaignId;
+      // Resolve layout from the persisted campaign, never a client-supplied flag.
+      const layout = await db.from("email_campaigns").select("kind").eq("id", id).single();
+      if (layout.error || !layout.data) throw layout.error ?? new Error("Campaign unavailable");
+      const render = layout.data.kind === "outreach" ? renderOutreachEmail : renderNewsletterEmail;
       // Validate signing configuration before claiming the campaign.
       createUnsubscribeToken(id, true);
       const claimed = await db.rpc("claim_email_campaign_batch", {
@@ -63,7 +67,7 @@ export async function POST(request: Request) {
             const { data, error } = await resend.emails.send({
               tags: [{ name: "mba_campaign", value: id }],
               from: DEFAULT_RESOURCE_FROM, to: recipient.email, subject: campaign.subject,
-              html: renderNewsletterEmail(campaign.subject, tracked, { previewText: campaign.preview_text, unsubscribeUrl }),
+              html: render(campaign.subject, tracked, { previewText: campaign.preview_text, unsubscribeUrl }),
               text: campaign.body_text + "\n\nUnsubscribe: " + unsubscribeUrl,
               headers: {
                 "List-Unsubscribe": `<${origin}/api/unsubscribe?token=${token}>`,
