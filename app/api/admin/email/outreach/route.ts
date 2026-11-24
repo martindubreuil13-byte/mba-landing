@@ -72,14 +72,16 @@ export async function POST(httpRequest: Request) {
     const candidate = candidates[0] ?? null;
     const exceptions = body.exception && candidate ? [{ ...body.exception, id: lead.id, email: normalizeEmail(candidate.email) }] : [];
     const { recipients, exclusions } = reviewRecipients([lead.id], candidates, exceptions, { adminId: admin.id, reviewedAt: new Date().toISOString() });
-    const recent = await recentOutreach(email);
+    // The address the email will actually go to is the contact's stored one: that is what is shown, checked for recent sends, and sent to.
+    const target = normalizeEmail(candidate?.email ?? email);
+    const recent = await recentOutreach(target);
     const decision = decideReview({
       candidate, recipientCount: recipients.length, exclusionReason: Object.keys(exclusions)[0] ?? null,
       hasException: exceptions.length > 0, recent, acknowledgeRecent: body.acknowledgeRecent === true,
     });
 
     const contact: ContactSummary = {
-      id: lead.id, name: candidate?.name || draft.recipientName.trim(), email,
+      id: lead.id, name: candidate?.name || draft.recipientName.trim(), email: target,
       state: candidate?.state ?? "Archived", reason: candidate?.reason ?? "Archived or unavailable", created: lead.created,
     };
     const summary = {

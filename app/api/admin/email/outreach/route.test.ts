@@ -96,6 +96,13 @@ describe("review", () => {
     expect(state.attachReview).toHaveBeenCalledWith(draftId, campaignId);
   });
 
+  it("shows, checks for recent sends, and sends to the contact's stored address, never merely the one typed", async () => {
+    state.candidates.mockResolvedValue([{ ...eligible, email: " Ada.Stored@Example.com " }]);
+    const result = await (await post({ op: "review", draftId })).json();
+    expect(result.contact.email).toBe("ada.stored@example.com");
+    expect(state.recentOutreach).toHaveBeenCalledWith("ada.stored@example.com");
+    expect(state.insert.mock.calls[0][0].recipients).toEqual([{ id: leadId, email: "ada.stored@example.com" }]);
+  });
   it("finds or creates the contact from the typed address, never subscribing it, and passes the optional name", async () => {
     await post({ op: "review", draftId });
     expect(state.findOrCreateContact).toHaveBeenCalledWith("ada@example.com", "Ada Lovelace");

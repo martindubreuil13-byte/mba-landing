@@ -21,7 +21,40 @@ it("makes an individual send a one-recipient campaign that can be claimed only o
       add column exceptions_acknowledged_by uuid,
       add column has_consent_exceptions boolean generated always as (jsonb_path_exists(recipients, '$[*].exception')) stored;`);
     await db.exec(sql("20261122081131_newsletter_campaign_batches.sql"));
+
+    // Compatibility with code that is already deployed: ONE long-lived session (like a pooled connection) uses the claim and completion functions on a
+    // newsletter BEFORE the migration, the migration is applied, and the same session keeps using them AFTER it, with no error and the same results.
+    const newsletterRecipients = (n) => Array.from({ length: n }, (_, i) => ({ id: "44444444-4444-4444-8444-0000000000" + String(10 + i), email: `news${i}@example.com` }));
+    const newNewsletter = async (n) => (await db.query(
+      `insert into public.email_campaigns(subject,preview_text,body_html,body_text,selected_count,exclusions,recipients) values('News','','<p>x</p>','x',$1,'{}',$2) returning id`,
+      [n, JSON.stringify(newsletterRecipients(n))])).rows[0].id;
+    const adminId = "11111111-1111-4111-8111-111111111111";
+    const claimNews = async (id, offset) => (await db.query("select public.claim_email_campaign_batch($1,$2,$3,false) as r", [id, offset, adminId])).rows[0].r;
+    const finishNews = async (id, token) => (await db.query("select public.complete_email_campaign_batch($1,$2) as r", [id, token])).rows[0].r;
+    const markDelivered = async (id, rows) => { for (const r of rows) await db.query("insert into public.email_campaign_deliveries(campaign_id,lead_id,email,status) values($1,$2,$3,'sent')", [id, r.id, r.email]); };
+    const before = await newNewsletter(30);
+    const b1 = await claimNews(before, 0);
+    assert.equal(b1.recipients.length, 25);
+    await markDelivered(before, b1.recipients);
+    assert.deepEqual(await finishNews(before, b1.claimToken), { nextOffset: 25, done: false });
+
     await db.exec(sql("20261124040000_individual_outreach.sql"));
+
+    const b2 = await claimNews(before, 25);                       // the half-sent newsletter carries on in the same session
+    assert.equal(b2.recipients.length, 5);
+    await markDelivered(before, b2.recipients);
+    assert.deepEqual(await finishNews(before, b2.claimToken), { nextOffset: 30, done: true });
+    const after = await newNewsletter(3);                          // and a brand-new newsletter, inserted exactly as the deployed code does (no kind column)
+    assert.equal((await db.query("select kind from public.email_campaigns where id=$1", [after])).rows[0].kind, "newsletter");
+    const a1 = await claimNews(after, 0);
+    assert.equal(a1.recipients.length, 3);
+    assert.equal((await db.query("select kind from public.email_campaigns where id=$1", [before])).rows[0].kind, "newsletter", "an existing campaign became a newsletter");
+    // The runbook's pre-check "is a newsletter being sent right now?" is valid SQL on this schema and sees the newsletter claimed above but not finished (1)...
+    assert.equal((await db.query("select count(*)::int as sending_now from public.email_campaigns where send_claim is not null and completed_at is null")).rows[0].sending_now, 1);
+    // ...and sees 0 once it is finished.
+    await markDelivered(after, a1.recipients);
+    assert.deepEqual(await finishNews(after, a1.claimToken), { nextOffset: 3, done: true });
+    assert.equal((await db.query("select count(*)::int as sending_now from public.email_campaigns where send_claim is not null and completed_at is null")).rows[0].sending_now, 0);
 
     const admin = "11111111-1111-4111-8111-111111111111";
     const person = { id: "22222222-2222-4222-8222-000000000001", email: "prospect@example.com" };

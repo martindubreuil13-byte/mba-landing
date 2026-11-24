@@ -83,6 +83,6 @@ Tested in CI: the migration's SQL in an in-memory Postgres (one-recipient rule, 
 
 Tested outside CI: the real components in a browser against a stand-in server (modes, drafts, review, evidence, blocked, recent-send, double click, compose next, audiences, phone width, and every failure and recovery path above).
 
-Tested on a real local Supabase stack (2026-11-24): `app/lib/email-outreach/local-db.test.ts`, 10 of 10 passing, including true concurrency (simultaneous claims; a send racing a re-review). It skips itself unless a loopback-only stack is running. See `supabase/INDIVIDUAL-OUTREACH-MIGRATION.md` for how to run it and the results.
+Tested on a real local Supabase stack (2026-11-24): `app/lib/email-outreach/local-db.test.ts`, 12 of 12 passing, including true concurrency (simultaneous claims; a send racing a re-review). It skips itself unless a loopback-only stack is running. See `supabase/INDIVIDUAL-OUTREACH-MIGRATION.md` for how to run it and the results.
 
 Not tested: a real send, and the live admin session. Do a staged-build check of Email Studio before promoting.

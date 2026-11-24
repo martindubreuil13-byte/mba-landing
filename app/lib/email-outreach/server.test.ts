@@ -32,15 +32,32 @@ const input = { recipientEmail: " Ada@Example.com ", recipientName: " Ada ", lea
 beforeEach(() => { state.results = {}; state.calls = []; state.rpcCalls = []; state.rpcResults = []; });
 
 describe("findOrCreateContact", () => {
-  it("reuses an existing contact (any capitalisation) without creating or changing anything", async () => {
+  it("reuses an existing contact by its exact address, without creating or changing anything", async () => {
     queue("leads", { data: { id: "lead-1" } });
     expect(await findOrCreateContact("  ADA@Example.com ", "Ada")).toEqual({ id: "lead-1", created: false });
     expect(callsTo("leads", "insert")).toHaveLength(0);
     expect(callsTo("leads", "update")).toHaveLength(0);
-    expect(callsTo("leads", "ilike")[0].args).toEqual(["email", "ada@example.com"]);
+    expect(callsTo("leads", "eq")[0].args).toEqual(["email", "ada@example.com"]);
+    expect(callsTo("leads", "ilike")).toHaveLength(0);
+  });
+  it("finds an older row stored with other capitalisation or stray spaces, which the database treats as the same address", async () => {
+    queue("leads", { data: null }, { data: [{ id: "lead-old", email: "  ADA@Example.com " }] });
+    expect(await findOrCreateContact("ada@example.com", "")).toEqual({ id: "lead-old", created: false });
+    expect(callsTo("leads", "insert")).toHaveLength(0);
+  });
+  it("never matches a lookalike: pattern characters in an address become wildcards in the search, and the exact comparison rejects other people", async () => {
+    queue("leads", { data: null }, { data: [{ id: "someone-else", email: "axxb@example.com" }] }, { data: { id: "new-lead" } });
+    expect(await findOrCreateContact("a*b@example.com", "")).toEqual({ id: "new-lead", created: true });
+    expect(callsTo("leads", "ilike")[0].args).toEqual(["email", "%a_b@example.com%"]);
+    expect(firstArg("leads", "insert")).toMatchObject({ email: "a*b@example.com" });
+  });
+  it("turns _ % * and a backslash in an address into one-character wildcards, so the search can only match more, never less", async () => {
+    queue("leads", { data: null }, { data: [{ id: "lead-5", email: "a_b%c*d@example.com" }] });
+    expect(await findOrCreateContact("a_b%c*d@example.com", "")).toEqual({ id: "lead-5", created: false });
+    expect(callsTo("leads", "ilike")[0].args[1]).toBe("%a_b_c_d@example.com%");
   });
   it("creates a new contact that is NOT subscribed and carries no consent, with the optional name split", async () => {
-    queue("leads", { data: null }, { data: { id: "lead-2" } });
+    queue("leads", { data: null }, { data: [] }, { data: { id: "lead-2" } });
     expect(await findOrCreateContact("Grace@Example.com", "Grace Brewster Hopper")).toEqual({ id: "lead-2", created: true });
     const created = firstArg("leads", "insert");
     expect(created).toMatchObject({ first_name: "Grace", last_name: "Brewster Hopper", email: "grace@example.com", ongoing_content_opt_in: false });
@@ -48,22 +65,19 @@ describe("findOrCreateContact", () => {
     expect(callsTo("consent_records", "insert")).toHaveLength(0);
   });
   it("creates a contact with no name at all", async () => {
-    queue("leads", { data: null }, { data: { id: "lead-3" } });
+    queue("leads", { data: null }, { data: [] }, { data: { id: "lead-3" } });
     await findOrCreateContact("x@example.com", "  ");
     expect(firstArg("leads", "insert")).toMatchObject({ first_name: "", last_name: null });
   });
   it("uses the contact another request created at the same moment", async () => {
-    queue("leads", { data: null }, { data: null, error: { code: "23505" } }, { data: { id: "lead-4" } });
+    queue("leads", { data: null }, { data: [] }, { data: null, error: { code: "23505" } }, { data: { id: "lead-4" } });
     expect(await findOrCreateContact("race@example.com", "")).toEqual({ id: "lead-4", created: false });
   });
-  it("treats percent and underscore in an address as literal characters when matching", async () => {
-    queue("leads", { data: { id: "lead-5" } });
-    await findOrCreateContact("a_b%c@example.com", "");
-    expect(callsTo("leads", "ilike")[0].args[1]).toBe("a\\_b\\%c@example.com");
-  });
   it("fails loudly rather than guessing when the database errors", async () => {
-    queue("leads", { data: null }, { data: null, error: { code: "XX000" } });
+    queue("leads", { data: null }, { data: [] }, { data: null, error: { code: "XX000" } });
     await expect(findOrCreateContact("e@example.com", "")).rejects.toThrow("could not be created");
+    queue("leads", { data: null, error: { code: "XX000" } });
+    await expect(findOrCreateContact("e@example.com", "")).rejects.toThrow("could not be looked up");
   });
 });
 

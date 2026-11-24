@@ -88,9 +88,18 @@ export async function findOrCreateContact(rawEmail: string, rawName: string): Pr
   const db = getServiceClient();
   const email = normalizeEmail(rawEmail);
   const find = async () => {
-    const { data, error } = await db.from("leads").select("id").ilike("email", email.replace(/[\\%_]/g, "\\$&")).limit(1).maybeSingle();
+    // 1. The exact address, which is how the app stores every address it creates (an indexed, exact match).
+    const exact = await db.from("leads").select("id").eq("email", email).limit(1).maybeSingle();
+    if (exact.error) throw new Error("The contact could not be looked up.");
+    if (exact.data) return exact.data as { id: string };
+    // 2. An older row stored with different capitalisation or stray spaces. The database treats those as the same address (its unique rule ignores both),
+    //    so find them too. In a search pattern _ % and * all mean "anything" (PostgREST reads * as %), so each becomes a one-character wildcard: that can
+    //    only match MORE than the address, never less. The exact comparison below then removes lookalikes, so the wrong person can never be matched.
+    const pattern = `%${email.replace(/[\\%_*]/g, "_")}%`;
+    const { data, error } = await db.from("leads").select("id,email").ilike("email", pattern).limit(200);
     if (error) throw new Error("The contact could not be looked up.");
-    return data as { id: string } | null;
+    const hit = (data as { id: string; email: string }[]).find((row) => normalizeEmail(row.email) === email);
+    return hit ? { id: hit.id } : null;
   };
   const existing = await find();
   if (existing) return { id: existing.id, created: false };

@@ -151,7 +151,7 @@ export default function OutreachComposer({ contacts, available, storageOrigin, i
       await callOutreach({ op: "delete", id: draft.id });
     } catch (error) {
       // Already gone elsewhere is fine; anything else is shown.
-      if (!(error instanceof Error && /no longer exists/.test(error.message))) { setNotice({ text: error instanceof Error ? error.message : "The draft could not be deleted.", error: true }); return; }
+      if (!(error instanceof OutreachError && error.code === "not_found")) { setNotice({ text: error instanceof Error ? error.message : "The draft could not be deleted.", error: true }); return; }
     }
     setDrafts((list) => list.filter(({ id }) => id !== draft.id));
     if (draft.id === currentId) load(null);

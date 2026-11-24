@@ -151,6 +151,36 @@ const evidence = { basis: "express_permission", reason: "Asked me to write after
     expect((await db.from("leads").select("first_name").eq("id", x.id).single()).data.first_name).not.toBe("Someone");
   });
 
+  it("contacts: characters that mean something in a search pattern (_ % * +) are matched exactly, never loosely, so the wrong person is never found", async () => {
+    // Each address gets a "twin" that a loose pattern match would wrongly return.
+    const cases = [
+      { address: email("john_doe"), twin: email("johnxdoe") },   // _ is "any one character" in a pattern
+      { address: email("a*b"), twin: email("axxb") },            // * is a wildcard in PostgREST patterns
+      { address: email("pc%t"), twin: email("pcAAt") },          // % is "anything" in a pattern
+      { address: email("tag+one"), twin: email("tag+two") },
+    ];
+    for (const { address, twin } of cases) {
+      const other = await store.findOrCreateContact(twin, "");
+      expect(other.created, `${twin} is created`).toBe(true);
+      const first = await store.findOrCreateContact(address, "");
+      expect(first.created, `${address} must be created, not matched to ${twin}`).toBe(true);
+      expect(first.id).not.toBe(other.id);
+      const again = await store.findOrCreateContact(address.toUpperCase(), "");
+      expect(again, `${address} is found again in any capitalisation`).toEqual({ id: first.id, created: false });
+    }
+  });
+
+  it("contacts: an older row stored with other capitalisation and stray spaces is found (the database treats it as the same address), not duplicated", async () => {
+    const stored = `  ${email("Old.Mixed").toUpperCase()}  `;
+    const { data, error } = await db.from("leads").insert({ first_name: "Old", email: stored, ongoing_content_opt_in: false }).select("id").single();
+    expect(error).toBeNull();
+    const found = await store.findOrCreateContact(email("old.mixed"), "Someone Else");
+    expect(found).toEqual({ id: data.id, created: false });
+    // and the database would indeed have refused a second copy
+    const duplicate = await db.from("leads").insert({ first_name: "Dup", email: email("old.mixed"), ongoing_content_opt_in: false });
+    expect(duplicate.error?.code).toBe("23505");
+  });
+
   it("recent sends: only individual emails to that address in the last 30 days count", async () => {
     const mine = await campaign("recent", { kind: "outreach" });
     const news = await campaign("recent", { kind: "newsletter" });
