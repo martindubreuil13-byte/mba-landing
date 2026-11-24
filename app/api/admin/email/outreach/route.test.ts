@@ -121,12 +121,12 @@ describe("review", () => {
     expect(state.findOrCreateContact).toHaveBeenCalledWith("ada@example.com", "Ada Lovelace");
   });
 
-  it("asks for documented evidence when no marketing permission is recorded, and creates nothing until it is given", async () => {
+  it("allows individual B2B outreach without a newsletter opt-in and records its actual basis", async () => {
     state.candidates.mockResolvedValue([{ ...unknown, administrativeException: { ...evidence, expiresAt: "2026-12-01T00:00:00Z" } }]);
     const result = await (await post({ op: "review", draftId })).json();
-    expect(result).toMatchObject({ status: "needs_exception", campaignId: null, contact: { state: "Unknown" }, prefill: { basis: "express_permission" } });
-    expect(state.insert).not.toHaveBeenCalled();
-    expect(state.attachReview).not.toHaveBeenCalled();
+    expect(result).toMatchObject({ status: "ready", campaignId, contact: { state: "Unknown" }, exceptionCount: 1 });
+    expect(state.insert.mock.calls[0][0].recipients[0]).toMatchObject({ exception: { basis: "individual_b2b_outreach", adminId } });
+    expect(state.attachReview).toHaveBeenCalled();
   });
   it("records the documented basis, the admin and the review time on the recipient when evidence is given", async () => {
     state.candidates.mockResolvedValue([unknown]);

@@ -7,7 +7,7 @@ import AdminShell from "@/app/components/admin/AdminShell";
 import { requireAdmin } from "@/app/lib/supabase/admin-session";
 import { isUuid } from "@/app/lib/relationships/model";
 import { campaignDetails, outreachRecipients } from "@/app/lib/email-studio/campaign-history";
-import { renderNewsletterEmail } from "@/app/lib/email-studio/render";
+import { renderNewsletterEmail, renderOutreachEmail } from "@/app/lib/email-studio/render";
 
 const outcomes: Record<string, string> = {
   sent: "Accepted by provider", failed: "Failed", excluded: "Excluded",
@@ -54,7 +54,7 @@ export default async function CampaignDetails({ params }: { params: Promise<{ id
       <section className="min-w-0">
         <h2 className="mb-2 font-serif text-xl">Original email</h2>
         {campaign.body_html ? <iframe title="Original newsletter" sandbox="" className="h-[34rem] w-full rounded-xl border border-[#e6dcd4] bg-white"
-          srcDoc={renderNewsletterEmail(campaign.subject, campaign.body_html, { previewText: campaign.preview_text })} /> : <p>Original email content is unavailable.</p>}
+          srcDoc={(isOutreach ? renderOutreachEmail : renderNewsletterEmail)(campaign.subject, campaign.body_html, { previewText: campaign.preview_text })} /> : <p>Original email content is unavailable.</p>}
       </section>
       <section className="rounded-xl border border-[#e6dcd4] bg-[#fffcf9] p-4">
         <h2 className="font-serif text-xl">Recipient outcomes</h2>

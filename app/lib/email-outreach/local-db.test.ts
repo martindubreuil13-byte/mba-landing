@@ -207,7 +207,7 @@ const evidence = { basis: "express_permission", reason: "Asked me to write after
     const draftId = saved.draft.id as string;
 
     const first = await (await post({ op: "review", draftId })).json();
-    expect(first).toMatchObject({ status: "needs_exception", campaignId: null, contact: { email: address, state: "Unknown", created: true } });
+    expect(first).toMatchObject({ status: "ready", exceptionCount: 1, contact: { email: address, state: "Unknown", created: true } });
     const { data: lead } = await db.from("leads").select("id,ongoing_content_opt_in,first_name,last_name").eq("email", address).single();
     expect(lead).toMatchObject({ ongoing_content_opt_in: false, first_name: "Pat", last_name: "Smith" });
 

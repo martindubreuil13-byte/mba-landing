@@ -5,7 +5,7 @@ import { BodyTooLargeError, isSameOriginRequest, readJsonBody } from "@/app/lib/
 import { recipientCandidates } from "@/app/lib/contact-tags/data";
 import { DEFAULT_RESOURCE_FROM } from "@/app/lib/resources/delivery-email";
 import { reviewRecipients } from "@/app/lib/email-studio/campaign";
-import { renderNewsletterEmail } from "@/app/lib/email-studio/render";
+import { renderOutreachEmail } from "@/app/lib/email-studio/render";
 import { validateCampaign } from "@/app/lib/email-studio/test-message";
 import { MAX_DRAFT_BYTES, decideReview, draftInput, isEmail, normalizeEmail, reviewInput, type ContactSummary } from "@/app/lib/email-outreach/model";
 import { attachReview, contactEmail, deleteDraft, deliveryResult, findOrCreateContact, getDraft, recentOutreach, saveDraft } from "@/app/lib/email-outreach/server";
@@ -71,13 +71,28 @@ export async function POST(httpRequest: Request) {
     const candidates = await recipientCandidates([lead.id]);
     const candidate = candidates[0] ?? null;
     const exceptions = body.exception && candidate ? [{ ...body.exception, id: lead.id, email: normalizeEmail(candidate.email) }] : [];
-    const { recipients, exclusions } = reviewRecipients([lead.id], candidates, exceptions, { adminId: admin.id, reviewedAt: new Date().toISOString() });
+    // Individual B2B outreach does not require a newsletter subscription. Keep the actual
+    // contact unchanged, and audit this administrative outreach choice without claiming consent.
+    const b2bOutreach = candidate?.state === "Unknown" && !body.exception;
+    const reviewedAt = new Date().toISOString();
+    const reviewed = reviewRecipients([lead.id], b2bOutreach
+      ? candidates.map((contact) => ({ ...contact, state: contact.id === lead.id ? "Eligible" : contact.state }))
+      : candidates, exceptions, { adminId: admin.id, reviewedAt });
+    const recipients = reviewed.recipients.map((recipient) => b2bOutreach ? {
+      ...recipient, exception: {
+        basis: "individual_b2b_outreach" as const,
+        reason: "Admin selected individual B2B outreach.",
+        evidence: "Individual outreach mode; no newsletter opt-in or independently verified permission is asserted.",
+        adminId: admin.id, reviewedAt,
+      },
+    } : recipient);
+    const { exclusions } = reviewed;
     // The address the email will actually go to is the contact's stored one: that is what is shown, checked for recent sends, and sent to.
     const target = normalizeEmail(candidate?.email ?? email);
     const recent = await recentOutreach(target);
     const decision = decideReview({
       candidate, recipientCount: recipients.length, exclusionReason: Object.keys(exclusions)[0] ?? null,
-      hasException: exceptions.length > 0, recent, acknowledgeRecent: body.acknowledgeRecent === true,
+      hasException: recipients.some((recipient) => Boolean(recipient.exception)), recent, acknowledgeRecent: body.acknowledgeRecent === true,
     });
 
     const contact: ContactSummary = {
@@ -86,7 +101,7 @@ export async function POST(httpRequest: Request) {
     };
     const summary = {
       contact, recent, from: DEFAULT_RESOURCE_FROM, subject: message.subject, previewText: message.previewText,
-      html: renderNewsletterEmail(message.subject, message.body, { previewText: message.previewText }),
+      html: renderOutreachEmail(message.subject, message.body, { previewText: message.previewText }),
       exceptionCount: recipients.filter(({ exception }) => exception).length,
     };
     if (decision.status !== "ready") return Response.json({ ...summary, ...decision, campaignId: null });

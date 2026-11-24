@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const state = vi.hoisted(() => ({
-  admin: vi.fn(), rpc: vi.fn(), candidates: vi.fn(), send: vi.fn(), deliveries: [] as object[], started: false,
+  admin: vi.fn(), rpc: vi.fn(), candidates: vi.fn(), send: vi.fn(), deliveries: [] as object[], started: false, kind: "newsletter",
 }));
 const id = "8ab4b9aa-e272-48d6-8861-b25198fa7b12";
 const second = "8ab4b9aa-e272-48d6-8861-b25198fa7b13";
@@ -19,6 +19,7 @@ vi.mock("@/app/lib/supabase/service", () => ({ getServiceClient: () => ({
   rpc: state.rpc,
   storage: { from: () => ({ getPublicUrl: () => ({ data: { publicUrl: "https://storage.example.com" } }) }) },
   from: (table: string) => table === "email_campaigns" ? {
+    select: () => ({ eq: () => ({ single: async () => ({ data: { kind: state.kind } }) }) }),
     insert: () => ({ select: () => ({ single: async () => ({ data: { id } }) }) }),
 
   } : {
@@ -42,6 +43,7 @@ beforeEach(() => {
   vi.stubEnv("RESEND_API_KEY", "mock-only");
   state.admin.mockResolvedValue({ id });
   state.started = false;
+  state.kind = "newsletter";
   state.deliveries = [];
   state.rpc.mockImplementation(async (name: string) => {
     if (name === "complete_email_campaign_batch") return { data: { nextOffset: 3, done: true } };
@@ -130,32 +132,34 @@ describe("campaign route", () => {
   });
 
   it("sends an individual (one-recipient) email once, with its unsubscribe link and idempotency key, and refuses a second send", async () => {
+    state.kind = "outreach";
     state.rpc.mockReset()
-      .mockResolvedValueOnce({ data: { claimToken: id, subject: "A quick hello", preview_text: "", body_html: "<p>Hi Ada</p>", body_text: "Hi Ada", recipients: [{ id, email }] } })
+      .mockResolvedValueOnce({ data: { claimToken: id, subject: "A quick hello", preview_text: "", body_html: "<p>Hi Ada</p>", body_text: "Hi Ada", recipients: [{ id, email, exception: { basis: "individual_b2b_outreach", reason: "Admin selected individual B2B outreach.", evidence: "No newsletter opt-in is asserted.", adminId: id, reviewedAt: new Date().toISOString() } }] } })
       .mockResolvedValueOnce({ data: { nextOffset: 1, done: true } })
       .mockResolvedValue({ data: null });
-    state.candidates.mockResolvedValue([candidate]);
+    state.candidates.mockResolvedValue([{ ...candidate, state: "Unknown", reason: "No marketing permission recorded" }]);
     state.send.mockResolvedValue({ data: { id: "provider-1" } });
-    const sent = await post({ campaignId: id, confirmed: true, offset: 0 });
+    const sent = await post({ campaignId: id, confirmed: true, offset: 0, acknowledgeExceptions: true });
     expect(sent.status).toBe(200);
     expect(await sent.json()).toMatchObject({ nextOffset: 1, done: true });
     expect(state.send).toHaveBeenCalledTimes(1);
     const [message, options] = state.send.mock.calls[0];
     expect(message).toMatchObject({ to: email, subject: "A quick hello", headers: { "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } });
     expect(message.html).toContain("/unsubscribe?token=");
+    expect(message.html).not.toMatch(/<table|<h1|The Modern Business Architect/);
     expect(message.text).toContain("Unsubscribe: ");
     expect(options).toEqual({ idempotencyKey: `mba-campaign/${id}/${id}` });
     // A double click, a second tab or a retry cannot send it again.
-    expect((await post({ campaignId: id, confirmed: true, offset: 0 })).status).toBe(409);
+    expect((await post({ campaignId: id, confirmed: true, offset: 0, acknowledgeExceptions: true })).status).toBe(409);
     expect(state.send).toHaveBeenCalledTimes(1);
   });
 
   it("does not send an individual email to a contact who unsubscribed after review", async () => {
     state.rpc.mockReset()
-      .mockResolvedValueOnce({ data: { claimToken: id, subject: "A quick hello", preview_text: "", body_html: "<p>Hi</p>", body_text: "Hi", recipients: [{ id, email }] } })
+      .mockResolvedValueOnce({ data: { claimToken: id, subject: "A quick hello", preview_text: "", body_html: "<p>Hi</p>", body_text: "Hi", recipients: [{ id, email, exception: { basis: "individual_b2b_outreach", reason: "Admin selected individual B2B outreach.", evidence: "No newsletter opt-in is asserted.", adminId: id, reviewedAt: new Date().toISOString() } }] } })
       .mockResolvedValueOnce({ data: { nextOffset: 1, done: true } });
     state.candidates.mockResolvedValue([{ ...candidate, state: "Not eligible", reason: "Unsubscribed" }]);
-    expect((await post({ campaignId: id, confirmed: true, offset: 0 })).status).toBe(200);
+    expect((await post({ campaignId: id, confirmed: true, offset: 0, acknowledgeExceptions: true })).status).toBe(200);
     expect(state.send).not.toHaveBeenCalled();
     expect(state.deliveries).toEqual(expect.arrayContaining([expect.objectContaining({ status: "excluded", reason: "Unsubscribed" })]));
   });

@@ -46,3 +46,9 @@ it("identifies invalid fields instead of claiming filled fields and contact sele
   expect(validateCampaign({ ...campaign, operations: [{ insert: "Text", attributes: { link: "javascript:alert(1)" } }] }, origin)).toMatchObject({ success: false, error: expect.stringContaining("formatting or an invalid link") });
   expect(validateCampaign({ ...campaign, operations: [{ insert: "\n" }] }, origin)).toMatchObject({ success: false, error: expect.stringContaining("Write a message") });
 });
+
+it("uses the personal layout for outreach test sends while newsletters keep their layout", () => {
+  const message = prepareTestMessage({ ...draft, kind: "outreach", operations: [{ insert: "Hi Ada,\nMartin\n" }] }, origin);
+  expect(message?.html).toContain("Hi Ada,");
+  expect(message?.html).not.toMatch(/<table|The Modern Business Architect|<h1/);
+});

@@ -2,8 +2,9 @@
 
 import { useState, type FormEvent, type RefObject } from "react";
 
-export default function TestEmailDialog({ dialog, subject, operations }: {
+export default function TestEmailDialog({ dialog, subject, operations, kind = "newsletter" }: {
   dialog: RefObject<HTMLDialogElement | null>;
+  kind?: "newsletter" | "outreach";
   subject: string;
   operations: RefObject<unknown[]>;
 }) {
@@ -18,7 +19,7 @@ export default function TestEmailDialog({ dialog, subject, operations }: {
     try {
       const res = await fetch("/api/admin/email/test", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipient, subject, confirmed: true, operations: operations.current }),
+        body: JSON.stringify({ recipient, subject, kind, confirmed: true, operations: operations.current }),
       });
       const data = await res.json();
       setResult({ error: !res.ok || data.ok !== true, text: res.ok && data.ok ? "Resend accepted the test email." : data.error ?? "The test could not be confirmed." });
