@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import AdminShell from "@/app/components/admin/AdminShell";
 import { requireAdmin } from "@/app/lib/supabase/admin-session";
 import { isUuid } from "@/app/lib/relationships/model";
-import { campaignDetails } from "@/app/lib/email-studio/campaign-history";
+import { campaignDetails, outreachRecipients } from "@/app/lib/email-studio/campaign-history";
 import { renderNewsletterEmail } from "@/app/lib/email-studio/render";
 
 const outcomes: Record<string, string> = {
@@ -20,6 +20,7 @@ export default async function CampaignDetails({ params }: { params: Promise<{ id
   if (!isUuid(id)) notFound();
   const campaign = await campaignDetails(id);
   if (!campaign) notFound();
+  const isOutreach = (await outreachRecipients([id])).has(id);
   const { recipients, exclusions } = campaign;
   const count = (status: string) => recipients.filter(({ delivery }) => delivery?.status === status).length;
   const accepted = count("sent");
@@ -34,10 +35,11 @@ export default async function CampaignDetails({ params }: { params: Promise<{ id
     <main className="mx-auto grid max-w-4xl gap-5">
       <Link className="text-[#6b1f1f] underline" href="/admin/email#campaign-history">Back to campaign history</Link>
       <header>
+        {isOutreach && <p className="text-sm font-semibold uppercase tracking-wide text-[#6b1f1f]">Individual outreach</p>}
         <h1 className="break-words font-serif text-3xl">{campaign.subject}</h1>
         <p>Send started {new Date(campaign.started_at).toLocaleString("en-GB", { timeZone: "Asia/Bangkok" })} (Bangkok)</p>
         {campaign.preview_text && <p>Preview text · {campaign.preview_text}</p>}
-        {campaign.editor_operations ? <Link className="mt-2 inline-block rounded-lg bg-[#6b1f1f] px-4 py-2 text-white" href={`/admin/email?duplicate=${id}`}>Duplicate</Link> :
+        {campaign.editor_operations ? <Link className="mt-2 inline-block rounded-lg bg-[#6b1f1f] px-4 py-2 text-white" href={isOutreach ? `/admin/email?mode=outreach&reuse=${id}` : `/admin/email?duplicate=${id}`}>{isOutreach ? "Reuse as new draft" : "Duplicate"}</Link> :
           <p className="mt-2 text-sm">Editable source was not saved for this campaign.</p>}
       </header>
       <CampaignIntelligence reach={reachMetrics(recipients, campaign.campaign_provider_events)} failed={failed}

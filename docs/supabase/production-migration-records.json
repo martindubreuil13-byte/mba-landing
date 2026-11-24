@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-11-22T08:12:24.140591+00:00",
+  "capturedAt": "2026-11-24T07:43:28.375915+00:00",
   "source": "supabase_migrations.schema_migrations of the production Supabase project, read with a SELECT (see docs/supabase/MIGRATION-HISTORY.md for the exact query). Names, counts and hashes only: no SQL text and no data are stored here.",
   "normalization": "md5 of the recorded statements concatenated, with every ';' and every whitespace character removed. Case, quoting and all other characters are compared exactly. Layout is ignored, which includes whitespace inside string literals.",
   "acknowledged": {
@@ -242,6 +242,12 @@
       "name": "newsletter_campaign_batches",
       "statementCount": 1,
       "normalizedMd5": "fa1dc45edef65143da4f04587d7753a6"
+    },
+    {
+      "version": "20261124074109",
+      "name": "individual_outreach",
+      "statementCount": 1,
+      "normalizedMd5": "1d78c9c4015f1a55b0490e7e824ebe78"
     }
   ]
 }

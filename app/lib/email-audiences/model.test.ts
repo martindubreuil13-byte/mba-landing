@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addMatching, exclusionCounts, matchingContacts } from "./model";
+import { addMatching, describeFilters, exclusionCounts, filtersChanged, matchingContacts } from "./model";
 
 const contacts = [
   { id: "1", name: "Ana Lee", email: "ana@example.com", tags: ["founders", "sme"] },
@@ -31,3 +31,22 @@ describe("audience rules", () => {
     ])]).toEqual([["Incomplete", 1], ["Suppressed", 2]]);
   });
 });
+
+describe("saved audience filters", () => {
+  const saved = { search_query: "acme", tag_ids: ["a", "b"] };
+  it("sees a change in search or tags, but not in tag order or surrounding spaces", () => {
+    expect(filtersChanged(saved, { search_query: " acme ", tag_ids: ["b", "a"] })).toBe(false);
+    expect(filtersChanged(saved, { search_query: "acme corp", tag_ids: ["a", "b"] })).toBe(true);
+    expect(filtersChanged(saved, { search_query: "acme", tag_ids: ["a"] })).toBe(true);
+    expect(filtersChanged(saved, { search_query: "acme", tag_ids: ["a", "b", "c"] })).toBe(true);
+    expect(filtersChanged(saved, { search_query: "acme", tag_ids: ["a", "c"] })).toBe(true);
+    expect(filtersChanged({ search_query: "", tag_ids: [] }, { search_query: "  ", tag_ids: [] })).toBe(false);
+  });
+  it("describes filters in words, naming tags that no longer exist", () => {
+    const names = new Map([["a", "Founders"]]);
+    expect(describeFilters({ search_query: " acme ", tag_ids: ["a"] }, names)).toBe("Search: acme · Founders");
+    expect(describeFilters({ search_query: "", tag_ids: ["a", "gone"] }, names)).toBe("Founders + unavailable tag");
+    expect(describeFilters({ search_query: "", tag_ids: [] }, names)).toBe("No filters (all contacts)");
+  });
+});
+

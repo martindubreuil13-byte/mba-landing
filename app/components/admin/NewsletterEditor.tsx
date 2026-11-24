@@ -39,7 +39,7 @@ function createNewsletterEmbed(Editor: typeof Quill, storageOrigin: string) {
   return NewsletterEmbed;
 }
 
-export default function NewsletterEditor({ onChange, storageOrigin, initialOperations }: { initialOperations?: import("quill").Op[]; storageOrigin: string; onChange: (value: string, operations: ReturnType<Quill["getContents"]>["ops"]) => void }) {
+export default function NewsletterEditor({ onChange, storageOrigin, initialOperations, placeholder = "Write your newsletter…", label = "Newsletter message" }: { initialOperations?: import("quill").Op[]; placeholder?: string; label?: string; storageOrigin: string; onChange: (value: string, operations: ReturnType<Quill["getContents"]>["ops"]) => void }) {
   const host = useRef<HTMLDivElement>(null);
   const toolbar = useRef<HTMLDivElement>(null);
   const editor = useRef<Quill>(null);
@@ -84,12 +84,12 @@ export default function NewsletterEditor({ onChange, storageOrigin, initialOpera
       const NewsletterEmbed = createNewsletterEmbed(Editor, storageOrigin);
       Editor.register(NewsletterEmbed, true);
       instance = new Editor(mount, {
-        placeholder: "Write your newsletter…",
+        placeholder,
         formats: ["bold", "italic", "underline", "header", "list", "align", "link", "font", "size", "color", "newsletterBlock"],
         modules: { toolbar: { container: controls }, history: { userOnly: true } },
       });
       instance.root.setAttribute("role", "textbox");
-      instance.root.setAttribute("aria-label", "Newsletter message");
+      instance.root.setAttribute("aria-label", label);
       instance.root.setAttribute("aria-multiline", "true");
       instance.on("text-change", update);
       instance.on("selection-change", (selection) => { if (selection) range.current = selection; });
@@ -117,7 +117,7 @@ export default function NewsletterEditor({ onChange, storageOrigin, initialOpera
       editor.current = null;
       mount.remove();
     };
-  }, [onChange, storageOrigin, initialOperations]);
+  }, [onChange, storageOrigin, initialOperations, placeholder, label]);
 
   useEffect(() => { if (linkOpen) linkInput.current?.focus(); }, [linkOpen]);
 

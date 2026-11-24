@@ -58,3 +58,19 @@ function observedDeliveries(events: ProviderEvent[]) {
   const bounced = new Set(events.filter((event) => event.event_type === "email.bounced").map((event) => event.lead_id));
   return [...confirmed].filter((id) => !bounced.has(id)).length;
 }
+
+/**
+ * Which of these campaigns were individual outreach, and to whom. Deliberately separate from the newsletter queries above and tolerant of failure:
+ * if it cannot run (for example the database update has not been applied yet) nothing is labelled, and newsletter history and details are unaffected.
+ * Only outreach rows are returned, so no newsletter recipient list is ever read here.
+ */
+export async function outreachRecipients(ids: string[]): Promise<Map<string, string | null>> {
+  const found = new Map<string, string | null>();
+  if (!ids.length) return found;
+  try {
+    const { data, error } = await getServiceClient().from("email_campaigns").select("id,recipients").in("id", ids).eq("kind", "outreach");
+    if (error || !data) return found;
+    for (const row of data) found.set(row.id as string, (row.recipients as { email: string }[])[0]?.email ?? null);
+  } catch { /* unlabelled is fine */ }
+  return found;
+}
