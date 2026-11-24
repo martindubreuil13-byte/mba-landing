@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const state = vi.hoisted(() => ({
   admin: vi.fn(), candidates: vi.fn(), insert: vi.fn(),
-  getDraft: vi.fn(), saveDraft: vi.fn(), deleteDraft: vi.fn(), attachCampaign: vi.fn(), contactEmail: vi.fn(),
+  getDraft: vi.fn(), saveDraft: vi.fn(), deleteDraft: vi.fn(), attachReview: vi.fn(), contactEmail: vi.fn(),
   findOrCreateContact: vi.fn(), recentOutreach: vi.fn(), deliveryResult: vi.fn(),
 }));
 const adminId = "11111111-1111-4111-8111-111111111111";
@@ -14,7 +14,7 @@ vi.mock("@/app/lib/supabase/admin-session", () => ({ getAdminUser: state.admin }
 vi.mock("@/app/lib/contact-tags/data", () => ({ recipientCandidates: state.candidates }));
 vi.mock("@/app/lib/resources/delivery-email", () => ({ DEFAULT_RESOURCE_FROM: "MBA <fixture@example.com>" }));
 vi.mock("@/app/lib/email-outreach/server", () => ({
-  getDraft: state.getDraft, saveDraft: state.saveDraft, deleteDraft: state.deleteDraft, attachCampaign: state.attachCampaign,
+  getDraft: state.getDraft, saveDraft: state.saveDraft, deleteDraft: state.deleteDraft, attachReview: state.attachReview,
   contactEmail: state.contactEmail, findOrCreateContact: state.findOrCreateContact, recentOutreach: state.recentOutreach, deliveryResult: state.deliveryResult,
 }));
 vi.mock("@/app/lib/supabase/service", () => ({ getServiceClient: () => ({
@@ -39,6 +39,7 @@ beforeEach(() => {
   state.findOrCreateContact.mockResolvedValue({ id: leadId, created: false });
   state.candidates.mockResolvedValue([eligible]);
   state.recentOutreach.mockResolvedValue([]);
+  state.attachReview.mockResolvedValue(true);
 });
 
 describe("access", () => {
@@ -92,7 +93,7 @@ describe("review", () => {
     const row = state.insert.mock.calls[0][0];
     expect(row).toMatchObject({ kind: "outreach", selected_count: 1, selected_contact_ids: [leadId], subject: "A quick hello", exclusions: {} });
     expect(row.recipients).toEqual([{ id: leadId, email: "ada@example.com" }]);
-    expect(state.attachCampaign).toHaveBeenCalledWith(draftId, campaignId);
+    expect(state.attachReview).toHaveBeenCalledWith(draftId, campaignId);
   });
 
   it("finds or creates the contact from the typed address, never subscribing it, and passes the optional name", async () => {
@@ -118,7 +119,7 @@ describe("review", () => {
     const result = await (await post({ op: "review", draftId })).json();
     expect(result).toMatchObject({ status: "needs_exception", campaignId: null, contact: { state: "Unknown" }, prefill: { basis: "express_permission" } });
     expect(state.insert).not.toHaveBeenCalled();
-    expect(state.attachCampaign).not.toHaveBeenCalled();
+    expect(state.attachReview).not.toHaveBeenCalled();
   });
   it("records the documented basis, the admin and the review time on the recipient when evidence is given", async () => {
     state.candidates.mockResolvedValue([unknown]);
@@ -153,6 +154,20 @@ describe("review", () => {
     expect(state.insert).toHaveBeenCalledTimes(1);
   });
 
+  it("refuses to hand out a review when another review of the same draft was already sent, or the draft vanished meanwhile", async () => {
+    state.attachReview.mockResolvedValueOnce(false);
+    const response = await post({ op: "review", draftId });
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({ code: "already_sent" });
+  });
+  it("tells the interface why, with a code, when a draft cannot be saved or reviewed", async () => {
+    state.saveDraft.mockResolvedValueOnce({ ok: false, reason: "already_sent" });
+    expect(await (await post({ op: "save", draft: { id: draftId, recipientEmail: "a@b.co", recipientName: "", leadId: null, subject: "S", previewText: "", operations: [] } })).json()).toMatchObject({ code: "already_sent" });
+    state.getDraft.mockResolvedValueOnce({ ...draft, sentAt: "2026-11-24T01:00:00Z" });
+    expect(await (await post({ op: "review", draftId })).json()).toMatchObject({ code: "already_sent" });
+    state.getDraft.mockResolvedValueOnce(null);
+    expect(await (await post({ op: "review", draftId })).json()).toMatchObject({ code: "not_found" });
+  });
   it("refuses an already-sent draft, a missing draft, and a missing or invalid address", async () => {
     state.getDraft.mockResolvedValueOnce({ ...draft, sentAt: "2026-11-24T01:00:00Z" });
     expect((await post({ op: "review", draftId })).status).toBe(409);

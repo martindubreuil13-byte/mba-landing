@@ -4,7 +4,7 @@ import { Monitor, Smartphone } from "lucide-react";
 import type { Op } from "quill";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { recipientCandidates } from "@/app/lib/contact-tags/data";
-import { callOutreach } from "@/app/lib/email-outreach/client";
+import { OutreachError, callOutreach } from "@/app/lib/email-outreach/client";
 import { isDirty, isEmail, type DeliveryResult, type OutreachDraft, type ReviewResponse } from "@/app/lib/email-outreach/model";
 import { sendCampaignBatches } from "@/app/lib/email-studio/campaign";
 import { renderNewsletterEmail } from "@/app/lib/email-studio/render";
@@ -15,7 +15,7 @@ import OutreachReviewDialog, { type Continue, type Flow } from "./OutreachReview
 import TestEmailDialog from "./TestEmailDialog";
 
 type Candidate = Awaited<ReturnType<typeof recipientCandidates>>[number];
-type Content = { recipientEmail: string; recipientName: string; subject: string; previewText: string; operations: unknown[] };
+export type Content = { recipientEmail: string; recipientName: string; subject: string; previewText: string; operations: unknown[] };
 
 const field = "w-full min-w-0 rounded-lg border border-[#daccc1] bg-white px-3 py-2";
 const blank: Content = { recipientEmail: "", recipientName: "", subject: "", previewText: "", operations: [] };
@@ -32,25 +32,27 @@ async function sendBatch(payload: object) {
  * Nothing is sent until the exact recipient and email have been reviewed and the admin presses the send button once;
  * the send itself uses the same confirmed, once-only mechanism as a newsletter campaign.
  */
-export default function OutreachComposer({ contacts, available, storageOrigin, initialDrafts }: {
+export default function OutreachComposer({ contacts, available, storageOrigin, initialDrafts, initialCopy }: {
   contacts: Candidate[]; available: boolean; storageOrigin: string; initialDrafts: OutreachDraft[] | null;
+  /** An earlier individual send reopened from Campaign history: starts as an unsaved draft, keeping the recipient. */
+  initialCopy?: Content;
 }) {
   const unavailable = initialDrafts === null;
   const [drafts, setDrafts] = useState<OutreachDraft[]>(initialDrafts ?? []);
   const [currentId, setCurrentId] = useState<string | null>(null);
-  const [recipient, setRecipient] = useState<Recipient>({ email: "", name: "", leadId: null });
-  const [subject, setSubject] = useState("");
-  const [previewText, setPreviewText] = useState("");
+  const [recipient, setRecipient] = useState<Recipient>({ email: initialCopy?.recipientEmail ?? "", name: initialCopy?.recipientName ?? "", leadId: null });
+  const [subject, setSubject] = useState(initialCopy?.subject ?? "");
+  const [previewText, setPreviewText] = useState(initialCopy?.previewText ?? "");
   const [message, setMessage] = useState("");
-  const [initialOps, setInitialOps] = useState<Op[] | undefined>();
+  const [initialOps, setInitialOps] = useState<Op[] | undefined>(initialCopy?.operations.length ? (initialCopy.operations as Op[]) : undefined);
   const [editorKey, setEditorKey] = useState(0);
   const [mode, setMode] = useState<"desktop" | "mobile">("desktop");
   const [notice, setNotice] = useState<{ text: string; error: boolean }>();
   const [busy, setBusy] = useState(false);
   const [flow, setFlow] = useState<Flow>({ stage: "closed" });
-  const operations = useRef<unknown[]>([]);
+  const operations = useRef<unknown[]>(initialCopy?.operations ?? []);
   const saved = useRef<Content>(blank);
-  const awaitingEditor = useRef(false);
+  const awaitingEditor = useRef(Boolean(initialCopy?.operations.length));
   const inFlight = useRef(false);
   const sendAttempted = useRef(false);
   const pending = useRef<Continue>({});
@@ -108,9 +110,31 @@ export default function OutreachComposer({ contacts, available, storageOrigin, i
       saved.current = current;
       return draft.id;
     } catch (error) {
+      if (recoverText(error)) return null;
       setNotice({ text: error instanceof Error ? error.message : "The draft could not be saved.", error: true });
       return null;
     }
+  }
+
+  /**
+   * The draft was sent (or deleted) somewhere else while this window still had it open. Never lose the text, and never offer a way to send it
+   * again from that draft: keep everything as a new, unsaved draft and say what happened.
+   */
+  function recoverText(error: unknown): boolean {
+    if (!(error instanceof OutreachError) || (error.code !== "already_sent" && error.code !== "not_found")) return false;
+    const content: Content = { recipientEmail: recipient.email, recipientName: recipient.name, subject, previewText, operations: operations.current };
+    const gone = currentId;
+    reviewDialog.current?.close();
+    setFlow({ stage: "closed" });
+    if (gone) setDrafts((list) => list.filter(({ id }) => id !== gone));
+    load(null, content);
+    setNotice({
+      text: error.code === "already_sent"
+        ? "This email was already sent (see Campaign history), so it cannot be sent again from this draft. Your text is kept below as a new unsaved draft."
+        : "This draft no longer exists (it may have been deleted or sent in another window). Your text is kept below as a new unsaved draft.",
+      error: false,
+    });
+    return true;
   }
 
   async function guarded(task: () => Promise<void>) {
@@ -144,6 +168,7 @@ export default function OutreachComposer({ contacts, available, storageOrigin, i
       if (data.campaignId) sendAttempted.current = false;
       setFlow({ stage: "review", data });
     } catch (error) {
+      if (recoverText(error)) return;
       setFlow({ stage: "error", message: error instanceof Error ? error.message : "The review could not be loaded." });
     }
   }
@@ -193,10 +218,21 @@ export default function OutreachComposer({ contacts, available, storageOrigin, i
   });
 
   const closeReview = () => { reviewDialog.current?.close(); setFlow({ stage: "closed" }); };
-  const afterSend = () => flow.stage === "result" && flow.result !== null && flow.result.status !== "none";
   const composeNext = () => { closeReview(); load(null); };
   const copyIntoNewDraft = () => { closeReview(); load(null, { ...blank, subject, previewText, operations: operations.current }); };
-  const backToEditing = () => { if (afterSend()) composeNext(); else closeReview(); };
+  /** After a send that did not succeed (or whose outcome is unclear): the text comes back as a new draft, with the same recipient, to review again. */
+  const reopenWithRecipient = () => {
+    closeReview();
+    load(null, { recipientEmail: recipient.email, recipientName: recipient.name, subject, previewText, operations: operations.current });
+    setNotice({ text: "Reopened as a new unsaved draft with the same recipient. The earlier attempt is in Campaign history, and you will be asked to confirm before sending again if it went out.", error: false });
+  };
+  /** Closing the result (Escape, or the back button): the text is discarded only after a confirmed send; otherwise it is kept. */
+  const backToEditing = () => {
+    const status = flow.stage === "result" ? flow.result?.status : undefined;
+    if (status === "sent") composeNext();
+    else if (status && status !== "none") reopenWithRecipient();
+    else closeReview();
+  };
 
   return <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
     <section className="grid min-w-0 gap-4 rounded-3xl border border-[#e6dcd4] bg-[#fffcf9] p-4 shadow-sm sm:p-6">
@@ -225,7 +261,7 @@ export default function OutreachComposer({ contacts, available, storageOrigin, i
       {busy && flow.stage === "closed" && <p role="status">Working…</p>}
       {notice && <p role={notice.error ? "alert" : "status"} className={notice.error ? "text-[#6b1f1f]" : "text-[#315644]"}>{notice.text}</p>}
       <OutreachReviewDialog dialog={reviewDialog} flow={flow} onContinue={continueReview} onSend={confirmSend} onClose={backToEditing}
-        onBackToEditing={backToEditing} onNext={composeNext} onCopy={copyIntoNewDraft} />
+        onBackToEditing={backToEditing} onNext={composeNext} onCopy={copyIntoNewDraft} onReopen={reopenWithRecipient} />
     </section>
     <section className="min-w-0 rounded-3xl border border-[#e6dcd4] bg-[#fffcf9] p-4 shadow-sm sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">

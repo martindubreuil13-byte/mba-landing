@@ -8,7 +8,7 @@ import { reviewRecipients } from "@/app/lib/email-studio/campaign";
 import { renderNewsletterEmail } from "@/app/lib/email-studio/render";
 import { validateCampaign } from "@/app/lib/email-studio/test-message";
 import { MAX_DRAFT_BYTES, decideReview, draftInput, isEmail, normalizeEmail, reviewInput, type ContactSummary } from "@/app/lib/email-outreach/model";
-import { attachCampaign, contactEmail, deleteDraft, deliveryResult, findOrCreateContact, getDraft, recentOutreach, saveDraft } from "@/app/lib/email-outreach/server";
+import { attachReview, contactEmail, deleteDraft, deliveryResult, findOrCreateContact, getDraft, recentOutreach, saveDraft } from "@/app/lib/email-outreach/server";
 
 /**
  * Individual outreach: drafts, review and result. Sending is NOT done here: a reviewed individual email is a one-recipient campaign, and the
@@ -27,7 +27,9 @@ const request = z.discriminatedUnion("op", [
 /** Content is validated before any contact is created; the real contact id replaces this stand-in afterwards. */
 const PLACEHOLDER_ID = "00000000-0000-4000-8000-000000000000";
 
-const fail = (error: string, status: number) => Response.json({ error }, { status });
+const ALREADY_SENT = "This draft was already sent. Start a new draft.";
+/** `code` lets the interface react to a specific case (for example keep the text as a new draft) without parsing wording. */
+const fail = (error: string, status: number, code?: string) => Response.json({ error, ...(code ? { code } : {}) }, { status });
 
 export async function POST(httpRequest: Request) {
   const admin = await getAdminUser();
@@ -41,17 +43,17 @@ export async function POST(httpRequest: Request) {
     if (body.op === "save") {
       const saved = await saveDraft(body.draft);
       if (saved.ok) return Response.json({ draft: saved.draft });
-      return saved.reason === "already_sent" ? fail("This draft was already sent. Start a new draft.", 409) : fail("This draft no longer exists.", 404);
+      return saved.reason === "already_sent" ? fail(ALREADY_SENT, 409, "already_sent") : fail("This draft no longer exists.", 404, "not_found");
     }
 
-    if (body.op === "delete") return await deleteDraft(body.id) ? Response.json({ ok: true }) : fail("This draft no longer exists.", 404);
+    if (body.op === "delete") return await deleteDraft(body.id) ? Response.json({ ok: true }) : fail("This draft no longer exists.", 404, "not_found");
 
     if (body.op === "result") return Response.json(await deliveryResult(body.campaignId));
 
     // Review: always judged from the SAVED draft, so what is reviewed is exactly what was saved.
     const draft = await getDraft(body.draftId);
-    if (!draft) return fail("This draft no longer exists.", 404);
-    if (draft.sentAt) return fail("This draft was already sent. Start a new draft.", 409);
+    if (!draft) return fail("This draft no longer exists.", 404, "not_found");
+    if (draft.sentAt) return fail(ALREADY_SENT, 409, "already_sent");
     const email = normalizeEmail(draft.recipientEmail);
     if (!email) return fail("Enter the recipient's email address.", 400);
     if (!isEmail(email)) return fail("Enter a valid email address.", 400);
@@ -92,7 +94,8 @@ export async function POST(httpRequest: Request) {
       selected_count: 1, exclusions: {}, recipients, editor_operations: message.operations, selected_contact_ids: [lead.id],
     }).select("id").single();
     if (error || !data) throw error ?? new Error("The review could not be saved.");
-    await attachCampaign(draft.id, data.id);
+    // Atomic: voids an older unsent review of this draft, and refuses if one was already sent (then this new review is voided too).
+    if (!await attachReview(draft.id, data.id)) return fail(ALREADY_SENT, 409, "already_sent");
     return Response.json({ ...summary, status: "ready", campaignId: data.id });
   } catch (error) {
     if (error instanceof BodyTooLargeError) return fail("The message exceeds the size limit.", 413);

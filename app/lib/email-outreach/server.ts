@@ -69,9 +69,14 @@ export async function deleteDraft(id: string): Promise<boolean> {
   return Boolean(data);
 }
 
-export async function attachCampaign(draftId: string, campaignId: string) {
-  const { error } = await getServiceClient().from("email_outreach_drafts").update({ campaign_id: campaignId }).eq("id", draftId);
+/**
+ * Makes `campaignId` the draft's one live review. Atomic in the database: an older unsent review of the same draft is voided, and if an older
+ * review was already sent the draft is finished. Returns false (and voids the new review) when this draft can no longer be sent.
+ */
+export async function attachReview(draftId: string, campaignId: string): Promise<boolean> {
+  const { data, error } = await getServiceClient().rpc("attach_outreach_review", { draft_id: draftId, review_campaign: campaignId });
   if (error) throw new Error("The review could not be linked to the draft.");
+  return data === true;
 }
 
 /**

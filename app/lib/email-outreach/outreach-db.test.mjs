@@ -63,13 +63,41 @@ it("makes an individual send a one-recipient campaign that can be claimed only o
     await db.query("delete from public.leads where id=$1", [person.id]);
     assert.equal((await db.query("select lead_id from public.email_outreach_drafts where id=$1", [draft.id])).rows[0].lead_id, null);
 
+    // One send per draft: a second review of the same draft voids the first, and a claimed review finishes the draft.
+    const review = async () => (await db.query(
+      `insert into public.email_campaigns(subject,preview_text,body_html,body_text,selected_count,exclusions,recipients,kind) values('S','','<p>x</p>','x',1,'{}',$1,'outreach') returning id`,
+      [JSON.stringify([person])])).rows[0].id;
+    const attach = async (draftId, campaign) => (await db.query("select public.attach_outreach_review($1,$2) as r", [draftId, campaign])).rows[0].r;
+    const fresh = (await db.query("insert into public.email_outreach_drafts(recipient_email) values('b@example.com') returning id")).rows[0].id;
+    const tab1 = await review();
+    assert.equal(await attach(fresh, tab1), true, "first review attaches");
+    assert.equal(await attach(fresh, tab1), true, "attaching the same review again changes nothing");
+    const tab2 = await review();
+    assert.equal(await attach(fresh, tab2), true, "a newer review attaches");
+    assert.equal(await claim(tab1, 0), null, "the older, unsent review is voided: tab 1 can no longer send");
+    assert.equal((await db.query("select campaign_id from public.email_outreach_drafts where id=$1", [fresh])).rows[0].campaign_id, tab2);
+    const sentTab2 = await claim(tab2, 0);
+    assert.ok(sentTab2, "the newest review is the one that can be sent");
+    const tab3 = await review();
+    assert.equal(await attach(fresh, tab3), false, "once a review was claimed for sending the draft is finished");
+    assert.equal(await claim(tab3, 0), null, "and the new review is voided, so nothing further can be sent");
+    assert.equal((await db.query("select campaign_id from public.email_outreach_drafts where id=$1", [fresh])).rows[0].campaign_id, tab2, "the draft still points at the review that was sent");
+    const orphan = await review();
+    assert.equal(await attach("33333333-3333-4333-8333-333333333333", orphan), false, "no draft, no live review");
+    assert.equal(await claim(orphan, 0), null);
+    // Voided reviews never reach history (history lists only started campaigns) and keep their content for audit.
+    assert.equal((await db.query("select count(*)::int as n from public.email_campaigns where id = any($1) and started_at is null and completed_at is not null", [[tab1, tab3, orphan]])).rows[0].n, 3);
+    await db.exec("set role anon");
+    await assert.rejects(() => attach(fresh, tab1), /permission denied/);
+    await db.exec("reset role");
+
     // Only the service role can touch drafts.
     await db.exec("set role anon");
     await assert.rejects(() => db.query("select * from public.email_outreach_drafts"), /permission denied/);
     await assert.rejects(() => db.query("insert into public.email_outreach_drafts(recipient_email) values('x@example.com')"), /permission denied/);
     await db.exec("reset role");
     await db.exec("set role service_role");
-    assert.equal((await db.query("select count(*)::int as n from public.email_outreach_drafts")).rows[0].n, 1);
+    assert.equal((await db.query("select count(*)::int as n from public.email_outreach_drafts")).rows[0].n, 2);
     await db.query("delete from public.email_outreach_drafts where id=$1", [draft.id]);
     await db.exec("reset role");
   } finally { await db.close(); }

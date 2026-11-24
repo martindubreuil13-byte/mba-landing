@@ -11,6 +11,20 @@ Adds a second mode to Email Studio, **Individual outreach** (one email to one pe
 5. **Result.** The outcome is shown in place (accepted, rejected, excluded, or unconfirmed). "Compose next email" gives a blank form without reloading; "Copy this message into a new draft" reuses the text for someone else.
 6. **History.** The send appears in Campaign history, labelled *Individual* with the recipient. Delivery, bounce and complaint events are recorded as for any campaign.
 
+### When a send does not go as planned
+
+Your text is never discarded after an unsuccessful send.
+
+| What happened | What you see | Your text |
+|---|---|---|
+| Sent | "Sent. The email provider accepted this email." | "Compose next email" or "Copy this message into a new draft". The draft is deleted; the send record in history holds everything. |
+| Provider rejected it, or the contact became ineligible after review | "…was not sent" with the reason | "Reopen as a new draft" keeps the **same recipient and text** as an unsaved draft. Escape does the same, it does not discard. Review again before anything is sent. |
+| The send never started (for example the 30-minute review expired) | "Nothing was sent" | Back to editing; the saved draft is untouched. |
+| The result could not be read back | "The result could not be confirmed. The email may or may not have gone out." (never "nothing was sent") | Back to editing, or reopen as a new draft. If the email did go out, the server refuses to review or save that draft again and the text is kept as a new unsaved draft. |
+| The draft was sent or deleted in another window | A notice that it was already sent | The text stays in the form as a new unsaved draft. It cannot be sent again from the old draft. |
+
+From **Campaign history**, an individual send has "Reuse as new draft" (also on its details page): it opens Individual outreach with the same recipient, subject and text, unsaved, so an old send is always recoverable.
+
 ### Safety checks (all reused, none loosened)
 
 | Check | Behaviour |
@@ -20,7 +34,7 @@ Adds a second mode to Email Studio, **Individual outreach** (one email to one pe
 | No recorded marketing permission (any new address, and most cold contacts) | Needs a documented basis, reason and evidence (the same rule and form as newsletter exceptions), saved with the send, plus a tick to acknowledge. |
 | Recheck at send time | Eligibility is checked again at the moment of sending. |
 | Unsubscribe | Every email carries a personalised unsubscribe link and `List-Unsubscribe` headers. Unsubscribing records the normal opt-out. |
-| Duplicates | One send per review (atomic claim, never replayed), a once-only Resend idempotency key, single-flight buttons, a draft that is deleted after a send attempt, and a confirmation when an *individual* email already went to that address in the last 30 days. |
+| Duplicates | One live review per draft, enforced in the database (`attach_outreach_review`): re-reviewing a draft voids its older unsent review, and once a review has been sent the draft is finished, even with two browser tabs open and a send racing a re-review. On top of that: one send per review (atomic claim, never replayed), a once-only Resend idempotency key, single-flight buttons, a draft that is deleted after a send attempt, and a confirmation when an *individual* email already went to that address in the last 30 days. |
 | Environment | Real sending only works in production, exactly like the newsletter. This work sends nothing from anywhere else. |
 
 A reviewed individual email is a **one-recipient campaign**, so the confirmed send goes through the existing `/api/admin/email/campaigns` route unchanged. The new `/api/admin/email/outreach` route only saves drafts, reviews and reports results. It never calls Resend.
@@ -50,7 +64,10 @@ The server action gained one operation, `update` (search text and tags of an exi
 
 - `email_campaigns.kind` (`'newsletter'` default, or `'outreach'`), plus a check that an outreach campaign has exactly one recipient. Existing rows become `'newsletter'`; nothing else about them changes.
 - New table `email_outreach_drafts` (row security on, service role only).
+- New function `attach_outreach_review(draft, review)`: the one-live-review-per-draft rule above. Service role only.
 - Nothing is dropped or rewritten, and the existing claim and completion functions are untouched.
+
+The exact apply, verify and record procedure, with read-only SQL for each step and the expected results, is in [supabase/INDIVIDUAL-OUTREACH-MIGRATION.md](supabase/INDIVIDUAL-OUTREACH-MIGRATION.md), together with how to validate the real database flow in an isolated local environment first.
 
 **Order matters.** Apply the migration to production **before** the code is merged and deployed (the new code reads `kind` and the drafts table). CI enforces this: `scripts/verify-migration-history.test.ts` requires every migration file to be in `docs/supabase/production-migration-records.json`, so it fails until the migration is applied in production and the snapshot refreshed.
 
@@ -62,6 +79,10 @@ If the migration is missing when the code runs, Email Studio shows "Individual o
 
 ## What was and was not tested
 
-Tested: the migration's SQL in an in-memory Postgres (one-recipient rule, single claim, drafts constraints, permissions); the server logic with mocks (review decisions, contact creation without subscription, recent-send lookup, draft rules); the existing send route with an individual campaign (one send, unsubscribe link, idempotency key, refusal of a second send, recheck at send time); and the real components in a browser against a stand-in server (modes, drafts, review, evidence, blocked, recent-send, double click, compose next, audiences, phone width).
+Tested in CI: the migration's SQL in an in-memory Postgres (one-recipient rule, single claim, the attach function's voiding and refusal, drafts constraints, permissions); the server logic with mocks (review decisions, contact creation without subscription, recent-send lookup, draft rules, error codes); the existing send route with an individual campaign (one send, unsubscribe link, idempotency key, refusal of a second send, recheck at send time); the tolerant history lookup.
 
-Not tested: a real send, the real database through the app (no local Supabase stack was available), and the live admin session. Do a staged-build check of Email Studio before promoting.
+Tested outside CI: the real components in a browser against a stand-in server (modes, drafts, review, evidence, blocked, recent-send, double click, compose next, audiences, phone width, and every failure and recovery path above).
+
+Written but **not yet run**: `app/lib/email-outreach/local-db.test.ts`, which exercises the real SQL through real PostgREST on a local Supabase stack, including true concurrency. It skips itself unless that stack is running.
+
+Not tested: a real send, and the live admin session. Do a staged-build check of Email Studio before promoting.

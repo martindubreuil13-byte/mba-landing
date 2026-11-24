@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 type Result = { data?: unknown; error?: { code?: string } | null };
-const state = vi.hoisted(() => ({ results: {} as Record<string, unknown[]>, calls: [] as { table: string; method: string; args: unknown[] }[] }));
+
+const state = vi.hoisted(() => ({ results: {} as Record<string, unknown[]>, calls: [] as { table: string; method: string; args: unknown[] }[], rpcCalls: [] as { name: string; args: unknown }[], rpcResults: [] as Result[] }));
 
 /** A recording stand-in for the Supabase query builder: every chained call is logged, and awaiting it yields the next queued result for that table. */
 vi.mock("@/app/lib/supabase/service", () => ({
   getServiceClient: () => ({
+    rpc: async (name: string, args: unknown) => { state.rpcCalls.push({ name, args }); return state.rpcResults.shift() ?? { data: null, error: null }; },
     from(table: string) {
       const proxy: object = new Proxy({}, {
         get(_, method: string) {
@@ -19,7 +21,7 @@ vi.mock("@/app/lib/supabase/service", () => ({
 }));
 vi.mock("server-only", () => ({}));
 
-import { deleteDraft, deliveryResult, findOrCreateContact, getDraft, listDrafts, recentOutreach, saveDraft } from "./server";
+import { attachReview, deleteDraft, deliveryResult, findOrCreateContact, getDraft, listDrafts, recentOutreach, saveDraft } from "./server";
 
 const queue = (table: string, ...results: Result[]) => { state.results[table] = [...(state.results[table] ?? []), ...results]; };
 const callsTo = (table: string, method: string) => state.calls.filter((call) => call.table === table && call.method === method);
@@ -27,7 +29,7 @@ const firstArg = (table: string, method: string) => callsTo(table, method)[0].ar
 const row = (over: object = {}) => ({ id: "d1", recipient_email: "a@b.co", recipient_name: "A", lead_id: null, subject: "S", preview_text: "", editor_operations: [], campaign_id: null, updated_at: "2026-11-24T00:00:00Z", ...over });
 const input = { recipientEmail: " Ada@Example.com ", recipientName: " Ada ", leadId: null, subject: "S", previewText: "", operations: [{ insert: "x\n" }] };
 
-beforeEach(() => { state.results = {}; state.calls = []; });
+beforeEach(() => { state.results = {}; state.calls = []; state.rpcCalls = []; state.rpcResults = []; });
 
 describe("findOrCreateContact", () => {
   it("reuses an existing contact (any capitalisation) without creating or changing anything", async () => {
@@ -139,3 +141,22 @@ describe("recent sends and results", () => {
     expect(await deliveryResult("c1")).toEqual({ status: "none", reason: null, providerAccepted: false });
   });
 });
+
+describe("attaching a review to a draft", () => {
+  it("asks the database to do it atomically, and reports whether this review is the draft's live one", async () => {
+    state.rpcResults.push({ data: true }, { data: false });
+    expect(await attachReview("d1", "c1")).toBe(true);
+    expect(await attachReview("d1", "c2")).toBe(false);
+    expect(state.rpcCalls).toEqual([
+      { name: "attach_outreach_review", args: { draft_id: "d1", review_campaign: "c1" } },
+      { name: "attach_outreach_review", args: { draft_id: "d1", review_campaign: "c2" } },
+    ]);
+  });
+  it("treats anything but an explicit true as refused, and surfaces database errors", async () => {
+    state.rpcResults.push({ data: null }, { data: "t" }, { data: null, error: { code: "42883" } });
+    expect(await attachReview("d1", "c1")).toBe(false);
+    expect(await attachReview("d1", "c1")).toBe(false);
+    await expect(attachReview("d1", "c1")).rejects.toThrow("could not be linked");
+  });
+});
+

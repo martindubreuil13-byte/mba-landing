@@ -29,3 +29,36 @@ create index email_outreach_drafts_campaign_idx on public.email_outreach_drafts 
 alter table public.email_outreach_drafts enable row level security;
 revoke all on public.email_outreach_drafts from public, anon, authenticated;
 grant select, insert, update, delete on public.email_outreach_drafts to service_role;
+
+-- One send per draft. Each review of a draft creates a one-recipient campaign; without a rule, two reviews of the same draft (two browser tabs, or a
+-- review dialog left open) could each be sent. This attaches a fresh review to its draft atomically:
+--   * the older review, if it has not been sent, is voided (completed_at set while never started), so the existing claim function refuses it;
+--   * if the older review was already claimed for sending, the draft is finished: the new review is voided and nothing new can be sent;
+--   * if the draft no longer exists, the new review is voided.
+-- Returns true only when the new review is the draft's single live review. Locks are taken draft first, then the older campaign (the row the
+-- claim function locks), so a send and a re-review at the same moment are serialised, never both allowed.
+create function public.attach_outreach_review(draft_id uuid, review_campaign uuid)
+returns boolean language plpgsql security invoker set search_path = '' as $$
+declare
+  previous uuid;
+  previous_started boolean;
+begin
+  select campaign_id into previous from public.email_outreach_drafts where id = draft_id for update;
+  if not found then
+    update public.email_campaigns set completed_at = coalesce(completed_at, now()) where id = review_campaign and started_at is null;
+    return false;
+  end if;
+  if previous is not null and previous <> review_campaign then
+    select started_at is not null into previous_started from public.email_campaigns where id = previous for update;
+    if coalesce(previous_started, false) then
+      update public.email_campaigns set completed_at = coalesce(completed_at, now()) where id = review_campaign and started_at is null;
+      return false;
+    end if;
+    update public.email_campaigns set completed_at = coalesce(completed_at, now()) where id = previous and started_at is null;
+  end if;
+  update public.email_outreach_drafts set campaign_id = review_campaign where id = draft_id;
+  return true;
+end;
+$$;
+revoke all on function public.attach_outreach_review(uuid, uuid) from public, anon, authenticated;
+grant execute on function public.attach_outreach_review(uuid, uuid) to service_role;

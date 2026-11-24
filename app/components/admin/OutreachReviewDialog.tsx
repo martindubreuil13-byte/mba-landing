@@ -67,7 +67,7 @@ function ExceptionForm({ prefill, busy, onSubmit }: { prefill: Prefill; busy: bo
 }
 
 /** The final check before one email goes out: exactly who, exactly what, and everything that has to be confirmed first. */
-type Handlers = { onContinue: (extra: Continue) => void; onSend: () => void; onClose: () => void; onBackToEditing: () => void; onNext: () => void; onCopy: () => void };
+type Handlers = { onContinue: (extra: Continue) => void; onSend: () => void; onClose: () => void; onBackToEditing: () => void; onNext: () => void; onCopy: () => void; onReopen: () => void };
 
 export default function OutreachReviewDialog({ dialog, flow, ...handlers }: { dialog: RefObject<HTMLDialogElement | null>; flow: Flow } & Handlers) {
   const busy = flow.stage === "loading" || flow.stage === "sending";
@@ -79,7 +79,7 @@ export default function OutreachReviewDialog({ dialog, flow, ...handlers }: { di
   </dialog>;
 }
 
-function Body({ flow, onContinue, onSend, onBackToEditing, onNext, onCopy }: { flow: Exclude<Flow, { stage: "closed" }> } & Omit<Handlers, "onClose">) {
+function Body({ flow, onContinue, onSend, onBackToEditing, onNext, onCopy, onReopen }: { flow: Exclude<Flow, { stage: "closed" }> } & Omit<Handlers, "onClose">) {
   const [acknowledged, setAcknowledged] = useState(false);
   const [recentSeen, setRecentSeen] = useState(false);
   const busy = flow.stage === "loading" || flow.stage === "sending";
@@ -136,26 +136,29 @@ function Body({ flow, onContinue, onSend, onBackToEditing, onNext, onCopy }: { f
       </> : null}
 
       {flow.stage === "result" && (() => {
-        const status = flow.result?.status ?? "none";
+        // null means the outcome could not be read back: say so, never "nothing was sent".
+        const status = flow.result ? flow.result.status : "unconfirmed";
         const email = flow.data.contact.email;
-        const nothingSent = status === "none";
         const text = status === "sent" ? `Sent. The email provider accepted this email for ${email}.`
           : status === "failed" ? `The email provider rejected this email, so it was not sent to ${email}.`
           : status === "excluded" ? `Not sent to ${email}: ${flow.result?.reason ?? "no longer eligible"}.`
-          : nothingSent ? `Nothing was sent. ${flow.error ?? "The send could not be started."}`
+          : status === "none" ? `Nothing was sent. ${flow.error ?? "The send could not be started."}`
           : "The result could not be confirmed. The email may or may not have gone out. Check Campaign history before sending anything similar again.";
         return <>
           <p role={status === "sent" ? "status" : "alert"} className={`rounded-lg border p-3 ${status === "sent" ? "border-[#315644] bg-[#eef5f0] text-[#315644]" : "border-[#6b1f1f] bg-[#f8ece8] text-[#6b1f1f]"}`}><strong>{text}</strong></p>
-          {!nothingSent && <p className="text-sm">This send is recorded in <Link className="underline" href="/admin/email#campaign-history">Campaign history</Link>, including delivery and bounces as the provider reports them.</p>}
+          {status !== "none" && <p className="text-sm">This send is recorded in <Link className="underline" href="/admin/email#campaign-history">Campaign history</Link>, including delivery and bounces as the provider reports them.</p>}
+          {status !== "sent" && status !== "none" && <p className="text-sm">Your message is kept. You can reopen it as a new draft with the same recipient, and review it again before anything is sent. If the earlier email did go out, you will be asked to confirm.</p>}
           <div className="flex flex-wrap gap-3">
-            {nothingSent ? <button type="button" className={primary} onClick={onBackToEditing}>Back to editing</button> : <>
+            {status === "sent" ? <>
               <button type="button" className={primary} onClick={onNext}>Compose next email</button>
               <button type="button" className={button} onClick={onCopy}>Copy this message into a new draft</button>
+            </> : status === "none" ? <button type="button" className={primary} onClick={onBackToEditing}>Back to editing</button> : <>
+              <button type="button" className={primary} onClick={onReopen}>Reopen as a new draft</button>
+              {status === "unconfirmed" && <button type="button" className={button} onClick={onBackToEditing}>Back to editing</button>}
             </>}
           </div>
         </>;
       })()}
-
     </div>
   </>;
 }
