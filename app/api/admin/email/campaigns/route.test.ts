@@ -129,6 +129,37 @@ describe("campaign route", () => {
     ]));
   });
 
+  it("sends an individual (one-recipient) email once, with its unsubscribe link and idempotency key, and refuses a second send", async () => {
+    state.rpc.mockReset()
+      .mockResolvedValueOnce({ data: { claimToken: id, subject: "A quick hello", preview_text: "", body_html: "<p>Hi Ada</p>", body_text: "Hi Ada", recipients: [{ id, email }] } })
+      .mockResolvedValueOnce({ data: { nextOffset: 1, done: true } })
+      .mockResolvedValue({ data: null });
+    state.candidates.mockResolvedValue([candidate]);
+    state.send.mockResolvedValue({ data: { id: "provider-1" } });
+    const sent = await post({ campaignId: id, confirmed: true, offset: 0 });
+    expect(sent.status).toBe(200);
+    expect(await sent.json()).toMatchObject({ nextOffset: 1, done: true });
+    expect(state.send).toHaveBeenCalledTimes(1);
+    const [message, options] = state.send.mock.calls[0];
+    expect(message).toMatchObject({ to: email, subject: "A quick hello", headers: { "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } });
+    expect(message.html).toContain("/unsubscribe?token=");
+    expect(message.text).toContain("Unsubscribe: ");
+    expect(options).toEqual({ idempotencyKey: `mba-campaign/${id}/${id}` });
+    // A double click, a second tab or a retry cannot send it again.
+    expect((await post({ campaignId: id, confirmed: true, offset: 0 })).status).toBe(409);
+    expect(state.send).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not send an individual email to a contact who unsubscribed after review", async () => {
+    state.rpc.mockReset()
+      .mockResolvedValueOnce({ data: { claimToken: id, subject: "A quick hello", preview_text: "", body_html: "<p>Hi</p>", body_text: "Hi", recipients: [{ id, email }] } })
+      .mockResolvedValueOnce({ data: { nextOffset: 1, done: true } });
+    state.candidates.mockResolvedValue([{ ...candidate, state: "Not eligible", reason: "Unsubscribed" }]);
+    expect((await post({ campaignId: id, confirmed: true, offset: 0 })).status).toBe(200);
+    expect(state.send).not.toHaveBeenCalled();
+    expect(state.deliveries).toEqual(expect.arrayContaining([expect.objectContaining({ status: "excluded", reason: "Unsubscribed" })]));
+  });
+
   it("delivers 41 synthetic recipients in separately claimed batches of 25 and 16", async () => {
     vi.useFakeTimers();
     const recipients = Array.from({ length: 41 }, (_, index) => ({

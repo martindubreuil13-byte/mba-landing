@@ -34,10 +34,11 @@ export default async function CampaignDetails({ params }: { params: Promise<{ id
     <main className="mx-auto grid max-w-4xl gap-5">
       <Link className="text-[#6b1f1f] underline" href="/admin/email#campaign-history">Back to campaign history</Link>
       <header>
+        {campaign.kind === "outreach" && <p className="text-sm font-semibold uppercase tracking-wide text-[#6b1f1f]">Individual outreach</p>}
         <h1 className="break-words font-serif text-3xl">{campaign.subject}</h1>
         <p>Send started {new Date(campaign.started_at).toLocaleString("en-GB", { timeZone: "Asia/Bangkok" })} (Bangkok)</p>
         {campaign.preview_text && <p>Preview text · {campaign.preview_text}</p>}
-        {campaign.editor_operations ? <Link className="mt-2 inline-block rounded-lg bg-[#6b1f1f] px-4 py-2 text-white" href={`/admin/email?duplicate=${id}`}>Duplicate</Link> :
+        {campaign.kind === "outreach" ? null : campaign.editor_operations ? <Link className="mt-2 inline-block rounded-lg bg-[#6b1f1f] px-4 py-2 text-white" href={`/admin/email?duplicate=${id}`}>Duplicate</Link> :
           <p className="mt-2 text-sm">Editable source was not saved for this campaign.</p>}
       </header>
       <CampaignIntelligence reach={reachMetrics(recipients, campaign.campaign_provider_events)} failed={failed}

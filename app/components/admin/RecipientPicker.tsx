@@ -5,7 +5,7 @@ import { preferenceLabel } from "@/app/lib/contact-tags/preferences";
 import { exceptionEvidence, type ExceptionReview } from "@/app/lib/email-studio/campaign";
 import type { recipientCandidates } from "@/app/lib/contact-tags/data";
 import { mutateAudience } from "@/app/lib/email-audiences/actions";
-import { addMatching, exclusionCounts, matchingContacts, type SavedAudience } from "@/app/lib/email-audiences/model";
+import { addMatching, describeFilters, exclusionCounts, filtersChanged, matchingContacts, type SavedAudience } from "@/app/lib/email-audiences/model";
 
 type Candidate = Awaited<ReturnType<typeof recipientCandidates>>[number];
 const pageSize = 20;
@@ -23,7 +23,7 @@ export default function RecipientPicker({ contacts, tags, available, tagsAvailab
   const [ids, setIds] = useState<string[]>([]);
   const [limit, setLimit] = useState(pageSize);
   const [audienceId, setAudienceId] = useState("");
-  const [operation, setOperation] = useState<"create" | "rename" | "delete" | null>(null);
+  const [operation, setOperation] = useState<"create" | "update" | "rename" | "delete" | null>(null);
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -37,6 +37,12 @@ export default function RecipientPicker({ contacts, tags, available, tagsAvailab
   const matching = matchingContacts(contacts, { search_query: query, tag_ids: tagIds });
   const current = audiences?.find(({ id }) => id === audienceId);
   const unknownTags = tagIds.filter((id) => !tags.some((tag) => tag.id === id));
+  const tagNames = new Map(tags.map((tag) => [tag.id, tag.name]));
+  const filters = { search_query: query, tag_ids: tagIds };
+  const changed = current ? filtersChanged(current, filters) : false;
+  const cannotSave = !available ? "Contacts could not be loaded, so filters cannot be saved."
+    : !tagsAvailable ? "Tags could not be loaded, so filters cannot be saved."
+    : unknownTags.length ? "Some saved tags are unavailable. Clear the filters and choose tags again before saving." : "";
 
   function toggle(id: string) {
     setReviews((previous) => { const next = { ...previous }; delete next[id]; return next; });
@@ -65,7 +71,9 @@ export default function RecipientPicker({ contacts, tags, available, tagsAvailab
     if (!operation || (operation !== "create" && !current)) return;
     const input = operation === "create"
       ? { op: operation, name, search_query: query, tag_ids: tagIds }
-      : { op: operation, name, id: current?.id };
+      : operation === "update"
+        ? { op: operation, id: current?.id, search_query: query, tag_ids: tagIds }
+        : { op: operation, name, id: current?.id };
     setError("");
     startTransition(async () => {
       try {
@@ -73,7 +81,7 @@ export default function RecipientPicker({ contacts, tags, available, tagsAvailab
         if ("error" in result && result.error) { setError(result.error); return; }
         setAudienceId(operation === "delete" ? "" : result.id ?? "");
         setOperation(null);
-        setNotice(operation === "delete" ? "Audience deleted." : "Audience saved.");
+        setNotice(operation === "delete" ? "Audience deleted." : operation === "update" ? "Audience filters updated." : operation === "rename" ? "Audience renamed." : "Audience created.");
       } catch {
         setError("The audience could not be saved. Try again.");
       }
@@ -85,27 +93,40 @@ export default function RecipientPicker({ contacts, tags, available, tagsAvailab
       <h2 className="font-serif text-xl text-[#6b1f1f]">Recipients</h2>
       {available && <span>{contacts.filter(({ state }) => state === "Eligible").length} recorded opt-ins</span>}
     </div>
-    <fieldset disabled={pending} className="space-y-2">
-      <label className="grid gap-1">Saved audience
+    <fieldset disabled={pending} className="space-y-2 rounded-lg border border-[#daccc1] bg-white p-3">
+      <legend className="px-1 font-medium text-[#6b1f1f]">Saved audiences</legend>
+      <p className="text-[#655951]">An audience remembers a search and tag filters, so you can come back to the same group of contacts. Set the filters below, then save them.</p>
+      <label className="grid gap-1">Load an audience
         <select className={field} value={audienceId} disabled={!audiences} onChange={(event) => load(event.target.value)}>
           <option value="">Choose an audience</option>
           {audiences?.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
         </select>
       </label>
-      {audiences ? <div className="flex flex-wrap gap-2">
-        <button type="button" className={actionClass} disabled={!available || !tagsAvailable || !!unknownTags.length} onClick={() => edit("create")}>Save current filters</button>
-        {current && <>
-          <button type="button" className={actionClass} onClick={() => edit("rename")}>Rename audience</button>
-          <button type="button" className={actionClass} onClick={() => edit("delete")}>Delete audience</button>
-        </>}
-      </div> : <p role="status">Saved audiences are unavailable.</p>}
-      {operation && <div className="space-y-2 rounded-lg bg-white p-3">
-        {operation === "delete" ? <p>Delete “{current?.name}”?</p> : <label className="grid gap-1">Audience name
-          <input className={field} value={name} maxLength={80} onChange={(event) => setName(event.target.value)} />
-        </label>}
+      {!audiences ? <p role="status">Saved audiences are unavailable.</p> : <>
+        {current && <p role="status" className={changed ? "font-medium text-[#6b1f1f]" : "text-[#315644]"}>
+          Loaded “{current.name}”. {changed ? "The filters below differ from the saved ones." : "The filters below match the saved audience."}</p>}
         <div className="flex flex-wrap gap-2">
-          <button type="button" className={actionClass} onClick={save} disabled={operation !== "delete" && !name.trim()}>
-            {pending ? "Saving…" : operation === "delete" ? "Confirm delete" : "Save audience"}
+          {current && <button type="button" className={actionClass} disabled={!changed || !!cannotSave} onClick={() => edit("update")}>Update “{current.name}” with current filters</button>}
+          <button type="button" className={actionClass} disabled={!!cannotSave} onClick={() => edit("create")}>{current ? "Save as a new audience" : "Create audience from current filters"}</button>
+          {current && <>
+            <button type="button" className={actionClass} onClick={() => edit("rename")}>Rename audience</button>
+            <button type="button" className={actionClass} onClick={() => edit("delete")}>Delete audience</button>
+          </>}
+        </div>
+        {cannotSave && <p role="status" className="text-[#6b1f1f]">{cannotSave}</p>}
+      </>}
+      {operation && <div className="space-y-2 rounded-lg bg-[#f8f1eb] p-3">
+        {operation === "delete" ? <p>Delete “{current?.name}”? This cannot be undone.</p>
+          : operation === "update" ? <p>Replace the saved filters of “{current?.name}” with <strong>{describeFilters(filters, tagNames)}</strong>? Anyone who matches the audience will change.</p>
+          : <>
+            {operation === "create" && <p>Filters to save: <strong>{describeFilters(filters, tagNames)}</strong></p>}
+            <label className="grid gap-1">Audience name
+              <input className={field} value={name} maxLength={80} onChange={(event) => setName(event.target.value)} />
+            </label>
+          </>}
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className={actionClass} onClick={save} disabled={(operation === "create" || operation === "rename") && !name.trim()}>
+            {pending ? "Saving…" : operation === "delete" ? "Confirm delete" : operation === "update" ? "Save changes to audience" : operation === "rename" ? "Save new name" : "Create audience"}
           </button>
           <button type="button" className={actionClass} onClick={() => edit(null)}>Cancel</button>
         </div>
